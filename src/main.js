@@ -303,25 +303,25 @@ import * as icons from './icons.js';
 
     // Create each scroll button
     const fullScrollUpButton = document.createElement('div');
-    fullScrollUpButton.innerHTML = chevronsUpSVG;
+    fullScrollUpButton.innerHTML = icons.chevronsUpSVG;
     applyScrollButtonStyles(fullScrollUpButton);
     fullScrollUpButton.title = 'Scroll Up (Full)';
     scrollButtonsContainer.appendChild(fullScrollUpButton);
 
     const partialScrollUpButton = document.createElement('div');
-    partialScrollUpButton.innerHTML = chevronUpSVG;
+    partialScrollUpButton.innerHTML = icons.chevronUpSVG;
     applyScrollButtonStyles(partialScrollUpButton);
     partialScrollUpButton.title = 'Scroll Up (Partial)';
     scrollButtonsContainer.appendChild(partialScrollUpButton);
 
     const partialScrollDownButton = document.createElement('div');
-    partialScrollDownButton.innerHTML = chevronDownSVG;
+    partialScrollDownButton.innerHTML = icons.chevronDownSVG;
     applyScrollButtonStyles(partialScrollDownButton);
     partialScrollDownButton.title = 'Scroll Down (Partial)';
     scrollButtonsContainer.appendChild(partialScrollDownButton);
 
     const fullScrollDownButton = document.createElement('div');
-    fullScrollDownButton.innerHTML = chevronsDownSVG;
+    fullScrollDownButton.innerHTML = icons.chevronsDownSVG;
     applyScrollButtonStyles(fullScrollDownButton);
     fullScrollDownButton.title = 'Scroll Down (Full)';
     scrollButtonsContainer.appendChild(fullScrollDownButton);
@@ -2327,7 +2327,7 @@ import * as icons from './icons.js';
     // Create cache panel search mode button with the provided SVG icon
     const cachePanelSearchMode = document.createElement('div');
     cachePanelSearchMode.className = 'user-mode-button';
-    cachePanelSearchMode.innerHTML = usersSVG;
+    cachePanelSearchMode.innerHTML = icons.usersSVG;
     // Apply common styles using the helper function
     applyHeaderButtonStyles(cachePanelSearchMode, 'darkslateblue');
 
@@ -2377,7 +2377,7 @@ import * as icons from './icons.js';
     const clearCacheButton = document.createElement('div');
     clearCacheButton.className = 'clear-cache-button';
     clearCacheButton.title = 'Clear cache';
-    clearCacheButton.innerHTML = trashSVG;
+    clearCacheButton.innerHTML = icons.trashSVG;
     // Apply common styles using the helper function
     applyHeaderButtonStyles(clearCacheButton, 'brown');
 
@@ -2400,7 +2400,7 @@ import * as icons from './icons.js';
     const closePanelButton = document.createElement('div');
     closePanelButton.className = 'close-panel-button';
     closePanelButton.title = 'Close panel';
-    closePanelButton.innerHTML = closeSVG;
+    closePanelButton.innerHTML = icons.closeSVG;
     // Apply common styles using the helper function
     applyHeaderButtonStyles(closePanelButton, 'darkolivegreen', '0 0 0 0.5em');
 
@@ -2673,7 +2673,7 @@ import * as icons from './icons.js';
                 if (typeof action !== "object" || action === null) continue;
                 const { type, timestamp } = action;
                 const userAction = userData?.login || "Unknown User";
-                const actionIconType = type === 'enter' ? enterSVG : leaveSVG;
+                const actionIconType = type === 'enter' ? icons.enterSVG : icons.leaveSVG;
                 const userPresence = type === 'enter';
                 // Use IIFE to capture the current value of shouldProcessActionLog
                 ((currentShouldProcess) => {
@@ -3553,7 +3553,7 @@ import * as icons from './icons.js';
       const trackedIcon = document.createElement('div');
       trackedIcon.title = 'Tracked user';
       trackedIcon.classList.add('tracked');
-      trackedIcon.innerHTML = trackedSVG;
+      trackedIcon.innerHTML = icons.trackedSVG;
       newUserElement.appendChild(trackedIcon);
     }
 
@@ -3565,7 +3565,7 @@ import * as icons from './icons.js';
       const ignoredIcon = document.createElement('div');
       ignoredIcon.title = 'Ignored user';
       ignoredIcon.classList.add('ignored');
-      ignoredIcon.innerHTML = ignoredSVG;
+      ignoredIcon.innerHTML = icons.ignoredSVG;
       newUserElement.appendChild(ignoredIcon);
     }
 
@@ -3579,7 +3579,7 @@ import * as icons from './icons.js';
     if (hasModeratorIcon || isModerator) {
       const moderatorIcon = document.createElement('div');
       moderatorIcon.classList.add('moderator');
-      moderatorIcon.innerHTML = moderatorSVG; // Assuming 'moderatorSVG' contains the SVG for the icon
+      moderatorIcon.innerHTML = icons.moderatorSVG; // Assuming 'icons.moderatorSVG' contains the SVG for the icon
       newUserElement.appendChild(moderatorIcon);
     }
 
@@ -3908,7 +3908,7 @@ import * as icons from './icons.js';
           const userGender = getUserGender(userName);
           const isTracked = usersToTrack.some(u => u.name === userName && u.state === 'thawed');
 
-          showUserAction(userName, actionType === "enter" ? enterSVG : leaveSVG, actionType === "enter");
+          showUserAction(userName, actionType === "enter" ? icons.enterSVG : icons.leaveSVG, actionType === "enter");
           refreshUserList(userName, actionType);
           logUserAction(userId, actionType);
 
@@ -4928,7 +4928,7 @@ import * as icons from './icons.js';
       // Append time SVG icon before the time
       const timeIcon = document.createElement('div');
       timeIcon.classList.add('time-icon');
-      timeIcon.innerHTML = clockSVG;
+      timeIcon.innerHTML = icons.clockSVG;
 
       // Append spans for each part with respective classes
       const timeElement = document.createElement('div');
@@ -4938,7 +4938,7 @@ import * as icons from './icons.js';
       // Append user SVG icon after the time
       const userIcon = document.createElement('div');
       userIcon.classList.add('user-icon');
-      userIcon.innerHTML = userSVG;
+      userIcon.innerHTML = icons.userSVG;
 
       const usernameElement = document.createElement('div');
       usernameElement.classList.add('username');
@@ -4947,7 +4947,7 @@ import * as icons from './icons.js';
       // Append action SVG icon after the username
       const actionIcon = document.createElement('div');
       actionIcon.classList.add('action-icon');
-      actionIcon.innerHTML = actionSVG;
+      actionIcon.innerHTML = icons.actionSVG;
 
       const messageElement = document.createElement('div');
       messageElement.classList.add('message');
@@ -5389,13 +5389,13 @@ import * as icons from './icons.js';
   function updateSoundSwitcherIcon() {
     switch (soundSwitcher.id) {
       case 'silence':
-        soundSwitcherIcon.innerHTML = silenceSVG;
+        soundSwitcherIcon.innerHTML = icons.silenceSVG;
         break;
       case 'beep':
-        soundSwitcherIcon.innerHTML = beepSVG;
+        soundSwitcherIcon.innerHTML = icons.beepSVG;
         break;
       case 'voice':
-        soundSwitcherIcon.innerHTML = voiceSVG;
+        soundSwitcherIcon.innerHTML = icons.voiceSVG;
         break;
     }
   } updateSoundSwitcherIcon();
@@ -5471,7 +5471,7 @@ import * as icons from './icons.js';
       if (voiceSpeedInfo) {
         // Set the text content of voiceSpeed
         if (voiceSpeed <= minVoiceSpeed || voiceSpeed >= maxVoiceSpeed) {
-          voiceSpeedInfo.innerHTML = iconRangeisOut;
+          voiceSpeedInfo.innerHTML = icons.rangeIsOutSVG;
         } else {
           voiceSpeedInfo.innerHTML = `SPEED ${Number(voiceSpeed).toFixed(1)}`;
         }
@@ -5567,7 +5567,7 @@ import * as icons from './icons.js';
       if (voicePitchInfo) {
         // Set the text content of voicePitch
         if (voicePitch <= minVoicePitch || voicePitch >= maxVoicePitch) {
-          voicePitchInfo.innerHTML = iconRangeisOut;
+          voicePitchInfo.innerHTML = icons.rangeIsOutSVG;
         } else {
           voicePitchInfo.innerHTML = `PITCH ${voicePitch.toFixed(1)}`;
         }
@@ -5790,10 +5790,10 @@ import * as icons from './icons.js';
   function updateMessageModeIcon() {
     switch (messageMode.id) {
       case 'every-message':
-        messageModeIcon.innerHTML = iconModeEvery;
+        messageModeIcon.innerHTML = icons.modeEverySVG;
         break;
       case 'mention-message':
-        messageModeIcon.innerHTML = modeMentionSVG;
+        messageModeIcon.innerHTML = icons.modeMentionSVG;
         break;
     }
   } updateMessageModeIcon();
@@ -5819,7 +5819,7 @@ import * as icons from './icons.js';
     showUserListCacheButton.style.zIndex = '3';
 
     // Add data base icon to the button
-    showUserListCacheButton.innerHTML = userlistCacheSVG;
+    showUserListCacheButton.innerHTML = icons.userlistCacheSVG;
 
     // Create the small indicator for user count
     const cacheUserCount = document.createElement('div');
@@ -5896,7 +5896,7 @@ import * as icons from './icons.js';
     // Add personal messages-specific styles
     showPersonalMessagesButton.style.position = 'relative';
     showPersonalMessagesButton.style.zIndex = '2';
-    showPersonalMessagesButton.innerHTML = personalMessagesSVG; // Add icon
+    showPersonalMessagesButton.innerHTML = icons.personalMessagesSVG; // Add icon
 
     // Create the small indicator for all message count
     const allMessageIndicator = createMessageCountIndicator('total-message-count', '#fa8072');
@@ -6313,7 +6313,7 @@ import * as icons from './icons.js';
     // Create a save button with the provided SVG icon
     const saveMessagesButton = document.createElement('div');
     saveMessagesButton.className = 'save-messages-button';
-    saveMessagesButton.innerHTML = saveSVG;
+    saveMessagesButton.innerHTML = icons.saveSVG;
     saveMessagesButton.title = 'Save messages';
     saveMessagesButton.style.opacity = '0';
 
@@ -6355,7 +6355,7 @@ import * as icons from './icons.js';
     // Create an import button for messages with the provided SVG icon
     const importMessagesButton = document.createElement('div');
     importMessagesButton.className = 'import-messages-button';
-    importMessagesButton.innerHTML = importSVG;
+    importMessagesButton.innerHTML = icons.importSVG;
     importMessagesButton.title = 'Import messages';
 
     // Apply common styles using the helper function
@@ -6421,7 +6421,7 @@ import * as icons from './icons.js';
     // Create an export button for messages with the provided SVG icon
     const exportMessagesButton = document.createElement('div');
     exportMessagesButton.className = 'export-messages-button';
-    exportMessagesButton.innerHTML = exportSVG;
+    exportMessagesButton.innerHTML = icons.exportSVG;
     exportMessagesButton.title = 'Export messages';
 
     // Apply common styles using the helper function
@@ -6453,7 +6453,7 @@ import * as icons from './icons.js';
     const copyPersonalMessagesButton = document.createElement('div');
     copyPersonalMessagesButton.className = 'copy-personal-messages-button';
     // Set the inner HTML of the copy personal messages button element with the clipboard SVG
-    copyPersonalMessagesButton.innerHTML = clipboardSVG;
+    copyPersonalMessagesButton.innerHTML = icons.clipboardSVG;
     copyPersonalMessagesButton.title = 'Copy Personal Messages';
     // Apply common styles to the button element
     applyHeaderButtonStyles(copyPersonalMessagesButton, 'steelblue');
@@ -6486,7 +6486,7 @@ import * as icons from './icons.js';
     const clearCacheButton = document.createElement('div');
     clearCacheButton.className = 'clear-cache-button';
     clearCacheButton.title = 'Clear personal messages';
-    clearCacheButton.innerHTML = trashSVG;
+    clearCacheButton.innerHTML = icons.trashSVG;
     applyHeaderButtonStyles(clearCacheButton, 'brown');
 
     // Add a click event listener to the clear cache button
@@ -6518,7 +6518,7 @@ import * as icons from './icons.js';
     const closePanelButton = document.createElement('div');
     closePanelButton.className = 'close-panel-button';
     closePanelButton.title = 'Close panel';
-    closePanelButton.innerHTML = closeSVG;
+    closePanelButton.innerHTML = icons.closeSVG;
     applyHeaderButtonStyles(closePanelButton, 'darkolivegreen', '0 0 0 0.5em');
 
     // Add a click event listener to the close panel button
@@ -6950,7 +6950,7 @@ import * as icons from './icons.js';
 
     showChatLogsButton.style.position = 'relative';
     showChatLogsButton.style.zIndex = '1';
-    showChatLogsButton.innerHTML = chatLogsSVG; // Add icon
+    showChatLogsButton.innerHTML = icons.chatLogsSVG; // Add icon
 
     showChatLogsButton.title = 'Show Chat Logs';
 
@@ -7338,7 +7338,7 @@ import * as icons from './icons.js';
     // Create a date input toggle with similar styles as the close button
     const dateInputToggle = document.createElement('div');
     dateInputToggle.className = 'date-panel-button';
-    dateInputToggle.innerHTML = calendarSVG;
+    dateInputToggle.innerHTML = icons.calendarSVG;
     // Apply common styles using the helper function with a different background color
     applyHeaderButtonStyles(dateInputToggle, 'steelblue');
     dateInputToggle.style.margin = '0 0.5em';
@@ -7385,7 +7385,7 @@ import * as icons from './icons.js';
     const toggleMentionMessages = document.createElement('div');
     toggleMentionMessages.className = 'toggle-mention-messages';
     // Set the inner HTML of the toggle component with a suitable SVG or text
-    toggleMentionMessages.innerHTML = personalMessagesSVG;
+    toggleMentionMessages.innerHTML = icons.personalMessagesSVG;
     toggleMentionMessages.title = 'Toggle Mention Messages';
     // Apply common styles to the component
     applyHeaderButtonStyles(toggleMentionMessages, 'saddlebrown');
@@ -7433,7 +7433,7 @@ import * as icons from './icons.js';
     const toggleMediaMessages = document.createElement('div');
     toggleMediaMessages.className = 'toggle-media-messages';
     // Set the inner HTML of the toggle component with a suitable SVG or text
-    toggleMediaMessages.innerHTML = mediaMessagesSVG;
+    toggleMediaMessages.innerHTML = icons.mediaMessagesSVG;
     toggleMediaMessages.title = 'Toggle Media Messages';
     // Apply common styles to the component
     applyHeaderButtonStyles(toggleMediaMessages, 'darkslategray');
@@ -7469,7 +7469,7 @@ import * as icons from './icons.js';
     const copyChatLogsUrl = document.createElement('div');
     copyChatLogsUrl.className = 'copy-current-chatlogs-url';
     // Set the inner HTML of the copy chat logs element with the clipboard SVG
-    copyChatLogsUrl.innerHTML = clipboardSVG;
+    copyChatLogsUrl.innerHTML = icons.clipboardSVG;
     copyChatLogsUrl.title = 'Copy Chat Logs Url';
     // Apply common styles to the button element
     applyHeaderButtonStyles(copyChatLogsUrl, 'steelblue');
@@ -7643,7 +7643,7 @@ import * as icons from './icons.js';
 
     // Function to update the toggle button's SVG and title based on current state
     function updateActiveUsersToggle(state) {
-      toggleActiveUsers.innerHTML = state === 'shown' ? toggleLeftSVG : toggleRightSVG; // Toggle between SVGs
+      toggleActiveUsers.innerHTML = state === 'shown' ? icons.toggleLeftSVG : icons.toggleRightSVG; // Toggle between SVGs
       toggleActiveUsers.title = state === 'shown' ? 'Hide User List' : 'Show User List'; // Update title based on state
     }
 
@@ -7675,21 +7675,21 @@ import * as icons from './icons.js';
     const oneDayBackward = document.createElement('div');
     oneDayBackward.className = 'chevron-left-button';
     oneDayBackward.title = 'Previous Day';
-    oneDayBackward.innerHTML = chevronLeftSVG; // Assuming you have chevronLeftSVG defined
+    oneDayBackward.innerHTML = icons.chevronLeftSVG; // Assuming you have icons.chevronLeftSVG defined
     applyHeaderButtonStyles(oneDayBackward, 'darkcyan');
 
     // Create and style the chevron right button
     const oneDayForward = document.createElement('div');
     oneDayForward.className = 'chevron-right-button';
     oneDayForward.title = 'Next Day';
-    oneDayForward.innerHTML = chevronRightSVG; // Assuming you have chevronRightSVG defined
+    oneDayForward.innerHTML = icons.chevronRightSVG; // Assuming you have icons.chevronRightSVG defined
     applyHeaderButtonStyles(oneDayForward, 'darkcyan');
 
     // Create and style the shuffle button
     const randomDay = document.createElement('div');
     randomDay.className = 'shuffle-button';
     randomDay.title = 'Random Date';
-    randomDay.innerHTML = shuffleSVG; // Assuming you have shuffleSVG defined
+    randomDay.innerHTML = icons.shuffleSVG; // Assuming you have icons.shuffleSVG defined
     applyHeaderButtonStyles(randomDay, 'darkslateblue');
 
     // Function to get current date or fallback to today's date
@@ -7741,7 +7741,7 @@ import * as icons from './icons.js';
     const closePanelButton = document.createElement('div');
     closePanelButton.className = 'close-panel-button';
     closePanelButton.title = 'Close panel';
-    closePanelButton.innerHTML = closeSVG;
+    closePanelButton.innerHTML = icons.closeSVG;
     // Apply common styles using the helper function
     applyHeaderButtonStyles(closePanelButton, 'darkolivegreen', '0 0 0 0.5em');
 
@@ -8355,7 +8355,7 @@ import * as icons from './icons.js';
     showSettingsButton.style.position = 'relative';
 
     // Add settings icon to the button (use the SVG icon you provided)
-    showSettingsButton.innerHTML = settingsSVG;
+    showSettingsButton.innerHTML = icons.settingsSVG;
 
     // Create a hidden file input for uploading settings
     const importFileInput = document.createElement('input');
@@ -8498,7 +8498,7 @@ import * as icons from './icons.js';
     // Create a close button with the provided SVG icon
     const closePanelButton = document.createElement('div');
     closePanelButton.className = 'close-panel-button';
-    closePanelButton.innerHTML = closeSVG;
+    closePanelButton.innerHTML = icons.closeSVG;
     closePanelButton.title = 'Close panel';
     // Apply common styles using the helper function
     applyHeaderButtonStyles(closePanelButton, 'darkolivegreen', '0 0 0 0.5em');
@@ -8513,7 +8513,7 @@ import * as icons from './icons.js';
     // Create a clear cache button with the provided SVG icon
     const clearCacheButton = document.createElement('div');
     clearCacheButton.className = 'clear-cache-button';
-    clearCacheButton.innerHTML = trashSVG;
+    clearCacheButton.innerHTML = icons.trashSVG;
     clearCacheButton.title = 'Clear settings';
 
     // Apply common styles using the helper function
@@ -8527,7 +8527,7 @@ import * as icons from './icons.js';
     // Create an import button with the provided SVG icon
     const importSettingsButton = document.createElement('div');
     importSettingsButton.className = 'import-settings-button';
-    importSettingsButton.innerHTML = importSVG;
+    importSettingsButton.innerHTML = icons.importSVG;
     importSettingsButton.title = 'Import settings';
 
     // Apply common styles using the helper function
@@ -8536,7 +8536,7 @@ import * as icons from './icons.js';
     // Create a save button with the provided SVG icon
     const saveSettingsButton = document.createElement('div');
     saveSettingsButton.className = 'save-settings-button';
-    saveSettingsButton.innerHTML = saveSVG;
+    saveSettingsButton.innerHTML = icons.saveSVG;
     saveSettingsButton.title = 'Save settings';
     saveSettingsButton.style.opacity = '0';
 
@@ -8764,7 +8764,7 @@ import * as icons from './icons.js';
     // Create an export button with the provided SVG icon
     const exportSettingsButton = document.createElement('div');
     exportSettingsButton.className = 'export-settings-button';
-    exportSettingsButton.innerHTML = exportSVG;
+    exportSettingsButton.innerHTML = icons.exportSVG;
     exportSettingsButton.title = 'Export settings';
 
     // Apply common styles using the helper function
@@ -8982,7 +8982,7 @@ import * as icons from './icons.js';
     function createRemoveButton(type, item) {
       const removeButton = document.createElement('div');
       removeButton.className = `remove-${type}-word`;
-      removeButton.innerHTML = removeSVG;
+      removeButton.innerHTML = icons.removeSVG;
       attachRemoveListener(removeButton, item);
       styleButton(removeButton, '#ee9090', '#6b2f2f', false);
       return removeButton;
@@ -8995,7 +8995,7 @@ import * as icons from './icons.js';
 
       // Set initial opacity based on the state
       snowflakeButton.style.opacity = state === 'thawed' ? '0.3' : '1';
-      snowflakeButton.innerHTML = snowflakeSVG;
+      snowflakeButton.innerHTML = icons.snowflakeSVG;
 
       attachSnowflakeListener(snowflakeButton, username); // Pass username here
       styleButton(snowflakeButton, 'lightsteelblue', 'steelblue', false);
@@ -9300,7 +9300,7 @@ import * as icons from './icons.js';
       const addButton = document.createElement('div');
       // Set class, content, and style for the button
       addButton.className = `add-button add-setting-button add-${middleWord}-item`;
-      addButton.innerHTML = addSVG; // Add SVG icon to the button
+      addButton.innerHTML = icons.addSVG; // Add SVG icon to the button
       styleButton(addButton, '#d190ee', '#502f6b', false); // Style the button
       addButton.style.margin = '0.4em';
 
@@ -9995,7 +9995,7 @@ import * as icons from './icons.js';
           chatSend.style.setProperty('background-color', 'rgb(160, 35, 35)', 'important');
           chatSend.style.setProperty(
             'background-image',
-            `url("data:image/svg+xml,${encodeURIComponent(deniedSVG)}")`,
+            `url("data:image/svg+xml,${encodeURIComponent(icons.deniedSVG)}")`,
             'important'
           );
           chatSend.style.setProperty('background-repeat', 'no-repeat', 'important');

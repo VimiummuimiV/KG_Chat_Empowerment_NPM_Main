@@ -188,7 +188,7 @@ export const voiceSVG = `
 // Icons for message mode button
 // Button SVG icons "every", "mention" representation
 const modeEverySVGStrokeColor = "hsl(100, 50%, 50%)";
-export const iconModeEvery = `
+export const modeEverySVG = `
   <svg xmlns="${svgUrl}"
       width="${iconSize}"
       height="${iconSize}"
@@ -218,14 +218,14 @@ export const modeMentionSVG = `
   </svg>`;
 
 // Icon for the out of range value
-const rangeisOutSVGStrokeColor = "currentColor";
-export const iconRangeisOut = `
+const rangeIsOutSVGStrokeColor = "currentColor";
+export const rangeIsOutSVG = `
   <svg xmlns="${svgUrl}"
       width="${iconSize - 12}"
       height="${iconSize - 12}"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="${rangeisOutSVGStrokeColor}"
+      stroke="${rangeIsOutSVGStrokeColor}"
       stroke-width="${iconStrokeWidth}"
       stroke-linecap="round" stroke-linejoin="round" class="feather feather-slash">
     <circle cx="12" cy="12" r="10"></circle>
