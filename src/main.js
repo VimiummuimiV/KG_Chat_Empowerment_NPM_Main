@@ -4514,31 +4514,6 @@ import * as icons from './icons.js';
   // Call the function to apply chat message grouping
   applyChatMessageGrouping();
 
-  // Algorithm to check for similarity between two strings
-  function similarity(s1, s2) {
-    const [longer, shorter] = s1.length >= s2.length ? [s1, s2] : [s2, s1];
-    const longerLength = longer.length;
-    if (longerLength === 0) return 1.0;
-    return (longerLength - editDistance(longer, shorter)) / longerLength;
-  }
-
-  function editDistance(s1, s2) {
-    s1 = s1.toLowerCase();
-    s2 = s2.toLowerCase();
-
-    const costs = Array(s2.length + 1).fill(0).map((_, j) => j);
-    for (let i = 1; i <= s1.length; i++) {
-      let lastValue = costs[0];
-      costs[0] = i;
-      for (let j = 1; j <= s2.length; j++) {
-        const newValue = costs[j];
-        costs[j] = s1.charAt(i - 1) === s2.charAt(j - 1) ? lastValue : Math.min(Math.min(newValue, lastValue), costs[j - 1]) + 1;
-        lastValue = newValue;
-      }
-    }
-    return costs[s2.length];
-  }
-
   // Time difference threshold (in milliseconds) to identify spam
   const timeDifferenceThreshold = 400;
   // Message limit per timeDifferenceThreshold
@@ -5017,10 +4992,6 @@ import * as icons from './icons.js';
   let isInitialized = false;
   // Define the maximum number of messages per user
   const maxMessagesPerUser = 5;
-  // Set a similarity threshold (you can adjust this value as needed)
-  const similarityThreshold = 0.8;
-  // Create a map to hold messages for each user
-  const messagesForSimilarityCheck = new Map();
 
   // Function to remove all messages from users in the ignored
   function removeIgnoredUserMessages() {
@@ -5089,9 +5060,6 @@ import * as icons from './icons.js';
     if (!isInitialized) {
       isInitialized = true;
 
-      // Remove the 'sessionChatMessages' key from localStorage if it exists
-      localStorage.getItem('sessionChatMessages') && localStorage.removeItem('sessionChatMessages');
-
       // Normalize chat usernames color for dark theme
       const allUsernameElements = document.querySelectorAll('.username'); // Get all username elements
       normalizeAndResetUsernames(allUsernameElements, 'all'); // Process all username elements
@@ -5113,40 +5081,6 @@ import * as icons from './icons.js';
             const latestMessageData = getLatestMessageData();
             const currentMessageText = latestMessageData?.messageText || null;
             const currentMessageUsername = latestMessageData?.usernameText || null;
-
-            // Initialize or update the user's message array in the map for similarity checks
-            messagesForSimilarityCheck.set(
-              currentMessageUsername,
-              messagesForSimilarityCheck.get(currentMessageUsername) || []
-            );
-            const userMessages = messagesForSimilarityCheck.get(currentMessageUsername);
-
-            // Check if the new message is similar to any existing message
-            const isSimilarMessage = userMessages.some(msg => {
-              const messageSimilarity = similarity(currentMessageText, msg);
-              return messageSimilarity > similarityThreshold;
-            });
-
-            // If the message is similar, apply filter styles
-            if (isSimilarMessage) {
-              node.style.filter = 'opacity(0.3) blur(1px)';
-            } else {
-              // Otherwise, update the user's message array
-              userMessages.push(currentMessageText);
-              messagesForSimilarityCheck.set(currentMessageUsername, userMessages);
-
-              // Prepare session messages object for localStorage
-              let sessionMessages = JSON.parse(localStorage.getItem('sessionChatMessages')) || {};
-              sessionMessages[currentMessageUsername] = sessionMessages[currentMessageUsername] || [];
-              sessionMessages[currentMessageUsername].push(currentMessageText);
-
-              // If the number of messages exceeds the maximum, remove the user’s messages
-              if (userMessages.length > maxMessagesPerUser) {
-                messagesForSimilarityCheck.delete(currentMessageUsername);
-                delete sessionMessages[currentMessageUsername];
-              }
-              localStorage.setItem('sessionChatMessages', JSON.stringify(sessionMessages));
-            }
 
             // Convert Cyrillic username to Latin
             const latinUsername = convertRussianUsernameToLatin(currentMessageUsername);
@@ -5181,17 +5115,9 @@ import * as icons from './icons.js';
             if (isVoice && isInitialized && currentMessageText && currentMessageText !== previousMessageText) {
               localStorage.setItem('previousMessageText', currentMessageText);
               if (currentMessageUsername && !currentMessageUsername.includes(myNickname)) {
-                if (isEveryMessageMode) {
-                  console.log('Triggered Voice: Every message mode');
+                const shouldRead = isEveryMessageMode || (isMentionMessageMode && isMention) || isPrivateMessage;
+                if (shouldRead) {
                   addNewMessage(currentMessageText);
-                } else if (isMentionMessageMode && isMention) {
-                  console.log('Triggered Voice: Mention message mode');
-                  addNewMessage(currentMessageText);
-                } else if (isPrivateMessage) {
-                  console.log('Triggered Voice: Private message');
-                  addNewMessage(currentMessageText);
-                } else {
-                  console.log('No matching condition for Voice Mode');
                 }
               }
             }
@@ -5200,20 +5126,12 @@ import * as icons from './icons.js';
             if (isBeep && isInitialized && currentMessageText && currentMessageText !== previousMessageText) {
               localStorage.setItem('previousMessageText', currentMessageText);
               if (currentMessageUsername && !currentMessageUsername.includes(myNickname)) {
-                if (isEveryMessageMode) {
-                  console.log('Triggered Beep: Every message mode');
-                  const frequenciesToPlay = isMention ? mentionMessageFrequencies : usualMessageFrequencies;
-                  playBeep(frequenciesToPlay, beepVolume);
-                } else if (isMentionMessageMode && isMention) {
-                  console.log('Triggered Beep: Mention message mode');
-                  playBeep(mentionMessageFrequencies, beepVolume);
-                } else if (isPrivateMessage) {
-                  console.log('Triggered Beep: Private message');
-                  playBeep(mentionMessageFrequencies, beepVolume);
-                } else {
-                  console.log('No matching condition for Beep Mode');
+                const shouldBeep = isEveryMessageMode || (isMentionMessageMode && isMention) || isPrivateMessage;
+                if (shouldBeep) {
+                  const useMentionFrequency = !isEveryMessageMode || isMention;
+                  playBeep(useMentionFrequency ? mentionMessageFrequencies : usualMessageFrequencies, beepVolume);
+                  if (isMention) isMention = false;
                 }
-                if (isMention) isMention = false;
               }
             }
 
@@ -9960,31 +9878,31 @@ import * as icons from './icons.js';
 
   const currentLocationIncludes = part => window.location.href.includes(part);
 
+  // Helper function to dynamically retrieve the current chat elements.
+  const getChatElements = () => ({
+    chatField: document.querySelector('.chat .text'),
+    chatSend: document.querySelector('.chat .send')
+  });
+
+  // Function to extract a system message from the chat field's value.
+  // Returns the message string if found, or null otherwise.
+  function getChatSystemMessage(chatField) {
+    if (!chatField) return null;
+    const value = chatField.value;
+    if (value.includes(blockedChatMessage)) return blockedChatMessage;
+    if (value.includes(lostConnectionMessage)) return lostConnectionMessage;
+    return null;
+  }
+
+  // Timeout settings.
+  const extraTimeout = 5000;
+  const minimalTimeout = 1000;
+
+  // Define system messages.
+  const blockedChatMessage = 'Вы не можете отправлять сообщения';
+  const lostConnectionMessage = 'Связь с сервером потеряна';
+
   if (currentLocationIncludes('gamelist')) {
-    // Timeout settings.
-    const extraTimeout = 5000;
-    const minimalTimeout = 1000;
-
-    // Define system messages.
-    const blockedChatMessage = 'Вы не можете отправлять сообщения';
-    const lostConnectionMessage = 'Связь с сервером потеряна';
-
-    // Helper function to dynamically retrieve the current chat elements.
-    const getChatElements = () => ({
-      chatField: document.querySelector('.chat .text'),
-      chatSend: document.querySelector('.chat .send')
-    });
-
-    // Function to extract a system message from the chat field's value.
-    // Returns the message string if found, or null otherwise.
-    function getChatSystemMessage(chatField) {
-      if (!chatField) return null;
-      const value = chatField.value;
-      if (value.includes(blockedChatMessage)) return blockedChatMessage;
-      if (value.includes(lostConnectionMessage)) return lostConnectionMessage;
-      return null;
-    }
-
     // Function to handle changes when the chat field is disabled.
     function handleChatStateChange(timeout, chatField, chatSend) {
       if (chatField.disabled) {
