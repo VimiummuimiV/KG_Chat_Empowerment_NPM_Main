@@ -3302,8 +3302,6 @@ import * as icons from './icons.js';
 
     textElement.focus();
     textElement.selectionEnd = textElement.value.length;
-
-    console.log(`Setting private message to: ${message}`);
   }
 
   function createCircularProgress(percentage, color, isRevoked) {
@@ -4242,12 +4240,12 @@ import * as icons from './icons.js';
     return finalColor;
   }
 
-  function getLatestMessageData() {
+  async function getLatestMessageData() {
     const messageElement = document.querySelector('.messages-content div p:last-of-type');
     if (!messageElement) return null;
 
     // Inline helper: collects text parts from a container's child nodes.
-    const collectMessageParts = container =>
+    const collectMessageParts = async (container) =>
       Array.from(container.childNodes)
         .map(node =>
           node.nodeType === Node.TEXT_NODE && node.textContent.trim() ? node.textContent.trim() :
@@ -4257,15 +4255,15 @@ import * as icons from './icons.js';
         .filter(Boolean);
 
     // 1. Extract common message text.
-    let finalMessageText = collectMessageParts(messageElement).join(' ').trim();
+    let finalMessageText = (await collectMessageParts(messageElement)).join(' ').trim();
     let messageType = "common"; // Default message type
 
     // 2. Check for private messages
     const privateMessageContainer = messageElement.querySelector('.room.private');
-    if (privateMessageContainer && privateMessageContainer.textContent.includes('[шепчет вам]')) {
+    if (privateMessageContainer && privateMessageContainer.textContent.includes('[шепчет ')) {
       const privateMessageElement = messageElement.querySelector('span.private');
       if (privateMessageElement) {
-        finalMessageText = collectMessageParts(privateMessageElement).join(' ').trim();
+        finalMessageText = (await collectMessageParts(privateMessageElement)).join(' ').trim();
         messageType = "private";
       }
     }
@@ -4273,7 +4271,7 @@ import * as icons from './icons.js';
     // 3. Check for system messages
     const systemMessageElement = messageElement.querySelector('.system-message');
     if (systemMessageElement) {
-      let systemMessageText = collectMessageParts(systemMessageElement).join(' ').trim();
+      let systemMessageText = (await collectMessageParts(systemMessageElement)).join(' ').trim();
       systemMessageText = systemMessageText.replace(/<Клавобот>\s*/g, '');
       finalMessageText = systemMessageText;
       messageType = "system";
@@ -4326,6 +4324,7 @@ import * as icons from './icons.js';
     let prefix = (messageType === "mention" || messageType === "private")
       ? `${replaceWithPronunciation(usernameText)} обращается: `
       : (usernameText !== lastUsername ? `${replaceWithPronunciation(usernameText)} пишет: ` : "");
+
     lastUsername = usernameText;
 
     const messageText = prefix + replaceWithPronunciation(finalMessageText);
@@ -5018,6 +5017,7 @@ import * as icons from './icons.js';
 
   // Function to detect a ban message based on the message text content
   function isBanMessage(messageText) {
+    if (!messageText) return false; // Return false if messageText is null, undefined, or an empty string
     return ['Клавобот', 'Пользователь', 'заблокирован'].every(word => messageText.includes(word));
   }
 
@@ -5055,7 +5055,7 @@ import * as icons from './icons.js';
   }
 
   // Create a mutation observer to watch for new messages being added
-  const newMessagesObserver = new MutationObserver(mutations => {
+  const newMessagesObserver = new MutationObserver(async mutations => {
     // If isInitialized is false, return without doing anything
     if (!isInitialized) {
       isInitialized = true;
@@ -5078,9 +5078,10 @@ import * as icons from './icons.js';
             const previousMessageText = localStorage.getItem('previousMessageText');
 
             // Get the latest message data (returns only messageText and usernameText)
-            const latestMessageData = getLatestMessageData();
+            const latestMessageData = await getLatestMessageData();
             const currentMessageText = latestMessageData?.messageText || null;
             const currentMessageUsername = latestMessageData?.usernameText || null;
+            console.log(currentMessageText);
 
             // Convert Cyrillic username to Latin
             const latinUsername = convertRussianUsernameToLatin(currentMessageUsername);
