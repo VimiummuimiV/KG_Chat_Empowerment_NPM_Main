@@ -11,7 +11,6 @@ module.exports = (env, argv) => {
 
   return {
     mode: isProduction ? 'production' : 'development',
-
     entry: './src/main.js', // Main script file
     output: {
       path: path.resolve(__dirname, 'dist'),
@@ -29,6 +28,7 @@ module.exports = (env, argv) => {
       minimize: isProduction, // Only minify in production
       minimizer: [new TerserPlugin()],
     },
+    stats: 'minimal',
     plugins: [
       {
         apply: (compiler) => {

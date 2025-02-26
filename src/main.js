@@ -1,112 +1,12 @@
+import './style.css'
 import * as icons from './icons.js';
 
 (function () {
-  // Global styles
-  const empowermentStyles = `
-    /* input error indication */
-    .input-error {
-      transition: background-color 300ms ease-in-out;
-      background-color: #6b2f2f !important;
-    }
-    /* chat length popup on field type with dynamic movement horizontally */
-    .length-field-popup {
-      position: absolute;
-      font: bold 12px Montserrat;
-      bottom: 40px;
-      transition: left 100ms ease-out;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2px 4px;
-      margin: 2px;
-      opacity: 0;
-    }
-
-    .bounce-in {
-      animation: bounceIn 500ms forwards;
-    }
-
-    @keyframes bounceIn {
-      0% { transform: translateY(0); opacity: 0; }
-      50% { transform: translateY(-10px); opacity: 1; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
-
-    .bounce-out {
-      animation: bounceOut 500ms forwards;
-    }
-
-    @keyframes bounceOut {
-      0% { transform: translateY(0); opacity: 1; }
-      50% { transform: translateY(-10px); opacity: 1; }
-      100% { transform: translateY(0); opacity: 0; }
-    }
-
-    /* catalogs panel && personal messages panel messages anchors color */
-    .chat-logs-panel .message-text a,
-    .cached-messages-panel .message-text a {
-      color: burlywood !important;
-      transition: color 0.15s ease-in-out;
-    }
-
-    .chat-logs-panel .message-text a:hover,
-    .cached-messages-panel .message-text a:hover {
-      color: lightgoldenrodyellow !important;
-    }
-
-    /* clickable thumbnail hover effect */
-    .thumbnail {
-      opacity: 1;
-      transition: opacity 0.15s ease-in-out;
-    }
-    .thumbnail:hover {
-      opacity: 0.8;
-    }
-    
-    /* element animations */
-    .pulse-effect {
-      animation: pulse 500ms ease-out; 
-    }
-
-    @keyframes pulse {
-      0% { filter: brightness(1); }
-      50% { filter: brightness(1.5); }
-      100% { filter: brightness(1); }
-    }
-
-    .shake-effect {
-      animation: shake 500ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-    }
-
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      10% { transform: translateX(-4px); }
-      20% { transform: translateX(6px); }
-      30% { transform: translateX(-8px); }
-      40% { transform: translateX(8px); }
-      50% { transform: translateX(-6px); }
-      60% { transform: translateX(5px); }
-      70% { transform: translateX(-3px); }
-      80% { transform: translateX(2px); }
-      90% { transform: translateX(-1px); }
-      100% { transform: translateX(0); }
-    }
-  `;
-
   const boxShadow = `
     0 8px 30px rgba(0, 0, 0, 0.12),
     0 4px 6px rgba(0, 0, 0, 0.04),
     0 2px 2px rgba(0, 0, 0, 0.08)
   `;
-
-  // Create a <style> element for the empowerment-styles class
-  const empowermentStylesElement = document.createElement('style');
-  empowermentStylesElement.classList.add('empowerment-global-styles');
-  // Set the inner HTML of the <style> element with the class-based CSS
-  empowermentStylesElement.innerHTML = empowermentStyles;
-  // Append the <style> element to the <head> of the document
-  document.head.appendChild(empowermentStylesElement);
 
   // Actual nickname to use it as an exclusion for the message beep and voice notifications
   const myNickname = document.querySelector('.userpanel .user-block .user-dropdown .name span').textContent;
@@ -250,21 +150,6 @@ import * as icons from './icons.js';
 
   // SCROLL BUTTONS
 
-  // Helper function to apply common styles to a scroll button
-  function applyScrollButtonStyles(button) {
-    button.style.width = '48px';
-    button.style.height = '48px';
-    button.style.display = 'flex';
-    button.style.justifyContent = 'center';
-    button.style.alignItems = 'center';
-    button.style.cursor = 'pointer';
-    button.style.setProperty('border-radius', '0.2em', 'important');
-    button.style.backgroundColor = '#282b2f';
-    button.style.margin = '0.5em 0';
-    button.style.filter = 'brightness(1)';
-    button.style.transition = 'filter 0.3s ease';
-  }
-
   // Global function to update button opacity using a single configuration object
   function updateScrollButtonOpacity({ container, buttons }) {
     const tolerance = 3,
@@ -294,35 +179,25 @@ import * as icons from './icons.js';
     // Create container for the scroll buttons
     const scrollButtonsContainer = document.createElement('div');
     scrollButtonsContainer.className = 'scroll-buttons-container';
-    scrollButtonsContainer.style.display = 'flex';
-    scrollButtonsContainer.style.justifyContent = 'center';
-    scrollButtonsContainer.style.gridArea = 'scroll';
-    scrollButtonsContainer.style.flexDirection = 'column';
-    scrollButtonsContainer.style.height = 'calc(100% - 1em)';
-    scrollButtonsContainer.style.padding = '1em';
 
     // Create each scroll button
     const fullScrollUpButton = document.createElement('div');
     fullScrollUpButton.innerHTML = icons.chevronsUpSVG;
-    applyScrollButtonStyles(fullScrollUpButton);
     fullScrollUpButton.title = 'Scroll Up (Full)';
     scrollButtonsContainer.appendChild(fullScrollUpButton);
 
     const partialScrollUpButton = document.createElement('div');
     partialScrollUpButton.innerHTML = icons.chevronUpSVG;
-    applyScrollButtonStyles(partialScrollUpButton);
     partialScrollUpButton.title = 'Scroll Up (Partial)';
     scrollButtonsContainer.appendChild(partialScrollUpButton);
 
     const partialScrollDownButton = document.createElement('div');
     partialScrollDownButton.innerHTML = icons.chevronDownSVG;
-    applyScrollButtonStyles(partialScrollDownButton);
     partialScrollDownButton.title = 'Scroll Down (Partial)';
     scrollButtonsContainer.appendChild(partialScrollDownButton);
 
     const fullScrollDownButton = document.createElement('div');
     fullScrollDownButton.innerHTML = icons.chevronsDownSVG;
-    applyScrollButtonStyles(fullScrollDownButton);
     fullScrollDownButton.title = 'Scroll Down (Full)';
     scrollButtonsContainer.appendChild(fullScrollDownButton);
 
@@ -333,6 +208,12 @@ import * as icons from './icons.js';
       partialScrollDownButton: partialScrollDownButton,
       fullScrollDownButton: fullScrollDownButton
     };
+
+    // Apply the 'large-button' class to each button using forEach
+    Object.values(buttons).forEach(button => {
+      button.classList.add("large-button", "scroll-button");
+      scrollButtonsContainer.appendChild(button);
+    });
 
     // Generic function to scroll the container
     function scrollContainer(direction, isFullScroll) {
@@ -361,7 +242,7 @@ import * as icons from './icons.js';
     });
 
     // Return an object containing the scroll buttons container and each individual button
-    return { scrollButtonsContainer, ...buttons };
+    return { scrollButtonsContainer };
   }
 
   // SOUND NOTIFICATION
@@ -584,12 +465,27 @@ import * as icons from './icons.js';
     setTimeout(() => textToSpeech(`${userToTrack.pronunciation} ${action}`, voiceSpeed), 300);
   }
 
-  // POPUPS
 
-  // Generate HSL color with optional parameters for hue, saturation, lightness
-  function getHSLColor(hue = 180, saturation = 50, lightness = 50) {
-    return `hsl(${hue},${saturation}%,${lightness}%)`;
-  }
+  // EMPOWERMENT PANEL AND USER COUNTER
+
+  // Retrieve body element to inject this beast elements
+  const bodyElement = document.querySelector('body');
+  // Create parent container for the beast elements
+  const empowermentButtonsPanel = document.createElement('div');
+  empowermentButtonsPanel.classList.add("empowerment-panel");
+
+  // Create chat user count container to store the user count number
+  const chatUserCount = document.createElement('div');
+  chatUserCount.classList.add("chat-user-count");
+  chatUserCount.title = 'Current Chat Users Count';
+  chatUserCount.innerHTML = '0';  // Set initial value as 0
+
+  // Append user count element inside empowerment panel
+  empowermentButtonsPanel.appendChild(chatUserCount);
+  // Append panel element inside the body
+  bodyElement.appendChild(empowermentButtonsPanel);
+
+  // POPUPS
 
   // Helper for pausing execution
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -778,25 +674,7 @@ import * as icons from './icons.js';
 
     tooltipInstance ||= (() => {
       const tooltipElement = document.createElement('div');
-      tooltipElement.classList.add("tooltip");
-      Object.assign(tooltipElement.style, {
-        position: 'fixed',
-        background: 'rgb(22, 22, 22)',
-        color: 'rgb(222, 222, 222)',
-        padding: '0.5em',
-        zIndex: 1200,
-        fontSize: '0.9em',
-        pointerEvents: 'none',
-        whiteSpace: 'nowrap',
-        opacity: 0,
-        transition: 'opacity 0.1s',
-        display: 'none',
-        left: 0,
-        top: 0
-      });
-      tooltipElement.style.setProperty('border', '1px solid rgb(60, 60, 60)', 'important');
-      tooltipElement.style.setProperty('border-radius', '4px', 'important');
-      tooltipElement.style.setProperty('box-shadow', '0 2px 5px rgba(0,0,0,0.3)', 'important');
+      tooltipElement.classList.add("custom-tooltip-popup");
       document.body.appendChild(tooltipElement);
       return tooltipElement;
     })();
@@ -826,8 +704,6 @@ import * as icons from './icons.js';
 
   // Timeout before the dynamicChatNotification should be removed
   const dynamicChatNotificationTimeout = 5000;
-  // Set the initial top distance for the first dynamicChatNotification
-  const dynamicChatNotificationTopOffset = 160;
 
   // Creates the action icon element
   function createActionIcon(iconType) {
@@ -904,28 +780,10 @@ import * as icons from './icons.js';
 
     // Style based on presence
     if (presence) {
-      staticChatNotification.classList.add('user-entered');
-      staticChatNotification.style.color = getHSLColor(100, 50, 50);
-      staticChatNotification.style.backgroundColor = getHSLColor(100, 50, 10);
-      staticChatNotification.style.setProperty('border', `1px solid ${getHSLColor(100, 50, 25)}`, 'important');
+      staticChatNotification.classList.add('user-enter');
     } else {
       staticChatNotification.classList.add('user-left');
-      staticChatNotification.style.color = getHSLColor(0, 50, 70);
-      staticChatNotification.style.backgroundColor = getHSLColor(0, 50, 15);
-      staticChatNotification.style.setProperty('border', `1px solid ${getHSLColor(0, 50, 40)}`, 'important');
     }
-
-    // Set layout styles
-    staticChatNotification.style.cursor = 'default';
-    staticChatNotification.style.whiteSpace = 'nowrap';
-    staticChatNotification.style.padding = '8px';
-    staticChatNotification.style.display = 'inline-flex';
-    staticChatNotification.style.flex = 'auto';
-    staticChatNotification.style.justifyContent = 'center';
-    staticChatNotification.style.margin = '4px';
-    staticChatNotification.style.fontSize = '1em';
-    staticChatNotification.style.alignItems = 'center';
-    staticChatNotification.style.setProperty('border-radius', '4px', 'important');
 
     // Append the notification to the selected container
     staticNotificationsContainer.appendChild(staticChatNotification);
@@ -949,20 +807,6 @@ import * as icons from './icons.js';
     if (!dynamicChatNotificationsContainer) {
       dynamicChatNotificationsContainer = document.createElement('div');
       dynamicChatNotificationsContainer.classList.add('dynamic-chat-notifications-container');
-
-      Object.assign(dynamicChatNotificationsContainer.style, {
-        zIndex: '1000',
-        width: '0',
-        position: 'fixed',
-        display: 'flex',
-        flexDirection: 'column',
-        top: '0',
-        bottom: '0',
-        left: '0',
-        right: '0',
-        paddingTop: dynamicChatNotificationTopOffset + 'px',
-      });
-
       document.body.appendChild(dynamicChatNotificationsContainer);
     }
 
@@ -992,32 +836,12 @@ import * as icons from './icons.js';
     dynamicChatNotification.dataset.username = user;
     dynamicChatNotification.dataset.time = time;
 
-    // Set initial styles and position (off-screen)
-    dynamicChatNotification.style.cursor = 'default';
-    dynamicChatNotification.style.whiteSpace = 'nowrap';
-    dynamicChatNotification.style.position = 'relative';
-    dynamicChatNotification.style.alignItems = 'center';
-    dynamicChatNotification.style.width = 'fit-content';
-    dynamicChatNotification.style.display = 'flex';
-    dynamicChatNotification.style.marginBottom = '0.2em';
-    dynamicChatNotification.style.padding = '8px 16px 8px 12px';
-    dynamicChatNotification.style.left = '0';
-    dynamicChatNotification.style.transform = 'translateX(-100%)';
-    dynamicChatNotification.style.opacity = '1';
-    dynamicChatNotification.style.transition =
-      'transform 0.3s cubic-bezier(0.83, 0, 0.17, 1), opacity 0.3s cubic-bezier(0.83, 0, 0.17, 1)';
-
     // Set colorization based on presence
     if (presence) {
-      dynamicChatNotification.style.color = getHSLColor(100, 50, 50);
-      dynamicChatNotification.style.backgroundColor = getHSLColor(100, 50, 10);
-      dynamicChatNotification.style.border = `1px solid ${getHSLColor(100, 50, 25)}`;
+      dynamicChatNotification.classList.add('user-enter');
     } else {
-      dynamicChatNotification.style.color = getHSLColor(0, 50, 70);
-      dynamicChatNotification.style.backgroundColor = getHSLColor(0, 50, 15);
-      dynamicChatNotification.style.border = `1px solid ${getHSLColor(0, 50, 40)}`;
+      dynamicChatNotification.classList.add('user-left');
     }
-    dynamicChatNotification.style.setProperty('border-radius', '0 4px 4px 0', 'important');
 
     // Append to the container
     dynamicChatNotificationsContainer.appendChild(dynamicChatNotification);
@@ -1202,25 +1026,10 @@ import * as icons from './icons.js';
 
     function createThumbnail(link, isUntrusted) {
       const thumbnail = document.createElement("div");
-      Object.assign(thumbnail.style, {
-        border: "none",
-        width: "6vw",
-        minWidth: "100px",
-        maxHeight: "200px",
-        height: "auto",
-        cursor: "pointer",
-        backgroundColor: "transparent",
-        padding: "2px",
-        margin: "6px",
-        overflowY: "auto"
-      })
-      thumbnail.classList.add("thumbnail");
+      thumbnail.classList.add("clickable-thumbnail");
 
       const img = document.createElement("img");
       img.src = link.href;
-      img.style.maxHeight = "100%";
-      img.style.maxWidth = "100%";
-      img.style.backgroundColor = "transparent";
 
       img.onload = () => {
         thumbnail.appendChild(img);
@@ -1237,10 +1046,10 @@ import * as icons from './icons.js';
       // Only show thumbnail on click for untrusted domains
       if (isUntrusted) {
         // Check if thumbnail already created, avoid creating again
-        if (!link.querySelector(".thumbnail")) {
+        if (!link.querySelector(".clickable-thumbnail")) {
           link.addEventListener("click", e => {
             // Only create thumbnail once
-            if (!link.querySelector(".thumbnail")) {
+            if (!link.querySelector(".clickable-thumbnail")) {
               thumbnail.appendChild(img); // Add image to thumbnail on user confirmation
               link.parentNode.insertBefore(thumbnail, link.nextSibling);
             }
@@ -1254,17 +1063,7 @@ import * as icons from './icons.js';
 
       thumbnail.addEventListener("click", e => {
         e.stopPropagation();
-
         bigImage = createBigImage(img.src);
-        Object.assign(bigImage.style, {
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) scale(1)",
-          position: "fixed",
-          opacity: "0",
-          zIndex: "999",
-          transformOrigin: "center center"
-        })
         triggerTargetElement(bigImage, "show");
         triggerDimmingElement("show");
       })
@@ -1291,10 +1090,6 @@ import * as icons from './icons.js';
     const bigImage = document.createElement('img');
     bigImage.src = src;
     bigImage.classList.add('scaled-thumbnail');
-    bigImage.style.maxHeight = '90vh';
-    bigImage.style.maxWidth = '90vw';
-    bigImage.style.cursor = "pointer";
-
     document.body.appendChild(bigImage);
 
     const removeBigImage = (bigImage) => {
@@ -1361,7 +1156,6 @@ import * as icons from './icons.js';
       zoomScale = Math.max(zoomScale, 1);
 
       // Apply the new zoom scale and transform origin
-      bigImage.style.transformOrigin = 'center center';
       bigImage.style.transform = `translate(${translateX}%, ${translateY}%) scale(${zoomScale})`;
 
       // Prevent the default scrolling behavior
@@ -1549,21 +1343,11 @@ import * as icons from './icons.js';
 
       // Create a wrapper div for better structure
       const wrapper = document.createElement('div');
-      Object.assign(wrapper.style, {
-        display: 'flex',
-        width: 'fit-content',
-        flexDirection: 'column',
-        gap: '6px',
-        marginBottom: '10px'
-      });
+      wrapper.classList.add("video-wrapper");
 
       // Create an appropriate embed element (iframe for YouTube, video for allowed formats)
       let embedElement = document.createElement(youtubeMatch ? 'iframe' : 'video');
-      Object.assign(embedElement.style, {
-        display: 'flex',
-        border: 'none',
-        height: '165px'
-      });
+      embedElement.classList.add("video-container");
 
       if (youtubeMatch) {
         // Update link text and set YouTube embed
@@ -1644,45 +1428,6 @@ import * as icons from './icons.js';
     });
   }
 
-  const empowermentButtonsMargin = 4; // Margin for the empowerment buttons
-
-  // Retrieve body element to inject this beast elements
-  const bodyElement = document.querySelector('body');
-  // Create parent container for the beast elements
-  const empowermentButtonsPanel = document.createElement('div');
-  empowermentButtonsPanel.classList.add('empowerment-panel');
-
-  // Create chat user count container to store the user count number
-  const chatUserCount = document.createElement('div');
-  chatUserCount.title = 'Current Chat Users Count';
-  chatUserCount.classList.add('chat-user-count');
-  chatUserCount.style.filter = 'grayscale(100%)';
-  chatUserCount.style.transition = '0.2s ease-in-out';
-  chatUserCount.style.fontFamily = "'Orbitron', sans-serif";
-  chatUserCount.style.fontSize = '24px';
-  chatUserCount.style.color = '#83cf40';
-  chatUserCount.style.backgroundColor = '#2b4317';
-  chatUserCount.style.width = '48px';
-  chatUserCount.style.height = '48px';
-  chatUserCount.style.display = 'flex';
-  chatUserCount.style.justifyContent = 'center';
-  chatUserCount.style.alignItems = 'center';
-  chatUserCount.style.border = '1px solid #4b7328';
-  chatUserCount.style.margin = `${empowermentButtonsMargin}px`;
-  // Set initial value as 0
-  chatUserCount.innerHTML = '0';
-
-  // Append user count element inside empowerment panel
-  empowermentButtonsPanel.appendChild(chatUserCount);
-  // Apply positioning styles for the empowerment panel
-  empowermentButtonsPanel.style.position = 'fixed';
-  empowermentButtonsPanel.style.top = '60px';
-  empowermentButtonsPanel.style.right = '12px';
-  empowermentButtonsPanel.style.padding = '6px';
-  empowermentButtonsPanel.style.zIndex = '1000';
-  // Append panel element inside the body
-  bodyElement.appendChild(empowermentButtonsPanel);
-
   // Adjust element visibility with smooth opacity transition
   function adjustVisibility(element, action, opacity) {
     if (!element) return; // Exit if element doesn't exist
@@ -1715,14 +1460,6 @@ import * as icons from './icons.js';
     if (!dimming) {
       dimming = document.createElement('div');
       dimming.classList.add('dimming-background');
-      dimming.style.background = 'black';
-      dimming.style.top = '0';
-      dimming.style.left = '0';
-      dimming.style.right = '0';
-      dimming.style.bottom = '0';
-      dimming.style.position = 'fixed';
-      dimming.style.opacity = '0'; // Initial transparent state
-      dimming.style.zIndex = '998';
 
       // Append the dimming element to the body
       document.body.appendChild(dimming);
@@ -1826,28 +1563,12 @@ import * as icons from './icons.js';
     profileIframe.classList.add('profile-iframe-container');
     profileIframe.src = url;
 
-    // Apply positioning and dimensional styles (non-commented per request)
-    Object.assign(profileIframe.style, {
-      border: 'none',
-      display: 'flex',
-      position: 'fixed',
-      zIndex: '999',
-      width: '75vw',
-      minWidth: '1000px',
-      height: '80vh',
-      top: '48.5vh',
-      left: '50vw',
-      transform: 'translate(-50%, -50%)'
-    });
-
-    // Add shadow and border-radius with !important priority
-    profileIframe.style.setProperty('box-shadow', '0 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08)', 'important');
-    profileIframe.style.setProperty('border-radius', '0.6em', 'important');
     document.body.appendChild(profileIframe);
+    adjustVisibility(profileIframe, 'show', 1);
 
     // Cleanup function for removing the iframe and event listeners
     const removeIframe = () => {
-      profileIframe.remove();
+      adjustVisibility(profileIframe, 'hide', 0);
       document.removeEventListener('keydown', handleEvents);
       document.removeEventListener('mousedown', handleEvents);
     };
@@ -1951,23 +1672,6 @@ import * as icons from './icons.js';
     // Create a container div with class 'cached-users-panel'
     const cachedUsersPanel = document.createElement('div');
     cachedUsersPanel.className = 'cached-users-panel popup-panel';
-    // Set initial styles
-    cachedUsersPanel.style.opacity = '0';
-    cachedUsersPanel.style.backgroundColor = '#1b1b1b';
-    cachedUsersPanel.style.setProperty('border-radius', '0.6em', 'important');
-    cachedUsersPanel.style.position = 'fixed';
-    cachedUsersPanel.style.top = '100px';
-    cachedUsersPanel.style.left = '50%';
-    cachedUsersPanel.style.transform = 'translateX(-50%)';
-    cachedUsersPanel.style.width = '80vw';
-    cachedUsersPanel.style.height = '80vh';
-    cachedUsersPanel.style.zIndex = '999';
-    cachedUsersPanel.style.display = 'grid';
-    cachedUsersPanel.style.gridTemplateColumns = '1fr';
-    cachedUsersPanel.style.gridTemplateRows = 'min-content';
-    cachedUsersPanel.style.gridTemplateAreas = `
-      "header header"
-      "cache scroll"`;
 
     // Define the event handler function for the cache panel
     panelsEvents.handleCacheKeydown = (event) => { // Assign the function to the object
@@ -1984,49 +1688,18 @@ import * as icons from './icons.js';
     // Create a container div with class 'panel-header'
     const panelHeaderContainer = document.createElement('div');
     panelHeaderContainer.className = 'panel-header';
-    panelHeaderContainer.style.display = 'flex';
-    panelHeaderContainer.style.flexDirection = 'row';
-    panelHeaderContainer.style.justifyContent = 'space-between';
-    panelHeaderContainer.style.padding = '0.6em';
-    panelHeaderContainer.style.gridArea = 'header';
 
     // Create a container div with class 'drop-time'
     const dropTime = document.createElement('div');
     dropTime.className = 'drop-time';
-    dropTime.style.display = 'flex';
-    dropTime.style.justifyContent = 'center';
-    dropTime.style.alignItems = 'center';
-    dropTime.style.minWidth = 'fit-content';
 
     // Create span with description for threshold time element
     const dropTimeThresholdDescription = document.createElement('span');
     dropTimeThresholdDescription.className = 'drop-time-threshold-description';
     dropTimeThresholdDescription.textContent = '🚧 Threshold';
-    dropTimeThresholdDescription.style.padding = '0.6em';
-    dropTimeThresholdDescription.style.color = '#c6b209';
 
     const dropTimeThreshold = document.createElement('span');
     dropTimeThreshold.className = 'drop-time-threshold';
-    dropTimeThreshold.style.padding = '0.6em';
-    dropTimeThreshold.style.color = 'lightcoral';
-    dropTimeThreshold.style.fontFamily = "'Roboto Mono', monospace";
-    dropTimeThreshold.style.fontSize = '1.1em';
-    dropTimeThreshold.style.fontWeight = 'bold';
-    dropTimeThreshold.style.setProperty('border-radius', '0.2em', 'important');
-    dropTimeThreshold.style.border = '1px solid rgba(240, 128, 128, 0.20)';
-    dropTimeThreshold.style.backgroundColor = 'rgba(240, 128, 128, 0.05)';
-    dropTimeThreshold.style.transition = 'filter 0.3s';
-    dropTimeThreshold.style.cursor = 'pointer';
-
-    // Add mouseover event to apply brightness filter
-    dropTimeThreshold.addEventListener('mouseover', () => {
-      dropTimeThreshold.style.filter = 'sepia(1)'; // Increase brightness on hover
-    });
-
-    // Add mouseout event to reset filter
-    dropTimeThreshold.addEventListener('mouseout', () => {
-      dropTimeThreshold.style.filter = 'sepia(0)'; // Reset brightness on mouse out
-    });
 
     // Get the value from the localStorage key 'cacheRefreshThresholdHours'
     const storedThresholdTime = localStorage.getItem('cacheRefreshThresholdHours');
@@ -2039,15 +1712,9 @@ import * as icons from './icons.js';
     const dropTimeExpirationDescription = document.createElement('span');
     dropTimeExpirationDescription.className = 'drop-time-expiration-description';
     dropTimeExpirationDescription.textContent = '💣 Countdown';
-    dropTimeExpirationDescription.style.padding = '0.6em';
-    dropTimeExpirationDescription.style.color = '#d0562c';
 
     const dropTimeExpiration = document.createElement('span');
     dropTimeExpiration.className = 'drop-time-expiration';
-    dropTimeExpiration.style.padding = '0.6em';
-    dropTimeExpiration.style.color = 'antiquewhite';
-    dropTimeExpiration.style.fontFamily = "'Roboto Mono', monospace";
-    dropTimeExpiration.style.fontSize = '1.1em';
 
     // Function to prompt the user for a cache refresh time and update the content
     function setCacheRefreshTime() {
@@ -2110,24 +1777,11 @@ import * as icons from './icons.js';
     // Create a container div for the search input
     const cacheSearchContainer = document.createElement('div');
     cacheSearchContainer.className = 'search-for-cached-users';
-    cacheSearchContainer.style.width = '100%';
-    cacheSearchContainer.style.margin = '0 0.5em';
-    cacheSearchContainer.style.display = 'flex';
 
     // Create the input field for searching users
     const cacheSearchInput = document.createElement('input');
     cacheSearchInput.className = 'cached-users-search-input';
     cacheSearchInput.type = 'text';
-    cacheSearchInput.style.outline = 'none';
-    cacheSearchInput.style.width = '100%';
-    cacheSearchInput.style.padding = '10px';
-    cacheSearchInput.style.fontSize = '1em';
-    cacheSearchInput.style.fontFamily = 'Montserrat';
-    cacheSearchInput.style.setProperty('color', 'bisque', 'important');
-    cacheSearchInput.style.setProperty('border-radius', '0.2em', 'important');
-    cacheSearchInput.style.boxSizing = 'border-box';
-    cacheSearchInput.style.backgroundColor = '#111';
-    cacheSearchInput.style.border = '1px solid #222';
 
     // Append search input to the search container
     cacheSearchContainer.appendChild(cacheSearchInput);
@@ -2236,10 +1890,6 @@ import * as icons from './icons.js';
           const errorMessage = document.createElement('div');
           errorMessage.className = 'error-message';
           errorMessage.textContent = `Error fetching user profile: ${error.message}`;
-          errorMessage.style.width = 'fit-content';
-          errorMessage.style.whiteSpace = 'nowrap';
-          errorMessage.style.fontFamily = 'Montserrat';
-          errorMessage.style.color = 'lightcoral';
           searchResultsContainer.appendChild(errorMessage);
         }
       }
@@ -2309,27 +1959,10 @@ import * as icons from './icons.js';
     panelControlButtons.className = 'panel-control-buttons';
     panelControlButtons.style.display = 'flex';
 
-    // Helper function to apply common styles to a button
-    function applyHeaderButtonStyles(button, backgroundColor, margin = '0 0.5em') {
-      button.style.backgroundColor = backgroundColor;
-      button.style.width = '48px';
-      button.style.height = '48px';
-      button.style.display = 'flex';
-      button.style.justifyContent = 'center';
-      button.style.alignItems = 'center';
-      button.style.cursor = 'pointer';
-      button.style.setProperty('border-radius', '0.2em', 'important');
-      button.style.margin = margin; // Set margin using the provided value
-      button.style.filter = 'brightness(1)';
-      button.style.transition = 'filter 0.3s ease';
-    }
-
     // Create cache panel search mode button with the provided SVG icon
     const cachePanelSearchMode = document.createElement('div');
-    cachePanelSearchMode.className = 'user-mode-button';
+    cachePanelSearchMode.className = 'large-button user-mode-button';
     cachePanelSearchMode.innerHTML = icons.usersSVG;
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(cachePanelSearchMode, 'darkslateblue');
 
     // Set the initial value or existing for cachePanelSearchMode if it doesn't exist
     const currentSearchMode = localStorage.getItem('cachePanelSearchMode') || (localStorage.setItem('cachePanelSearchMode', 'cache'), 'cache');
@@ -2339,20 +1972,14 @@ import * as icons from './icons.js';
 
     // Function to update styles based on the current mode
     function updateStyles(mode) {
-      const backgroundColor = mode === 'fetch' ? '#b2a4f9' : 'darkslateblue';
-      const strokeColor = mode === 'fetch' ? 'darkslateblue' : '#b2a4f9';
+      const button = cachePanelSearchMode;
 
-      // Apply the new background color using the helper function
-      applyHeaderButtonStyles(cachePanelSearchMode, backgroundColor);
-
-      // Update the SVG stroke color
-      const svg = cachePanelSearchMode.querySelector('svg');
-      if (svg) {
-        svg.setAttribute('stroke', strokeColor);
-      }
+      // Toggle classes by removing and adding the appropriate class
+      button.classList.toggle('cache-mode-button', mode === 'cache');
+      button.classList.toggle('fetch-mode-button', mode !== 'cache');
     }
 
-    // Initial mode setup
+    // Initial mode setup based on the current mode
     updateStyles(currentSearchMode);
 
     // Add click event listener to the cache panel search mode button
@@ -2375,11 +2002,9 @@ import * as icons from './icons.js';
 
     // Create a clear cache button with the provided SVG icon
     const clearCacheButton = document.createElement('div');
-    clearCacheButton.className = 'clear-cache-button';
+    clearCacheButton.className = 'large-button panel-header-clear-button';
     clearCacheButton.title = 'Clear cache';
     clearCacheButton.innerHTML = icons.trashSVG;
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(clearCacheButton, 'brown');
 
     // Add a click event listener to the clear cache button
     clearCacheButton.addEventListener('click', () => {
@@ -2398,11 +2023,9 @@ import * as icons from './icons.js';
 
     // Create a close button with the provided SVG icon
     const closePanelButton = document.createElement('div');
-    closePanelButton.className = 'close-panel-button';
+    closePanelButton.className = 'large-button panel-header-close-button';
     closePanelButton.title = 'Close panel';
     closePanelButton.innerHTML = icons.closeSVG;
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(closePanelButton, 'darkolivegreen', '0 0 0 0.5em');
 
     // Add a click event listener to the close panel button
     closePanelButton.addEventListener('click', () => {
@@ -2420,52 +2043,30 @@ import * as icons from './icons.js';
     const fetchedUsersContainer = document.createElement('div');
     fetchedUsersContainer.className = 'fetched-users';
 
-    // Set grid layout properties
-    fetchedUsersContainer.style.display = 'grid'; // Use grid layout
-    fetchedUsersContainer.style.gridTemplateRows = '1fr 1fr'; // Stack two rows for new and old users
-    fetchedUsersContainer.style.height = 'calc(100% - 0.5em)'; // Set height for main container
-    fetchedUsersContainer.style.overflowY = 'auto'; // Enable vertical scrolling if needed
-    fetchedUsersContainer.style.gridArea = 'cache';
-
     // Function to create a user container with common styles
-    function createUserContainer(className) {
+    function createUserContainer(isOldUser) {
       const userContainer = document.createElement('div');
-      userContainer.className = className;
-
-      // Add common CSS styles for grid layout and centering
-      userContainer.style.display = 'grid';
-      // userContainer.style.gridAutoFlow = 'dense'; // Allows items to fill empty spaces
-      userContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(220px, 1fr))'; // Responsive columns
-      userContainer.style.gap = '12px'; // Space between items
-      userContainer.style.padding = '1em';
-      userContainer.style.height = 'fit-content';
-
+      userContainer.className = 'users-container';
+      // Add a modifier class based on whether it's an old or new user
+      userContainer.classList.add(isOldUser ? 'old-user' : 'new-user');
       return userContainer;
     }
 
     // Create containers for old and new users
-    const oldUsersContainer = createUserContainer('old-users');
-    const newUsersContainer = createUserContainer('new-users');
+    const oldUsersContainer = createUserContainer(true);
+    const newUsersContainer = createUserContainer(false);
 
-    // Function to create a description for user groups
+    // Function to create a description with customizable text and class
     function createDescription(text, className) {
       const description = document.createElement('span');
-      description.className = className;
+      description.className = `description ${className}`; // Add common 'description' class with the specific className
       description.textContent = text;
-      description.style.color = 'bisque';
-      description.style.fontFamily = 'Montserrat';
-      description.style.fontSize = '1em';
-      description.style.margin = '0';
-      description.style.padding = '0.4em 0.2em';
-      // Make description span all columns
-      description.style.gridColumn = '1 / -1';
-      description.style.height = 'fit-content';
       return description;
     }
 
-    // Create and style descriptions for old and new users
-    const oldUsersDescription = createDescription('Active Users', 'old-users-description'); // Create description for old users
-    const newUsersDescription = createDescription('New Registrations', 'new-users-description'); // Create description for new users
+    // Create descriptions
+    const oldUsersDescription = createDescription('Active Users', 'old-users-description');
+    const newUsersDescription = createDescription('New Registrations', 'new-users-description');
 
     // Append descriptions to their respective containers
     oldUsersContainer.appendChild(oldUsersDescription); // Append description to old users container
@@ -2495,42 +2096,11 @@ import * as icons from './icons.js';
     const createCachePanelUserElement = (userId, userData) => {
       // Create the main container for the user.
       const userElement = document.createElement('div');
-      userElement.className = 'user';
-      userElement.style.padding = '0.2em';
-      userElement.style.margin = '0.4em 0.2em';
-      userElement.style.display = 'grid';
-      userElement.style.gridTemplateColumns = 'auto 1fr';
-      userElement.style.alignItems = 'center';
-      userElement.style.height = 'fit-content';
-
-      // Define base styling for tracked and untracked users for visits element
-      const baseStyle = {
-        marginLeft: '8px',
-        padding: '4px 6px',
-        borderRadius: '2px !important',
-        cursor: 'pointer',
-        whiteSpace: 'pre'
-      };
-
-      // Styles for tracked and untracked users for visits element
-      const styles = {
-        tracked: { ...baseStyle, color: 'greenyellow', backgroundColor: 'darkgreen', fontWeight: 'bold' },
-        untracked: { ...baseStyle, color: 'orange', backgroundColor: '#111111', fontWeight: 'normal' }
-      };
-
-      // Helper function to convert styles into a CSS string.
-      const generateStylesString = (styles) =>
-        Object.entries(styles)
-          .map(([key, value]) => `${key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}: ${value}`)
-          .join('; ');
-
-      // Choose the appropriate style based on whether the user is tracked.
-      const chosenStyles = userData.tracked ? styles.tracked : styles.untracked;
+      userElement.className = 'user-item';
 
       // Create an avatar container.
       const avatarElement = document.createElement('div');
       avatarElement.className = 'avatar';
-      avatarElement.style.marginRight = '8px';
 
       // Handle avatar URL and display logic.
       const avatarTimestamp = fetchedUsers[userId]?.avatarTimestamp;
@@ -2541,13 +2111,10 @@ import * as icons from './icons.js';
         const imgElement = document.createElement('img');
         imgElement.src = finalAvatarUrl;
         imgElement.alt = `${userData.login}'s avatar`;
-        imgElement.style.height = '24px';
-        imgElement.style.width = '24px';
         imgElement.style.objectFit = 'cover';
         avatarElement.appendChild(imgElement);
       } else {
         // Display a random emoji avatar if no avatar is available.
-        avatarElement.style.fontSize = '1.8rem';
         avatarElement.innerHTML = getRandomEmojiAvatar();
       }
 
@@ -2567,20 +2134,6 @@ import * as icons from './icons.js';
 
       // Append the login element to the container
       loginContainer.appendChild(loginElement);
-
-      // Set styles and hover behavior for the login link.
-      loginElement.style.setProperty('color', 'skyblue', 'important');
-      loginElement.style.textDecoration = 'none';
-      loginElement.style.fontFamily = 'Montserrat';
-      loginElement.style.transition = 'color 0.3s ease';
-
-      loginElement.addEventListener('mouseover', () => {
-        loginElement.style.setProperty('color', 'cornsilk', 'important');
-      });
-
-      loginElement.addEventListener('mouseout', () => {
-        loginElement.style.setProperty('color', 'skyblue', 'important');
-      });
 
       // Define the URL for user profile messaging
       const profileUrl = profileBaseUrl + userId;
@@ -2609,7 +2162,8 @@ import * as icons from './icons.js';
       if (userData.visits !== undefined) {
         const visitsElement = document.createElement('span');
         visitsElement.className = 'visits';
-        visitsElement.style.cssText = generateStylesString(chosenStyles);
+        // Add dynamic class based on whether the user is tracked or untracked
+        visitsElement.classList.add(userData.tracked ? 'tracked' : 'untracked');
         visitsElement.textContent = userData.visits;
         visitsElement.dataset.userId = userId;
         // Call the function to prepend an emoticon
@@ -2617,27 +2171,6 @@ import * as icons from './icons.js';
 
         // Add the visitsElement to the fetchedUsersContainer
         loginContainer.appendChild(visitsElement);
-
-        // Create an object for action log container styles
-        const actionLogContainerStyles = {
-          position: 'fixed',
-          opacity: '0',
-          padding: '8px',
-          gap: '4px',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          maxHeight: '85vh',
-          overflowY: 'auto',
-          scrollbarWidth: 'none',
-          overflowX: 'hidden',
-          display: 'flex',
-          minWidth: '30vw',
-          maxWidth: '50vw',
-          flexWrap: 'wrap',
-          backgroundColor: '#111111',
-          border: '3px dashed #212121'
-        };
 
         // Add click event listener to visitsElement
         visitsElement.addEventListener('click', (event) => {
@@ -2653,10 +2186,6 @@ import * as icons from './icons.js';
               // Create a container for the action log display if it doesn't exist
               actionLogContainer = document.createElement('div');
               actionLogContainer.className = 'action-log';
-              // Apply the styles from the object
-              actionLogContainer.style.setProperty('box-shadow', boxShadow, 'important');
-              actionLogContainer.style.setProperty('border-radius', '0.2em', 'important');
-              Object.assign(actionLogContainer.style, actionLogContainerStyles);
 
               // Append the action log container to the specific container (fetchedUsersContainer)
               fetchedUsersContainer.appendChild(actionLogContainer);
@@ -2712,7 +2241,6 @@ import * as icons from './icons.js';
       rankElement.className = 'rank';
       rankElement.textContent = userData.rank || 'N/A';
       rankElement.style.color = rankColors[userData.rank] || 'white';
-      rankElement.style.padding = '2px 0';
 
       // Append rank element to the user data element
       userDataElement.appendChild(rankElement);
@@ -2721,8 +2249,6 @@ import * as icons from './icons.js';
       const registeredElement = document.createElement('div');
       registeredElement.className = 'registered';
       registeredElement.textContent = userData.registered || 'N/A';
-      registeredElement.style.color = 'cadetblue';
-      registeredElement.style.fontSize = '12px';
 
       let hoverTimer;
       const originalContent = registeredElement.textContent;
@@ -2794,8 +2320,6 @@ import * as icons from './icons.js';
       // Group all metrics into a container.
       const userMetrics = document.createElement('div');
       userMetrics.className = 'user-metrics';
-      userMetrics.style.marginTop = '4px';
-      userMetrics.style.gridColumn = 'span 2';
 
       // Append metrics elements into metrics wrapper
       userMetrics.append(bestSpeedElement, ratingLevelElement, carsElement, friendsElement);
@@ -2845,37 +2369,9 @@ import * as icons from './icons.js';
 
     // Create and append scroll buttons
     const {
-      scrollButtonsContainer,
-      fullScrollUpButton,
-      partialScrollUpButton,
-      partialScrollDownButton,
-      fullScrollDownButton
+      scrollButtonsContainer
     } = createScrollButtons(fetchedUsersContainer);
     cachedUsersPanel.appendChild(scrollButtonsContainer);
-
-    // Create an array containing the buttons we want to apply the events to
-    const buttons = [
-      cachePanelSearchMode,
-      clearCacheButton,
-      closePanelButton,
-      fullScrollUpButton,
-      partialScrollUpButton,
-      partialScrollDownButton,
-      fullScrollDownButton
-    ];
-
-    // Iterate through each button in the array
-    buttons.forEach(button => {
-      // Add a mouseover event listener to change the button's brightness on hover
-      button.addEventListener('mouseover', () => {
-        button.style.filter = 'brightness(0.8)'; // Dim the button
-      });
-
-      // Add a mouseout event listener to reset the button's brightness when not hovered
-      button.addEventListener('mouseout', () => {
-        button.style.filter = 'brightness(1)'; // Reset to original brightness
-      });
-    });
 
     // Fade in the cached users panel
     triggerTargetElement(cachedUsersPanel, 'show');
@@ -2963,115 +2459,33 @@ import * as icons from './icons.js';
 
   // NEW CHAT USER LIST (START)
 
-  // Add styles for hover effects dynamically to the head
-  const newChatUserListStyles = document.createElement('style');
+  // Function to dynamically apply background color
+  function applyDynamicBackgroundColor() {
+    // Create a new <style> element
+    const newChatUserListStyles = document.createElement('style');
+    newChatUserListStyles.classList.add("userlist-dynamic-background");
 
-  // Apply class to the style element
-  newChatUserListStyles.classList.add('new-chat-user-list');
+    // Get the dynamic background color
+    const dynamicBackgroundColor = getComputedStyle(document.querySelector('.chat .messages')).backgroundColor;
 
-  newChatUserListStyles.innerHTML = `
-    #chat-general .userlist-content {
-      opacity: 0;
-    }
-
+    // Define the styles with only background color
+    const userListStyles = `
     #chat-general .smile-tab {
-      background-color: ${((c) => c[0] == '#' ? c : '#' + c.match(/\d+/g).map(Number).map(x => x.toString(16).padStart(2, '0')).join(''))
-      (getComputedStyle(document.querySelector('.chat .messages')).backgroundColor)};
-      position: relative;
-      z-index: 1;
+      background-color: ${dynamicBackgroundColor};
     }
-
     .chat-user-list {
-        display: flex;
-        flex-direction: column;
-        position: absolute;
-        top: 20px;
-        padding-top: 8px;
-        width: 200px;
-        height: 94%;
-        overflow-y: auto;
-        overflow-x: hidden;
-        background-color: ${((c) => c[0] == '#' ? c : '#' + c.match(/\d+/g).map(Number).map(x => x.toString(16).padStart(2, '0')).join(''))
-      (getComputedStyle(document.querySelector('.chat .messages')).backgroundColor)};
+      background-color: ${dynamicBackgroundColor};
     }
+  `;
 
-    .chat-user-list [class^="rank-group"] {
-        display: flex;
-        flex-direction: column;
-    }
+    // Set the innerHTML of the style element to the styles
+    newChatUserListStyles.innerHTML = userListStyles;
+    // Append the <style> element to the document head
+    document.head.appendChild(newChatUserListStyles);
+  }
 
-    .chat-user-list [class^="user"] {
-        display: inline-flex;
-        margin: 2px 0;
-    }
-
-    .chat-user-list .avatar {
-        width: 24px;
-        height: 24px;
-        display: inline-flex;
-    }
-
-    .chat-user-list .avatar img,
-    .fetched-users .avatar img {
-        transition: transform 0.3s;
-        transform-origin: left;
-    }
-
-    .chat-user-list .avatar img:hover,
-    .fetched-users .avatar img:hover {
-        transform: scale(2);
-    }
-
-    .chat-user-list .name {
-        text-decoration: none;
-        display: inline-flex;
-        width: auto;
-        height: 24px;
-        line-height: 24px;
-        padding: 0 8px;
-        max-width: 124px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .chat-user-list .name:hover {
-        text-decoration: underline;
-    }
-
-    .chat-user-list .profile,
-    .chat-user-list .tracked,
-    .chat-user-list .ignored,
-    .chat-user-list .moderator {
-        display: inline-flex;
-        width: 24px;
-        height: 24px;
-        justify-content: center;
-        align-items: center;
-    }
-
-    svg.feather-meh,
-    svg.feather-smile,
-    svg.feather-frown {
-        stroke: #A47C5E;
-    }
-
-    /* Common rotation animation */
-    @keyframes rotateProfileIconAnimation {
-        0% {
-            transform: rotate(0deg) scale(1);
-            transition-timing-function: ease-in-out;
-        }
-        50% {
-            transform: rotate(180deg) scale(1.2);
-            transition-timing-function: linear;
-        }
-        100% {
-            transform: rotate(360deg) scale(1);
-        }
-    }
-`;
-
-  document.head.appendChild(newChatUserListStyles);
+  // Call the function to apply the dynamic background color
+  applyDynamicBackgroundColor();
 
   // Function to validate required user data
   function validateUserData(user) {
@@ -4154,12 +3568,6 @@ import * as icons from './icons.js';
           const mentionSpan = document.createElement('span');
           mentionSpan.className = 'mention';
           mentionSpan.textContent = word;
-          Object.assign(mentionSpan.style, {
-            display: 'inline-flex',
-            color: '#83cf40',
-            fontFamily: 'Roboto Mono, monospace',
-            fontWeight: 'bold'
-          });
           fragment.appendChild(mentionSpan);
         } else {
           fragment.appendChild(document.createTextNode(word));
@@ -4736,81 +4144,6 @@ import * as icons from './icons.js';
 
   // POPUP MESSAGES START
 
-  const popupChatMessageStyles = document.createElement('style');
-  popupChatMessageStyles.textContent = `
-    .popup-messages-container {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: start;
-      user-select: none;
-      pointer-events: none;
-      position: fixed;
-      left: 0;
-      right: 0;
-      top: 50px;
-      bottom: 0;
-    }
-
-    .popup-chat-message {
-      display: flex;
-      align-items: center;
-      background-color: hsl(100, 50%, 10%);
-      position: relative;
-      max-width: 70vw;
-      border-radius: 0.2em !important;
-      color: hsl(100, 50%, 50%);
-      border: 1px solid hsl(100, 50%, 25%);
-      padding: 4px;
-      margin: 6px 15vw;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-      animation: fadeIn 0.3s ease-in-out forwards;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .popup-chat-message.fade-out {
-      animation: fadeOut 0.3s ease-in-out forwards;
-    }
-
-    @keyframes fadeOut {
-      from {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      to {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-    }
-
-    .popup-chat-message > div {
-      padding: 2px;
-      display: flex;
-      font-family: 'Montserrat', sans-serif;
-    }
-
-    .popup-chat-message .time,
-    .popup-chat-message .time-icon {
-      opacity: 0.7;
-    }
-`;
-
-  popupChatMessageStyles.classList.add('popup-chat-message-styles');
-
-  document.head.appendChild(popupChatMessageStyles);
-
   // Set the maximum number of popup messages to display globally
   const maxPopupMessagesCount = 10;
 
@@ -5209,21 +4542,6 @@ import * as icons from './icons.js';
     }, 500);
   }
 
-  // Helper function to apply common styles to buttons
-  function applyBaseButtonStyles(element) {
-    Object.assign(element.style, {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: '48px',
-      height: '48px',
-      cursor: 'pointer',
-      margin: `${empowermentButtonsMargin}px`,
-      backgroundColor: '#212226',
-      border: '1px solid #45474b',
-    });
-  }
-
   // CREATE SOUND SWITCHER BUTTON (START)
 
   function createSoundSwitcherButton() {
@@ -5232,13 +4550,10 @@ import * as icons from './icons.js';
     // Retrieve the value from localStorage key "messageNotificationState"
     const messageNotificationState = KG_Chat_Empowerment.messageSettings.messageNotificationState || 'silence';
     // Add the class 'sound-switcher-button' to the 'soundSwitcher' element
-    soundSwitcher.classList.add('sound-switcher-button');
+    soundSwitcher.classList.add("empowerment-button", "sound-switcher-button");
     // Initial button id if the localStorage key isn't created with assigned value by user
     soundSwitcher.id = messageNotificationState;
     // Retrieve the value from localStorage key "messageNotificationTitle"
-
-    // Apply base button styles
-    applyBaseButtonStyles(soundSwitcher);
 
     // Retrieve the value from KG_Chat_Empowerment.messageSettings.messageNotificationTitle
     const messageNotificationTitle = KG_Chat_Empowerment.messageSettings.messageNotificationTitle || 'Do not disturb';
@@ -5331,16 +4646,6 @@ import * as icons from './icons.js';
     };
   }
 
-  // Function to assign common styles for voice speed and pitch elements
-  function assignVoiceSettingsStyles(voiceSettings) {
-    voiceSettings.style.position = 'absolute';
-    voiceSettings.style.top = '65px';
-    voiceSettings.style.right = '70px';
-    voiceSettings.style.opacity = 0;
-    voiceSettings.style.transition = 'opacity 0.3s ease';
-    voiceSettings.style.fontFamily = 'Orbitron, sans-serif';
-  }
-
   /*
   * Shows the current voice speed or pitch as a span element with appropriate styles.
   * If the Ctrl key is pressed, displays the current voice speed.
@@ -5357,7 +4662,6 @@ import * as icons from './icons.js';
         voiceSettings = document.createElement('div');
         voiceSettings.classList.add('voice-settings');
         soundSwitcher.appendChild(voiceSettings);
-        assignVoiceSettingsStyles(voiceSettings);
         void voiceSettings.offsetWidth;
         voiceSettings.style.opacity = '1';
       }
@@ -5374,21 +4678,16 @@ import * as icons from './icons.js';
         voiceSettings.appendChild(currentVoiceSpeed);
       }
 
-      // Create progress text info
+      // Create progress text info for voice speed
       let voiceSpeedInfo = voiceSettings.querySelector('.current-voice-speed .voice-value-info');
       if (!voiceSpeedInfo) {
         voiceSpeedInfo = document.createElement('span');
-        voiceSpeedInfo.classList.add('voice-value-info');
+        voiceSpeedInfo.classList.add("voice-speed", "voice-value-info");
         voiceSettings.querySelector('.current-voice-speed').appendChild(voiceSpeedInfo);
-        voiceSpeedInfo.style.display = 'flex';
-        voiceSpeedInfo.style.width = '100%';
-        voiceSpeedInfo.style.justifyContent = 'center';
-        voiceSpeedInfo.style.marginBottom = '6px';
-        voiceSpeedInfo.style.color = 'hsl(100, 50%, 50%)';
       }
 
       if (voiceSpeedInfo) {
-        // Set the text content of voiceSpeed
+        // Set the text content of voice speed
         if (voiceSpeed <= minVoiceSpeed || voiceSpeed >= maxVoiceSpeed) {
           voiceSpeedInfo.innerHTML = icons.rangeIsOutSVG;
         } else {
@@ -5396,44 +4695,22 @@ import * as icons from './icons.js';
         }
       }
 
-      // Create a new progress element if it doesn't exist
-      let voiceSpeedProgress = voiceSettings.querySelector('.current-voice-speed .voice-progress');
+      // Create a new progress element if it doesn't exist for speed
+      let voiceSpeedProgress = voiceSettings.querySelector('.current-voice-speed .voice-speed-progress');
       if (!voiceSpeedProgress) {
         voiceSpeedProgress = document.createElement('span');
-        voiceSpeedProgress.classList.add('voice-progress');
+        voiceSpeedProgress.classList.add('voice-speed-progress');
         // Create the progress fill element
         let fill = document.createElement('span');
-        fill.classList.add('voice-progress-fill');
+        fill.classList.add('voice-speed-progress-fill');
         // Append the fill element to the progress element
         voiceSpeedProgress.appendChild(fill);
-        // Append the progress element to the voice settings element
+        // Append the progress element to the current voice speed container
         voiceSettings.querySelector('.current-voice-speed').appendChild(voiceSpeedProgress);
       }
 
-      // Update progress fill width based on voice pitch percentage
-      voiceSpeedProgress.querySelector('.voice-progress-fill').style.width = getVoiceSettingsPercentage().speed;
-
-      // Apply styles to the progress and fill elements
-      const progressStyle = {
-        display: 'block',
-        width: '120px',
-        height: '12px',
-        backgroundColor: 'hsl(90, 60%, 30%)'
-      };
-
-      const fillStyle = {
-        display: 'block',
-        height: '100%',
-        backgroundColor: 'hsl(90, 60%, 50%)'
-      };
-
-      for (let property in progressStyle) {
-        voiceSpeedProgress.style[property] = progressStyle[property];
-      }
-
-      for (let property in fillStyle) {
-        voiceSpeedProgress.querySelector('.voice-progress-fill').style[property] = fillStyle[property];
-      }
+      // Update progress fill width based on voice speed percentage
+      voiceSpeedProgress.querySelector('.voice-speed-progress-fill').style.width = getVoiceSettingsPercentage().speed;
 
       // Clear any existing timeout on voiceSettings and set a new one
       if (voiceSettings.timeoutId) {
@@ -5453,7 +4730,6 @@ import * as icons from './icons.js';
         voiceSettings = document.createElement('div');
         voiceSettings.classList.add('voice-settings');
         soundSwitcher.appendChild(voiceSettings);
-        assignVoiceSettingsStyles(voiceSettings);
         void voiceSettings.offsetWidth;
         voiceSettings.style.opacity = '1';
       }
@@ -5470,21 +4746,16 @@ import * as icons from './icons.js';
         voiceSettings.appendChild(currentVoicePitch);
       }
 
-      // Create progress text info
+      // Create progress text info for voice pitch
       let voicePitchInfo = voiceSettings.querySelector('.current-voice-pitch .voice-value-info');
       if (!voicePitchInfo) {
         voicePitchInfo = document.createElement('span');
-        voicePitchInfo.classList.add('voice-value-info');
+        voicePitchInfo.classList.add("voice-pitch", "voice-value-info");
         voiceSettings.querySelector('.current-voice-pitch').appendChild(voicePitchInfo);
-        voicePitchInfo.style.display = 'flex';
-        voicePitchInfo.style.width = '100%';
-        voicePitchInfo.style.justifyContent = 'center';
-        voicePitchInfo.style.marginBottom = '6px';
-        voicePitchInfo.style.color = 'hsl(180, 60%, 50%)';
       }
 
       if (voicePitchInfo) {
-        // Set the text content of voicePitch
+        // Set the text content of voice pitch
         if (voicePitch <= minVoicePitch || voicePitch >= maxVoicePitch) {
           voicePitchInfo.innerHTML = icons.rangeIsOutSVG;
         } else {
@@ -5492,44 +4763,22 @@ import * as icons from './icons.js';
         }
       }
 
-      // Create a new progress element if it doesn't exist
-      let pitchProgress = voiceSettings.querySelector('.current-voice-pitch .voice-progress');
+      // Create a new progress element if it doesn't exist for pitch
+      let pitchProgress = voiceSettings.querySelector('.current-voice-pitch .voice-pitch-progress');
       if (!pitchProgress) {
         pitchProgress = document.createElement('span');
-        pitchProgress.classList.add('voice-progress');
+        pitchProgress.classList.add('voice-pitch-progress');
         // Create the progress fill element
         let fill = document.createElement('span');
-        fill.classList.add('voice-progress-fill');
+        fill.classList.add('voice-pitch-progress-fill');
         // Append the fill element to the progress element
         pitchProgress.appendChild(fill);
-        // Append the progress element to the voice settings element
+        // Append the progress element to the current voice pitch container
         voiceSettings.querySelector('.current-voice-pitch').appendChild(pitchProgress);
       }
 
       // Update progress fill width based on voice pitch percentage
-      pitchProgress.querySelector('.voice-progress-fill').style.width = getVoiceSettingsPercentage().pitch;
-
-      // Apply styles to the progress and fill elements
-      const progressStyle = {
-        display: 'block',
-        width: '120px',
-        height: '12px',
-        backgroundColor: 'hsl(180, 60%, 30%)'
-      };
-
-      const fillStyle = {
-        display: 'block',
-        height: '100%',
-        backgroundColor: 'hsl(180, 60%, 50%)'
-      };
-
-      for (let property in progressStyle) {
-        pitchProgress.style[property] = progressStyle[property];
-      }
-
-      for (let property in fillStyle) {
-        pitchProgress.querySelector('.voice-progress-fill').style[property] = fillStyle[property];
-      }
+      pitchProgress.querySelector('.voice-pitch-progress-fill').style.width = getVoiceSettingsPercentage().pitch;
 
       // Clear any existing timeout on voiceSettings and set a new one
       if (voiceSettings.timeoutId) {
@@ -5653,12 +4902,9 @@ import * as icons from './icons.js';
     // Retrieve the value from KG_Chat_Empowerment.messageSettings.messageModeState
     const messageModeState = KG_Chat_Empowerment.messageSettings.messageModeState || 'every-message';
     // Add the class 'message-mode-button' to the 'messagesMode' element
-    messageMode.classList.add('message-mode-button');
+    messageMode.classList.add("empowerment-button", "message-mode-button");
     // Initial button id if the localStorage key isn't created with assigned value by user
     messageMode.id = messageModeState;
-
-    // Apply base button styles
-    applyBaseButtonStyles(messageMode);
 
     // Retrieve the value from KG_Chat_Empowerment.messageSettings.messageModeTitle
     const messageModeTitle = KG_Chat_Empowerment.messageSettings.messageModeTitle || 'Notify about every message';
@@ -5723,15 +4969,12 @@ import * as icons from './icons.js';
   // CREATE USER LIST CACHE BUTTON (START)
 
   // Function to create the button for showCachePanel
-  function createShowUserListCacheButton() {
+  function createCacheButton() {
     // Create a new element with class 'cache-panel-load-button'
     const showUserListCacheButton = document.createElement('div');
 
     // Add the class 'cache-panel-load-button' to the button
-    showUserListCacheButton.classList.add('cache-panel-load-button');
-
-    // Apply base button styles
-    applyBaseButtonStyles(showUserListCacheButton);
+    showUserListCacheButton.classList.add("empowerment-button", "cache-panel-load-button");
 
     // Add cache-specific styles directly
     showUserListCacheButton.style.position = 'relative';
@@ -5743,22 +4986,6 @@ import * as icons from './icons.js';
     // Create the small indicator for user count
     const cacheUserCount = document.createElement('div');
     cacheUserCount.classList.add('cache-user-count');
-    cacheUserCount.style.display = 'flex';
-    cacheUserCount.style.position = 'absolute';
-    cacheUserCount.style.justifyContent = 'center';
-    cacheUserCount.style.alignItems = 'center';
-    cacheUserCount.style.left = '0';
-    cacheUserCount.style.bottom = '0';
-    cacheUserCount.style.transform = 'translate(-50%, 50%)';
-    cacheUserCount.style.zIndex = '1';
-    cacheUserCount.style.height = '20px';
-    cacheUserCount.style.padding = '0 4px';
-    cacheUserCount.style.setProperty('border-radius', '2px', 'important');
-    cacheUserCount.style.backgroundColor = '#9db380';
-    cacheUserCount.style.color = 'rgb(2, 2, 2)';
-    cacheUserCount.style.fontSize = '12px';
-    cacheUserCount.style.fontFamily = 'Roboto';
-    cacheUserCount.style.fontWeight = 'bold';
 
     // Initially set the count based on localStorage
     const fetchedUsers = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
@@ -5782,7 +5009,7 @@ import * as icons from './icons.js';
 
     // Append the button to the existing panel
     empowermentButtonsPanel.appendChild(showUserListCacheButton);
-  } createShowUserListCacheButton();
+  } createCacheButton();
 
   // Function to update the user count displayed near the cache button based on localStorage
   function updateUserCountText() {
@@ -5807,28 +5034,19 @@ import * as icons from './icons.js';
   function createPersonalMessagesButton() {
     // Create a new element with class 'personal-messages-button'
     const showPersonalMessagesButton = document.createElement('div');
-    showPersonalMessagesButton.classList.add('personal-messages-button');
-
-    // Apply base button styles
-    applyBaseButtonStyles(showPersonalMessagesButton);
-
-    // Add personal messages-specific styles
-    showPersonalMessagesButton.style.position = 'relative';
-    showPersonalMessagesButton.style.zIndex = '2';
+    showPersonalMessagesButton.classList.add("empowerment-button", "personal-messages-button");
     showPersonalMessagesButton.innerHTML = icons.personalMessagesSVG; // Add icon
 
     // Create the small indicator for all message count
-    const allMessageIndicator = createMessageCountIndicator('total-message-count', '#fa8072');
+    const allMessageIndicator = document.createElement('div');
+    allMessageIndicator.classList.add("message-count", "total-message-count");
     const personalMessages = JSON.parse(localStorage.getItem('personalMessages')) || {};
     allMessageIndicator.textContent = Object.keys(personalMessages).length;
-
-    // Position the all message count to the left
-    allMessageIndicator.style.left = '0';
-    allMessageIndicator.style.transform = 'translate(-50%, 50%)';
     showPersonalMessagesButton.appendChild(allMessageIndicator);
 
     // Create the small indicator for new message count
-    const newMessageIndicator = createMessageCountIndicator('new-message-count', '#ffd700');
+    const newMessageIndicator = document.createElement('div');
+    newMessageIndicator.classList.add("message-count", "new-message-count");
 
     // Get the new messages count from localStorage or set to 0 if not present
     let newMessagesCount = Number(localStorage.getItem('newMessagesCount')) || (localStorage.setItem('newMessagesCount', '0'), 0);
@@ -5838,9 +5056,6 @@ import * as icons from './icons.js';
     // Check the newMessagesCount value and set visibility
     newMessageIndicator.style.visibility = newMessagesCount > 0 ? 'visible' : 'hidden'; // Set visibility based on count
 
-    // Position the new message count to the right
-    newMessageIndicator.style.right = '0';
-    newMessageIndicator.style.transform = 'translate(50%, 50%)';
     showPersonalMessagesButton.appendChild(newMessageIndicator);
 
     // Assign a title to the button
@@ -5862,30 +5077,7 @@ import * as icons from './icons.js';
 
     // Append the button to the existing panel
     empowermentButtonsPanel.appendChild(showPersonalMessagesButton);
-  }
-
-  // Helper function to create a message count indicator
-  function createMessageCountIndicator(className, backgroundColor) {
-    const messageCount = document.createElement('div');
-    messageCount.classList.add(className);
-    messageCount.style.display = 'flex';
-    messageCount.style.position = 'absolute';
-    messageCount.style.justifyContent = 'center';
-    messageCount.style.alignItems = 'center';
-    messageCount.style.height = '20px'; // Fixed height for all indicators
-    messageCount.style.padding = '0 4px';
-    messageCount.style.setProperty('border-radius', '2px', 'important');
-    messageCount.style.backgroundColor = backgroundColor;
-    messageCount.style.color = 'rgb(2, 2, 2)';
-    messageCount.style.fontSize = '12px';
-    messageCount.style.fontFamily = 'Roboto';
-    messageCount.style.fontWeight = 'bold';
-    messageCount.style.bottom = '0'; // Common bottom positioning for both indicators
-    return messageCount;
-  }
-
-  // Call the function to create the button
-  createPersonalMessagesButton();
+  } createPersonalMessagesButton();
 
   // Find chat message by time in range and matching username
   async function findGeneralChatMessage(targetTime, targetUsername, allowScroll) {
@@ -6156,55 +5348,19 @@ import * as icons from './icons.js';
     // Create a container div with class 'cached-messages-panel'
     const cachedMessagesPanel = document.createElement('div');
     cachedMessagesPanel.className = 'cached-messages-panel popup-panel';
-    // Set initial styles
-    cachedMessagesPanel.style.opacity = '0';
-    cachedMessagesPanel.style.backgroundColor = '#1b1b1b';
-    cachedMessagesPanel.style.setProperty('border-radius', '0.6em', 'important');
-    cachedMessagesPanel.style.position = 'fixed';
-    cachedMessagesPanel.style.top = '100px';
-    cachedMessagesPanel.style.left = '50%';
-    cachedMessagesPanel.style.transform = 'translateX(-50%)';
-    cachedMessagesPanel.style.width = '50vw';
-    cachedMessagesPanel.style.height = '80vh';
-    cachedMessagesPanel.style.zIndex = '999';
-    cachedMessagesPanel.style.minWidth = '1000px';
-    cachedMessagesPanel.style.display = 'grid';
-    cachedMessagesPanel.style.gridTemplateColumns = '1fr';
-    cachedMessagesPanel.style.gridTemplateRows = 'min-content';
-    cachedMessagesPanel.style.gridTemplateAreas = `
-      "header header"
-      "messages scroll"`;
 
     // Create a container div for the panel header
     const panelHeaderContainer = document.createElement('div');
     panelHeaderContainer.className = 'panel-header';
-    panelHeaderContainer.style.display = 'flex';
-    panelHeaderContainer.style.flexDirection = 'row';
-    panelHeaderContainer.style.justifyContent = 'flex-end'; // Aligns to the right
-    panelHeaderContainer.style.padding = '0.6em';
-    panelHeaderContainer.style.gridArea = 'header';
 
     // Create the search input container and append it to the panel header
     const messagesSearchContainer = document.createElement('div');
     messagesSearchContainer.className = 'search-for-personal-messages';
-    messagesSearchContainer.style.width = '100%';
-    messagesSearchContainer.style.margin = '0 0.5em 0 0';
-    messagesSearchContainer.style.display = 'flex';
 
     // Create the input field for searching personal messages
     const messagesSearchInput = document.createElement('input');
     messagesSearchInput.className = 'personal-messages-search-input';
-    messagesSearchInput.type = 'text';
-    messagesSearchInput.style.outline = 'none';
-    messagesSearchInput.style.width = '100%';
-    messagesSearchInput.style.padding = '10px';
-    messagesSearchInput.style.fontSize = '1em';
-    messagesSearchInput.style.fontFamily = 'Montserrat';
-    messagesSearchInput.style.color = 'bisque';
-    messagesSearchInput.style.setProperty('border-radius', '0.2em', 'important');
-    messagesSearchInput.style.boxSizing = 'border-box';
-    messagesSearchInput.style.backgroundColor = '#111';
-    messagesSearchInput.style.border = '1px solid #222';
+    messagesSearchInput.type = 'search';
 
     // Append the search input to the search container
     messagesSearchContainer.appendChild(messagesSearchInput);
@@ -6212,32 +5368,13 @@ import * as icons from './icons.js';
     // Create a container div with class 'panel-control-buttons'
     const panelControlButtons = document.createElement('div');
     panelControlButtons.className = 'panel-control-buttons';
-    panelControlButtons.style.display = 'flex';
-
-    // Helper function to apply common styles to a button
-    function applyHeaderButtonStyles(button, backgroundColor, margin = '0 0.5em', display = 'flex') {
-      button.style.backgroundColor = backgroundColor;
-      button.style.width = '48px';
-      button.style.height = '48px';
-      button.style.display = display;
-      button.style.justifyContent = 'center';
-      button.style.alignItems = 'center';
-      button.style.cursor = 'pointer';
-      button.style.setProperty('border-radius', '0.2em', 'important');
-      button.style.margin = margin; // Set margin using the provided value
-      button.style.filter = 'brightness(1)';
-      button.style.transition = 'filter 0.3s ease, opacity 0.3s ease';
-    }
 
     // Create a save button with the provided SVG icon
     const saveMessagesButton = document.createElement('div');
-    saveMessagesButton.className = 'save-messages-button';
+    saveMessagesButton.className = 'large-button panel-header-save-button';
     saveMessagesButton.innerHTML = icons.saveSVG;
     saveMessagesButton.title = 'Save messages';
-    saveMessagesButton.style.opacity = '0';
-
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(saveMessagesButton, '#2f6b63', '0 0.5em', 'none');
+    saveMessagesButton.style.opacity = "0";
 
     // Handle the save button click to restore the backup
     saveMessagesButton.addEventListener('click', () => {
@@ -6273,12 +5410,9 @@ import * as icons from './icons.js';
 
     // Create an import button for messages with the provided SVG icon
     const importMessagesButton = document.createElement('div');
-    importMessagesButton.className = 'import-messages-button';
+    importMessagesButton.className = "large-button panel-header-import-button";
     importMessagesButton.innerHTML = icons.importSVG;
     importMessagesButton.title = 'Import messages';
-
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(importMessagesButton, '#502f6b');
 
     importMessagesButton.addEventListener('click', () => {
       isMessagesImport = true;
@@ -6339,12 +5473,9 @@ import * as icons from './icons.js';
 
     // Create an export button for messages with the provided SVG icon
     const exportMessagesButton = document.createElement('div');
-    exportMessagesButton.className = 'export-messages-button';
+    exportMessagesButton.className = "large-button panel-header-export-button";
     exportMessagesButton.innerHTML = icons.exportSVG;
     exportMessagesButton.title = 'Export messages';
-
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(exportMessagesButton, '#2f4c6b');
 
     // Add event listener for exporting messages
     exportMessagesButton.addEventListener('click', () => {
@@ -6370,12 +5501,10 @@ import * as icons from './icons.js';
 
     // Create a copy personal messages button element
     const copyPersonalMessagesButton = document.createElement('div');
-    copyPersonalMessagesButton.className = 'copy-personal-messages-button';
+    copyPersonalMessagesButton.className = "large-button panel-header-copy-button";
     // Set the inner HTML of the copy personal messages button element with the clipboard SVG
     copyPersonalMessagesButton.innerHTML = icons.clipboardSVG;
     copyPersonalMessagesButton.title = 'Copy Personal Messages';
-    // Apply common styles to the button element
-    applyHeaderButtonStyles(copyPersonalMessagesButton, 'steelblue');
 
     // Event listener to copy the text content of the messages container
     copyPersonalMessagesButton.addEventListener('click', () => {
@@ -6403,10 +5532,9 @@ import * as icons from './icons.js';
 
     // Create a clear cache button with the provided SVG icon
     const clearCacheButton = document.createElement('div');
-    clearCacheButton.className = 'clear-cache-button';
+    clearCacheButton.className = "large-button panel-header-clear-button";
     clearCacheButton.title = 'Clear personal messages';
     clearCacheButton.innerHTML = icons.trashSVG;
-    applyHeaderButtonStyles(clearCacheButton, 'brown');
 
     // Add a click event listener to the clear cache button
     clearCacheButton.addEventListener('click', () => {
@@ -6435,10 +5563,9 @@ import * as icons from './icons.js';
 
     // Create a close button with the provided SVG icon
     const closePanelButton = document.createElement('div');
-    closePanelButton.className = 'close-panel-button';
+    closePanelButton.className = "large-button panel-header-close-button";
     closePanelButton.title = 'Close panel';
     closePanelButton.innerHTML = icons.closeSVG;
-    applyHeaderButtonStyles(closePanelButton, 'darkolivegreen', '0 0 0 0.5em');
 
     // Add a click event listener to the close panel button
     closePanelButton.addEventListener('click', () => {
@@ -6467,10 +5594,6 @@ import * as icons from './icons.js';
     // Create a container for the messages
     const messagesContainer = document.createElement('div');
     messagesContainer.className = 'messages-container';
-    messagesContainer.style.overflowY = 'auto';
-    messagesContainer.style.height = 'calc(100% - 0.5em)';
-    messagesContainer.style.padding = '1em';
-    messagesContainer.style.gridArea = 'messages';
 
     function attachMutationObserver() {
       // Set up MutationObserver to monitor removal of child elements
@@ -6483,10 +5606,15 @@ import * as icons from './icons.js';
 
         if (removedNode && saveMessagesButton.style.opacity === '0') {
           isFirstPanelRun = false;
-          // If an element node was removed and save button is hidden, show it
-          saveMessagesButton.style.display = 'flex'; // Ensure the button is part of the layout
-          saveMessagesButton.offsetHeight; // This ensures that the styles are applied before starting the transition
+
+          // Ensure button is visible and part of the layout before applying opacity
+          saveMessagesButton.style.visibility = 'visible'; // Make the button interactable
+          saveMessagesButton.style.display = 'flex'; // Set display to flex to reveal it
+          saveMessagesButton.offsetHeight; // Ensure styles are applied before transition starts
+
+          // Apply opacity to fade the button in
           saveMessagesButton.style.opacity = '1';
+          saveMessagesButton.style.transition = 'opacity 0.5s ease'; // Apply smooth fade-in transition
         }
       });
 
@@ -6530,18 +5658,6 @@ import * as icons from './icons.js';
           // show "Today" if date matches
           dateItem.textContent = date === today ? 'Today ⏳' : `${date} 📅`;
           dateItem.dataset.date = date; // Store the date in a data attribute
-          dateItem.style.position = 'relative';
-          dateItem.style.font = '1em Montserrat';
-          dateItem.style.color = 'burlywood';
-          dateItem.style.backgroundColor = 'rgba(222, 184, 135, 0.1)';
-          dateItem.style.width = 'fit-content';
-          dateItem.style.margin = '2em 1em 1em';
-          dateItem.style.padding = '0.4em 0.8em';
-          dateItem.style.textAlign = 'center';
-          dateItem.style.setProperty('border-radius', '0.4em', 'important');
-          dateItem.style.left = '50%';
-          dateItem.style.transform = 'translateX(-50%)';
-
           messagesContainer.appendChild(dateItem); // Append the date-item to the container
           lastDate = date; // Update the last processed date
         }
@@ -6549,7 +5665,6 @@ import * as icons from './icons.js';
         // Create a message-item for the current message
         const messageElement = document.createElement('div');
         messageElement.className = 'message-item';
-        messageElement.style.padding = '0.2em';
 
         // Add margin-top if this is the first message of a new username group
         if (username !== lastUsername) {
@@ -6565,10 +5680,6 @@ import * as icons from './icons.js';
         timeElement.className = 'message-time';
         timeElement.textContent = formattedTime;
         timeElement.title = `Moscow Time: ${calibrateToMoscowTime(formattedTime)}`;
-        timeElement.style.margin = '0px 0.4em';
-        timeElement.style.height = 'fit-content';
-        timeElement.style.cursor = 'pointer';
-        timeElement.style.transition = 'color 0.2s ease';
         timeElement.style.color = timeColors[type] || 'slategray';
 
         // Add click event listener for "mention" and "private" types
@@ -6592,10 +5703,6 @@ import * as icons from './icons.js';
         usernameElement.className = 'message-username';
         usernameElement.textContent = username;
         usernameElement.style.color = usernameColor;
-        usernameElement.style.display = 'inline-flex';
-        usernameElement.style.cursor = 'pointer';
-        usernameElement.style.margin = '0px 0.4em';
-        usernameElement.style.height = 'fit-content';
 
         // Add click event only if userId is defined
         usernameElement.addEventListener('click', (event) => {
@@ -6614,9 +5721,6 @@ import * as icons from './icons.js';
 
         const messageTextElement = document.createElement('span');
         messageTextElement.className = 'message-text';
-        messageTextElement.style.cursor = 'pointer'; // Pointer cursor
-        messageTextElement.style.margin = '0px 0.4em';
-        messageTextElement.style.height = 'fit-content';
 
         // Replace smiley codes with <img> tags, and then wrap links with <a> tags
         messageTextElement.innerHTML = message
@@ -6726,41 +5830,8 @@ import * as icons from './icons.js';
     document.body.appendChild(cachedMessagesPanel);
 
     // Create and append scroll buttons
-    const {
-      scrollButtonsContainer,
-      fullScrollUpButton,
-      partialScrollUpButton,
-      partialScrollDownButton,
-      fullScrollDownButton
-    } = createScrollButtons(messagesContainer);
+    const { scrollButtonsContainer } = createScrollButtons(messagesContainer);
     cachedMessagesPanel.appendChild(scrollButtonsContainer);
-
-    // Create an array containing the buttons we want to apply the events to
-    const buttons = [
-      saveMessagesButton,
-      importMessagesButton,
-      exportMessagesButton,
-      copyPersonalMessagesButton,
-      clearCacheButton,
-      closePanelButton,
-      fullScrollUpButton,
-      partialScrollUpButton,
-      partialScrollDownButton,
-      fullScrollDownButton
-    ];
-
-    // Iterate through each button in the array
-    buttons.forEach(button => {
-      // Add a mouseover event listener to change the button's brightness on hover
-      button.addEventListener('mouseover', () => {
-        button.style.filter = 'brightness(0.8)'; // Dim the button
-      });
-
-      // Add a mouseout event listener to reset the button's brightness when not hovered
-      button.addEventListener('mouseout', () => {
-        button.style.filter = 'brightness(1)'; // Reset to original brightness
-      });
-    });
 
     // Fade in the cached messages panel
     triggerTargetElement(cachedMessagesPanel, 'show');
@@ -6862,10 +5933,7 @@ import * as icons from './icons.js';
   // Function to create the button for opening chat logs
   function createChatLogsButton() {
     const showChatLogsButton = document.createElement('div');
-    showChatLogsButton.classList.add('chat-logs-button');
-
-    // Apply base button styles
-    applyBaseButtonStyles(showChatLogsButton);
+    showChatLogsButton.classList.add("empowerment-button", "chat-logs-button");
 
     showChatLogsButton.style.position = 'relative';
     showChatLogsButton.style.zIndex = '1';
@@ -7123,61 +6191,22 @@ import * as icons from './icons.js';
     const chatLogsPanel = document.createElement('div');
     chatLogsPanel.className = 'chat-logs-panel popup-panel';
 
-    // Set initial styles for the chat logs panel
-    chatLogsPanel.style.opacity = '0';
-    chatLogsPanel.style.backgroundColor = '#1b1b1b';
-    chatLogsPanel.style.setProperty('border-radius', '0.6em', 'important');
-    chatLogsPanel.style.position = 'fixed';
-    chatLogsPanel.style.top = '100px';
-    chatLogsPanel.style.left = '50%';
-    chatLogsPanel.style.transform = 'translateX(-50%)';
-    chatLogsPanel.style.width = '80vw';
-    chatLogsPanel.style.height = '80vh';
-    chatLogsPanel.style.zIndex = '999';
-    chatLogsPanel.style.minWidth = '1000px';
-    chatLogsPanel.style.display = 'grid';
-    chatLogsPanel.style.gridTemplateColumns = '1fr';
-    chatLogsPanel.style.gridTemplateRows = 'min-content';
-    chatLogsPanel.style.gridTemplateAreas = `
-      "header header header"
-      "messages scroll users"`;
-
     // Create a container div for the panel header
     const panelHeaderContainer = document.createElement('div');
     panelHeaderContainer.className = 'panel-header';
-    panelHeaderContainer.style.display = 'flex';
-    panelHeaderContainer.style.flexDirection = 'row';
-    panelHeaderContainer.style.gridArea = 'header';
-    panelHeaderContainer.style.justifyContent = 'flex-end';
-    panelHeaderContainer.style.padding = '0.6em';
 
     // Create a container div with class 'panel-control-buttons'
     const panelControlButtons = document.createElement('div');
     panelControlButtons.className = 'panel-control-buttons';
-    panelControlButtons.style.display = 'flex';
 
     // Create a container div for the search input
     const chatlogsSearchContainer = document.createElement('div');
     chatlogsSearchContainer.className = 'search-for-chatlogs-messages';
-    chatlogsSearchContainer.style.width = '100%';
-    chatlogsSearchContainer.style.margin = '0 0.5em 0 0';
-    chatlogsSearchContainer.style.display = 'flex';
 
     // Create the input field for searching users
     const chatlogsSearchInput = document.createElement('input');
     chatlogsSearchInput.className = 'chatlogs-search-input';
     chatlogsSearchInput.type = 'text';
-    chatlogsSearchInput.style.outline = 'none';
-    chatlogsSearchInput.style.height = '48px';
-    chatlogsSearchInput.style.width = '100%';
-    chatlogsSearchInput.style.padding = '10px';
-    chatlogsSearchInput.style.fontSize = '1em';
-    chatlogsSearchInput.style.fontFamily = 'Montserrat';
-    chatlogsSearchInput.style.setProperty('color', 'bisque', 'important');
-    chatlogsSearchInput.style.setProperty('border-radius', '0.2em', 'important');
-    chatlogsSearchInput.style.boxSizing = 'border-box';
-    chatlogsSearchInput.style.backgroundColor = '#111';
-    chatlogsSearchInput.style.border = '1px solid #222';
 
     // Append search input to the search container
     chatlogsSearchContainer.appendChild(chatlogsSearchInput);
@@ -7239,28 +6268,10 @@ import * as icons from './icons.js';
     // Focus on the search input using requestAnimationFrame
     function focusOnSearchField() { requestAnimationFrame(function () { chatlogsSearchInput.focus(); }); } focusOnSearchField();
 
-    // Helper function to apply common styles to a header button
-    function applyHeaderButtonStyles(button, backgroundColor, margin = '0 0.5em') {
-      button.style.backgroundColor = backgroundColor;
-      button.style.width = '48px';
-      button.style.height = '48px';
-      button.style.display = 'flex';
-      button.style.justifyContent = 'center';
-      button.style.alignItems = 'center';
-      button.style.cursor = 'pointer';
-      button.style.setProperty('border-radius', '0.2em', 'important');
-      button.style.margin = margin; // Set margin using the provided value
-      button.style.filter = 'brightness(1)';
-      button.style.transition = 'filter 0.3s ease';
-    }
-
     // Create a date input toggle with similar styles as the close button
     const dateInputToggle = document.createElement('div');
-    dateInputToggle.className = 'date-panel-button';
+    dateInputToggle.className = "large-button panel-header-date-button";
     dateInputToggle.innerHTML = icons.calendarSVG;
-    // Apply common styles using the helper function with a different background color
-    applyHeaderButtonStyles(dateInputToggle, 'steelblue');
-    dateInputToggle.style.margin = '0 0.5em';
 
     // Function to toggle visibility of an element
     function toggleDateInputVisibility(element) {
@@ -7281,20 +6292,7 @@ import * as icons from './icons.js';
     const dateInput = document.createElement('input');
     dateInput.type = 'date';
     dateInput.className = 'chatlogs-date-input';
-
-    // Apply consistent styles
-    dateInput.style.backgroundColor = '#111';
-    dateInput.style.color = 'bisque';
-    dateInput.style.border = '1px solid #222';
-    dateInput.style.width = 'fit-content';
-    dateInput.style.height = '48px';
-    dateInput.style.padding = '10px';
-    dateInput.style.fontSize = '1em';
-    dateInput.style.fontFamily = 'Montserrat';
-    dateInput.style.display = 'none'; // Hidden by default
-    dateInput.style.setProperty('border-radius', '0.2em', 'important');
-    dateInput.style.boxSizing = 'border-box';
-    dateInput.style.margin = '0 0.5em';
+    dateInput.style.display = "none";
 
     // Append the date button and input field to the control buttons container
     panelControlButtons.appendChild(dateInputToggle);
@@ -7302,46 +6300,21 @@ import * as icons from './icons.js';
 
     // Create a toggle mention messages component
     const toggleMentionMessages = document.createElement('div');
-    toggleMentionMessages.className = 'toggle-mention-messages';
+    toggleMentionMessages.className = "large-button toggle-mention-messages-button";
     // Set the inner HTML of the toggle component with a suitable SVG or text
     toggleMentionMessages.innerHTML = icons.personalMessagesSVG;
     toggleMentionMessages.title = 'Toggle Mention Messages';
-    // Apply common styles to the component
-    applyHeaderButtonStyles(toggleMentionMessages, 'saddlebrown');
 
     // Add a click event listener to toggle the visibility of messages without mentions
     toggleMentionMessages.addEventListener('click', async () => {
       await toggleMessagesVisibility('mention');
     });
 
-    // Function to apply styles to the toggle counter element
-    function applyToggleCounterStyles(element, backgroundColor) {
-      // Set the display type to flex for layout control
-      element.style.display = 'flex';
-      element.style.position = 'absolute';
-      element.style.justifyContent = 'center';
-      element.style.alignItems = 'center';
-      element.style.padding = '2px 4px';
-      element.style.setProperty('border-radius', '2px', 'important');
-      element.style.fontSize = '12px';
-      element.style.fontFamily = 'Roboto';
-      element.style.fontWeight = 'bold';
-      element.style.bottom = '0px';
-      element.style.left = '0px';
-      element.style.transform = 'translate(-50%, 50%)';
-      element.style.backgroundColor = backgroundColor;
-      element.style.color = '#020202';
-      element.style.pointerEvents = 'none';
-      element.style.userSelect = 'none';
-    }
-
     // Create a new div element for the toggle mention messages counter
     const toggleMentionMessagesCounter = document.createElement('div');
     // Assign a class name to the element
     toggleMentionMessagesCounter.className = 'toggle-mention-messages-counter';
     toggleMentionMessagesCounter.textContent = '0'; // Set as default value before assign
-    // Apply the defined styles using the applyToggleCounterStyles function
-    applyToggleCounterStyles(toggleMentionMessagesCounter, '#ffa07a');
 
     // Append the counter inside the toggleMentionMessages component
     toggleMentionMessages.appendChild(toggleMentionMessagesCounter);
@@ -7350,12 +6323,12 @@ import * as icons from './icons.js';
 
     // Create a toggle media messages component
     const toggleMediaMessages = document.createElement('div');
-    toggleMediaMessages.className = 'toggle-media-messages';
+    toggleMediaMessages.className = "large-button panel-header-toggle-media-messages";
     // Set the inner HTML of the toggle component with a suitable SVG or text
     toggleMediaMessages.innerHTML = icons.mediaMessagesSVG;
     toggleMediaMessages.title = 'Toggle Media Messages';
     // Apply common styles to the component
-    applyHeaderButtonStyles(toggleMediaMessages, 'darkslategray');
+    // applyHeaderButtonStyles(toggleMediaMessages, 'darkslategray');
 
     // Add a click event listener to toggle the visibility of media messages
     toggleMediaMessages.addEventListener('click', async () => {
@@ -7367,8 +6340,6 @@ import * as icons from './icons.js';
     // Assign a class name to the element
     toggleMediaMessagesCounter.className = 'toggle-media-messages-counter';
     toggleMediaMessagesCounter.textContent = '0'; // Set as default value before assign
-    // Apply the defined styles using the applyToggleCounterStyles function
-    applyToggleCounterStyles(toggleMediaMessagesCounter, '#71c4c4');
 
     // Append the counter inside the toggleMediaMessages component
     toggleMediaMessages.appendChild(toggleMediaMessagesCounter);
@@ -7386,12 +6357,12 @@ import * as icons from './icons.js';
 
     // Create a copy chatlogs button element
     const copyChatLogsUrl = document.createElement('div');
-    copyChatLogsUrl.className = 'copy-current-chatlogs-url';
+    copyChatLogsUrl.className = "large-button panel-header-copy-button";
     // Set the inner HTML of the copy chat logs element with the clipboard SVG
     copyChatLogsUrl.innerHTML = icons.clipboardSVG;
     copyChatLogsUrl.title = 'Copy Chat Logs Url';
     // Apply common styles to the button element
-    applyHeaderButtonStyles(copyChatLogsUrl, 'steelblue');
+    // applyHeaderButtonStyles(copyChatLogsUrl, 'steelblue');
 
     // Helper function to extract date from the URL
     const extractDateFromUrl = (url) => {
@@ -7420,12 +6391,6 @@ import * as icons from './icons.js';
         logLink.textContent = date; // Display the date
         logLink.href = url; // Store the URL in the href attribute
 
-        // Style the log link
-        logLink.style.setProperty('color', 'darkseagreen', 'important');
-        logLink.style.textDecoration = 'none'; // Optional: Remove underline
-        logLink.style.display = 'inline-flex';
-        logLink.style.padding = '0.5em';
-
         logLink.addEventListener('click', async (event) => {
           event.preventDefault(); // Prevent the default link behavior
 
@@ -7451,10 +6416,6 @@ import * as icons from './icons.js';
         const logTitle = document.createElement('span');
         logTitle.classList.add('saved-chatlog-url-title');
         logTitle.textContent = title || '➕'; // Display the title (or an empty string if none provided)
-
-        // Style the log title
-        logTitle.style.color = 'lightsteelblue';
-        logTitle.style.padding = '0.5em';
 
         // Add click event listener to the title
         logTitle.addEventListener('click', () => {
@@ -7523,19 +6484,6 @@ import * as icons from './icons.js';
         if (savedChatlogs.length > 0 && !chatLogsLinksContainer) {
           chatLogsLinksContainer = document.createElement('div');
           chatLogsLinksContainer.classList.add('saved-chatlog-container');
-          chatLogsLinksContainer.style.display = 'flex';
-          chatLogsLinksContainer.style.flexDirection = 'column';
-          chatLogsLinksContainer.style.overflowY = 'auto';
-          chatLogsLinksContainer.style.backgroundColor = 'rgb(30, 40, 45)';
-          chatLogsLinksContainer.style.setProperty('border', '1px solid rgb(60, 70, 80)', 'important');
-          chatLogsLinksContainer.style.setProperty('border-radius', '0.2em', 'important');
-          chatLogsLinksContainer.style.position = 'absolute';
-          chatLogsLinksContainer.style.padding = '0.5em';
-          chatLogsLinksContainer.style.height = 'fit-content';
-          chatLogsLinksContainer.style.width = 'max-content';
-          chatLogsLinksContainer.style.maxHeight = `calc(${chatLogsContainer.offsetHeight}px - 0.5em)`;
-          chatLogsLinksContainer.style.top = 'calc(50px + 1em)';
-          chatLogsLinksContainer.style.right = '0';
           createChatLogLinks(savedChatlogs, chatLogsLinksContainer);
 
           copyChatLogsUrl.appendChild(chatLogsLinksContainer);
@@ -7553,9 +6501,8 @@ import * as icons from './icons.js';
 
     // Create a toggle active users button
     const toggleActiveUsers = document.createElement('div');
-    toggleActiveUsers.className = 'toggle-active-users';
+    toggleActiveUsers.className = "large-button panel-header-toggle-button";
     updateActiveUsersToggle(shouldShowActiveUsers); // Set initial SVG based on stored state
-    applyHeaderButtonStyles(toggleActiveUsers, '#144e9d'); // Apply common styles
 
     // Set initial title based on stored state
     toggleActiveUsers.title = shouldShowActiveUsers === 'shown' ? 'Hide User List' : 'Show User List';
@@ -7592,24 +6539,24 @@ import * as icons from './icons.js';
 
     // Create and style the chevron left button
     const oneDayBackward = document.createElement('div');
-    oneDayBackward.className = 'chevron-left-button';
+    oneDayBackward.className = "large-button panel-header-one-day-back-button";
     oneDayBackward.title = 'Previous Day';
     oneDayBackward.innerHTML = icons.chevronLeftSVG; // Assuming you have icons.chevronLeftSVG defined
-    applyHeaderButtonStyles(oneDayBackward, 'darkcyan');
+    // applyHeaderButtonStyles(oneDayBackward, 'darkcyan');
 
     // Create and style the chevron right button
     const oneDayForward = document.createElement('div');
-    oneDayForward.className = 'chevron-right-button';
+    oneDayForward.className = "large-button panel-header-one-day-forward-button";
     oneDayForward.title = 'Next Day';
     oneDayForward.innerHTML = icons.chevronRightSVG; // Assuming you have icons.chevronRightSVG defined
-    applyHeaderButtonStyles(oneDayForward, 'darkcyan');
+    // applyHeaderButtonStyles(oneDayForward, 'darkcyan');
 
     // Create and style the shuffle button
     const randomDay = document.createElement('div');
-    randomDay.className = 'shuffle-button';
+    randomDay.className = "large-button panel-header-shuffle-button";
     randomDay.title = 'Random Date';
     randomDay.innerHTML = icons.shuffleSVG; // Assuming you have icons.shuffleSVG defined
-    applyHeaderButtonStyles(randomDay, 'darkslateblue');
+    // applyHeaderButtonStyles(randomDay, 'darkslateblue');
 
     // Function to get current date or fallback to today's date
     function getEffectiveDate() {
@@ -7658,11 +6605,11 @@ import * as icons from './icons.js';
 
     // Create a close button with the provided SVG icon
     const closePanelButton = document.createElement('div');
-    closePanelButton.className = 'close-panel-button';
+    closePanelButton.className = "large-button panel-header-close-button";
     closePanelButton.title = 'Close panel';
     closePanelButton.innerHTML = icons.closeSVG;
     // Apply common styles using the helper function
-    applyHeaderButtonStyles(closePanelButton, 'darkolivegreen', '0 0 0 0.5em');
+    // applyHeaderButtonStyles(closePanelButton, 'darkolivegreen', '0 0 0 0.5em');
 
     // Add a click event listener to the close panel button
     closePanelButton.addEventListener('click', () => {
@@ -7678,65 +6625,14 @@ import * as icons from './icons.js';
     // Create a container for the chat logs
     const chatLogsContainer = document.createElement('div');
     chatLogsContainer.className = 'chat-logs-container';
-    chatLogsContainer.style.overflowY = 'auto';
-    chatLogsContainer.style.height = 'calc(100% - 0.5em)';
-    chatLogsContainer.style.padding = '1em';
-    chatLogsContainer.style.display = 'flex';
-    chatLogsContainer.style.gridArea = 'messages';
-    chatLogsContainer.style.flexDirection = 'column';
-
 
     // Append the header and chat logs container to the chat logs panel
     chatLogsPanel.appendChild(panelHeaderContainer);
     chatLogsPanel.appendChild(chatLogsContainer);
 
     // Create and append scroll buttons
-    const {
-      scrollButtonsContainer,
-      fullScrollUpButton,
-      partialScrollUpButton,
-      partialScrollDownButton,
-      fullScrollDownButton
-    } = createScrollButtons(chatLogsContainer);
+    const { scrollButtonsContainer } = createScrollButtons(chatLogsContainer);
     chatLogsPanel.appendChild(scrollButtonsContainer);
-
-    // Compact array of buttons with optional exclusions
-    const buttons = [
-      { element: fullScrollUpButton },
-      { element: fullScrollDownButton },
-      { element: partialScrollUpButton },
-      { element: partialScrollDownButton },
-      { element: toggleMentionMessages },
-      { element: toggleMediaMessages },
-      { element: copyChatLogsUrl, exclusion: 'saved-chatlog-container' },
-      { element: toggleActiveUsers },
-      { element: dateInputToggle },
-      { element: oneDayBackward },
-      { element: oneDayForward },
-      { element: randomDay },
-      { element: closePanelButton }
-    ];
-
-    // Helper function to check if the event target is inside an excluded child element
-    function isExcludedChild(event, exclusionClass) {
-      return exclusionClass && event.target.closest(`.${exclusionClass}`);
-    }
-
-    buttons.forEach(button => {
-      const { element, exclusion } = button;
-
-      // Add mouseover event
-      element.addEventListener('mouseover', event => {
-        if (isExcludedChild(event, exclusion)) return; // Skip if mouse is inside an excluded child
-        element.style.filter = 'brightness(0.8)'; // Apply dim effect
-      });
-
-      // Add mouseout event
-      element.addEventListener('mouseout', event => {
-        if (isExcludedChild(event, exclusion) && event.relatedTarget?.closest(`.${exclusion}`)) return; // Skip if mouse is leaving to an excluded child
-        element.style.filter = 'brightness(1)'; // Reset brightness
-      });
-    });
 
     // Append the chat logs panel to the body
     document.body.appendChild(chatLogsPanel);
@@ -7799,10 +6695,7 @@ import * as icons from './icons.js';
         // Create a container for each message
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-item');
-        messageContainer.style.padding = '0.2em'; // Set padding for the message container
-        messageContainer.style.display = 'inline-flex';
-        messageContainer.style.cursor = 'pointer'; // Set cursor to pointer on hover for click effect
-        messageContainer.style.alignItems = 'start'; // Align items to center
+
         // Attach click event to scroll the chat logs container to the middle of the parent container on LMB click
         messageContainer.addEventListener('click', async (event) => {
           // If the clicked element or one of its parents is an anchor, exit early.
@@ -7817,24 +6710,8 @@ import * as icons from './icons.js';
         // Create time element
         const timeElement = document.createElement('span');
         timeElement.className = 'message-time';
-
         // Update the timeElement's text content with the adjusted time
         timeElement.textContent = time;
-        timeElement.style.color = 'darkseagreen';
-        timeElement.style.margin = '0 0.4em';
-        timeElement.style.cursor = 'pointer';
-        timeElement.style.transition = 'color 0.2s ease'; // Smooth color transition
-        timeElement.style.height = 'fit-content';
-
-        // Add hover effect to change color to light green
-        timeElement.addEventListener('mouseover', () => {
-          timeElement.style.color = 'lightgreen';
-        });
-
-        // Revert back to original color on mouse out
-        timeElement.addEventListener('mouseout', () => {
-          timeElement.style.color = 'darkseagreen';
-        });
 
         // Open the chat log URL on click
         timeElement.addEventListener('click', function () {
@@ -7846,9 +6723,6 @@ import * as icons from './icons.js';
         const usernameElement = document.createElement('span');
         usernameElement.className = 'message-username';
         usernameElement.textContent = username; // Use the original username for display
-        usernameElement.style.cursor = 'pointer';
-        usernameElement.style.margin = '0 0.4em';
-        usernameElement.style.height = 'fit-content';
 
         // Add click event to navigate to the user's profile or shake the username if userId is not found
         usernameElement.addEventListener('click', async () => {
@@ -7879,10 +6753,6 @@ import * as icons from './icons.js';
         // Create message text element
         const messageTextElement = document.createElement('span');
         messageTextElement.className = 'message-text';
-        messageTextElement.style.color = 'lightsteelblue';
-        messageTextElement.style.margin = '0 0.4em';
-        messageTextElement.style.overflowWrap = 'anywhere';
-        messageTextElement.style.height = 'fit-content';
 
         // Replace smiley codes with <img> tags, and then wrap links with <a> tags
         messageTextElement.innerHTML = message
@@ -7941,14 +6811,6 @@ import * as icons from './icons.js';
         if (!activeUsers) {
           activeUsers = document.createElement('div');
           activeUsers.className = 'active-users';
-          activeUsers.style.padding = '1em';
-          activeUsers.style.height = 'calc(100% - 1em)';
-          activeUsers.style.width = 'fit-content';
-          activeUsers.style.overflowY = 'auto';
-          activeUsers.style.overflowX = 'hidden';
-          activeUsers.style.gridArea = 'users';
-          activeUsers.style.display = 'flex';
-          activeUsers.style.flexDirection = 'column';
 
           // Append the newly created activeUsers container to the parent container
           parentContainer.appendChild(activeUsers);
@@ -7966,17 +6828,6 @@ import * as icons from './icons.js';
           // Create a user element
           const userElement = document.createElement('div');
           userElement.className = 'active-user-item';
-          userElement.style.display = 'flex';
-          userElement.style.height = 'fit-content';
-          userElement.style.alignItems = 'center';
-          userElement.style.justifyContent = 'left';
-          userElement.style.margin = '0.2em 0';
-          userElement.style.cursor = 'pointer';
-          userElement.style.transition = 'filter 0.15s';
-
-          // Compact event listeners for mouse over and mouse out
-          userElement.addEventListener('mouseover', () => (userElement.style.filter = 'brightness(0.8)'));
-          userElement.addEventListener('mouseout', () => (userElement.style.filter = 'brightness(1)'));
 
           // Add click event to populate the search input with the clicked username
           userElement.addEventListener('click', () => {
@@ -7998,7 +6849,6 @@ import * as icons from './icons.js';
           const nicknameElement = document.createElement('span');
           nicknameElement.className = 'active-user-name';
           nicknameElement.textContent = username;
-          nicknameElement.style.padding = '0.4em';
 
           // Fetch the color for the username from the hue map
           const userHue = usernameHueMap[username] || 0; // Fallback to 0 if hue not found
@@ -8008,10 +6858,8 @@ import * as icons from './icons.js';
           const messageCountElement = document.createElement('span');
           messageCountElement.className = 'active-user-messages-count';
           messageCountElement.textContent = count;
-          messageCountElement.style.padding = '0.4em';
           messageCountElement.style.color = `hsl(${userHue}, 80%, 50%)`; // Apply the hue color
           messageCountElement.style.backgroundColor = `hsla(${userHue}, 80%, 50%, 0.2)`;
-          messageCountElement.style.setProperty('border-radius', '0.2em', 'important');
 
           // Append elements to user element
           userElement.appendChild(messageCountElement);
@@ -8263,12 +7111,9 @@ import * as icons from './icons.js';
     // Create a new element with class 'settings-button'
     const showSettingsButton = document.createElement('div');
     // Add the class 'settings-button' to the button
-    showSettingsButton.classList.add('settings-button');
+    showSettingsButton.classList.add("empowerment-button", "settings-button");
 
     showSettingsButton.title = 'Show Settings Panel';
-
-    // Apply base button styles
-    applyBaseButtonStyles(showSettingsButton);
 
     // Add settings-specific styles directly
     showSettingsButton.style.position = 'relative';
@@ -8359,25 +7204,6 @@ import * as icons from './icons.js';
     const settingsPanel = document.createElement('div');
     settingsPanel.className = 'settings-panel popup-panel';
 
-    // Set initial styles
-    settingsPanel.style.opacity = '0';
-    settingsPanel.style.backgroundColor = '#1b1b1b';
-    settingsPanel.style.setProperty('border-radius', '0.6em', 'important');
-    settingsPanel.style.position = 'fixed';
-    settingsPanel.style.top = '100px';
-    settingsPanel.style.left = '50%';
-    settingsPanel.style.transform = 'translateX(-50%)';
-    settingsPanel.style.width = '50vw';
-    settingsPanel.style.height = '80vh';
-    settingsPanel.style.zIndex = '999';
-    settingsPanel.style.minWidth = '1000px';
-    settingsPanel.style.display = 'grid';
-    settingsPanel.style.gridTemplateColumns = '1fr';
-    settingsPanel.style.gridTemplateRows = 'min-content';
-    settingsPanel.style.gridTemplateAreas = `
-      "header header"
-      "settings scroll"`;
-
     // Define the event handler function for settings panel
     panelsEvents.handleSettingsKeydown = (event) => { // Assign the function to the object
       if (event.key === 'Escape') {
@@ -8393,34 +7219,15 @@ import * as icons from './icons.js';
     // Create a container div for the panel header
     const panelHeaderContainer = document.createElement('div');
     panelHeaderContainer.className = 'panel-header';
-    panelHeaderContainer.style.display = 'flex';
-    panelHeaderContainer.style.flexDirection = 'row';
-    panelHeaderContainer.style.justifyContent = 'flex-end'; // Aligns to the right
-    panelHeaderContainer.style.padding = '0.6em';
-    panelHeaderContainer.style.gridArea = 'header';
 
-    // Helper function to apply common styles to a button
-    function applyHeaderButtonStyles(button, backgroundColor, margin = '0 0.5em') {
-      button.style.backgroundColor = backgroundColor;
-      button.style.width = '48px';
-      button.style.height = '48px';
-      button.style.display = 'flex';
-      button.style.justifyContent = 'center';
-      button.style.alignItems = 'center';
-      button.style.cursor = 'pointer';
-      button.style.setProperty('border-radius', '0.2em', 'important');
-      button.style.margin = margin; // Set margin using the provided value
-      button.style.filter = 'brightness(1)';
-      button.style.transition = 'filter 0.3s ease, opacity 0.3s ease';
-    }
+    const panelControlButtons = document.createElement('div');
+    panelControlButtons.classList.add("panel-control-buttons");
 
     // Create a close button with the provided SVG icon
     const closePanelButton = document.createElement('div');
-    closePanelButton.className = 'close-panel-button';
+    closePanelButton.className = 'large-button panel-header-close-button';
     closePanelButton.innerHTML = icons.closeSVG;
     closePanelButton.title = 'Close panel';
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(closePanelButton, 'darkolivegreen', '0 0 0 0.5em');
 
     // Add a click event listener to the close panel button
     closePanelButton.addEventListener('click', () => {
@@ -8431,12 +7238,9 @@ import * as icons from './icons.js';
 
     // Create a clear cache button with the provided SVG icon
     const clearCacheButton = document.createElement('div');
-    clearCacheButton.className = 'clear-cache-button';
+    clearCacheButton.className = "large-button panel-header-clear-button";
     clearCacheButton.innerHTML = icons.trashSVG;
     clearCacheButton.title = 'Clear settings';
-
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(clearCacheButton, 'brown');
 
     // Add a click event listener to the clear cache button
     clearCacheButton.addEventListener('click', () => {
@@ -8445,26 +7249,35 @@ import * as icons from './icons.js';
 
     // Create an import button with the provided SVG icon
     const importSettingsButton = document.createElement('div');
-    importSettingsButton.className = 'import-settings-button';
+    importSettingsButton.className = "large-button panel-header-import-button";
     importSettingsButton.innerHTML = icons.importSVG;
     importSettingsButton.title = 'Import settings';
 
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(importSettingsButton, '#502f6b');
-
     // Create a save button with the provided SVG icon
     const saveSettingsButton = document.createElement('div');
-    saveSettingsButton.className = 'save-settings-button';
+    saveSettingsButton.className = "large-button panel-header-save-button";
     saveSettingsButton.innerHTML = icons.saveSVG;
     saveSettingsButton.title = 'Save settings';
-    saveSettingsButton.style.opacity = '0';
 
     function initializeSaveButtonLogic(saveButton) {
       const container = document.querySelector('.settings-content-container');
       if (!container) return console.error("Container not found.");
 
-      const showButton = () => (saveButton.style.opacity = '1');
-      const hideButton = () => (saveButton.style.opacity = '0');
+      const showButton = () => {
+        saveButton.style.visibility = 'visible'; // Make the element interactable
+        saveButton.style.display = 'flex'; // Set display to flex to reveal it
+        setTimeout(() => {
+          saveButton.style.opacity = '1'; // Gradually change opacity
+        }, 10); // Small delay to trigger the transition
+      };
+
+      const hideButton = () => {
+        saveButton.style.opacity = '0'; // Fade out
+        setTimeout(() => {
+          saveButton.style.visibility = 'hidden'; // Hide the element after fading out
+          saveButton.style.display = 'none'; // Hide the element from layout
+        }, 500); // Match the transition duration for smooth disappearance
+      };
 
       // Get previous values from localStorage
       const previousValues = getSettingsData();
@@ -8633,9 +7446,6 @@ import * as icons from './icons.js';
       });
     }
 
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(saveSettingsButton, '#2f6b63');
-
     // Create a hidden file input for importing settings
     const importFileInput = document.createElement('input');
     importFileInput.type = 'file';
@@ -8666,8 +7476,8 @@ import * as icons from './icons.js';
         const container = document.querySelector(selector);
         if (container) container.replaceChildren(); // Clear the container
 
-        const addButton = container.querySelector('.add-setting-button');
-        // Re-add the .add-setting-button if it was found
+        const addButton = container.querySelector('.add-settings-button');
+        // Re-add the .add-settings-button if it was found
         addButton && container.appendChild(addButton);
       });
     }
@@ -8682,12 +7492,9 @@ import * as icons from './icons.js';
 
     // Create an export button with the provided SVG icon
     const exportSettingsButton = document.createElement('div');
-    exportSettingsButton.className = 'export-settings-button';
+    exportSettingsButton.className = "large-button panel-header-export-button";
     exportSettingsButton.innerHTML = icons.exportSVG;
     exportSettingsButton.title = 'Export settings';
-
-    // Apply common styles using the helper function
-    applyHeaderButtonStyles(exportSettingsButton, '#2f4c6b');
 
     // Example of how to use the getSettingsData function in the export event
     exportSettingsButton.addEventListener('click', function () {
@@ -8696,65 +7503,19 @@ import * as icons from './icons.js';
     });
 
     // Append the buttons to the panel header container
-    panelHeaderContainer.appendChild(saveSettingsButton);
-    panelHeaderContainer.appendChild(importSettingsButton);
-    panelHeaderContainer.appendChild(exportSettingsButton);
-    panelHeaderContainer.appendChild(clearCacheButton);
-    panelHeaderContainer.appendChild(closePanelButton);
+    panelControlButtons.appendChild(saveSettingsButton);
+    panelControlButtons.appendChild(importSettingsButton);
+    panelControlButtons.appendChild(exportSettingsButton);
+    panelControlButtons.appendChild(clearCacheButton);
+    panelControlButtons.appendChild(closePanelButton);
 
-    // Append the header to the settings panel
-    settingsPanel.appendChild(panelHeaderContainer);
+    panelHeaderContainer.appendChild(panelControlButtons);
 
-    // Append the header to the settings panel
     settingsPanel.appendChild(panelHeaderContainer);
 
     // Create a container for the settings content
     const settingsContainer = document.createElement('div');
     settingsContainer.className = 'settings-content-container';
-    settingsContainer.style.overflowY = 'auto'; // Enable scrolling for settings content
-    settingsContainer.style.height = 'calc(100% - 0.5em)'; // Adjust height considering header
-    settingsContainer.style.padding = '1em';
-    settingsContainer.style.gridArea = 'settings';
-
-    // Helper function to assign styles to description elements
-    function assignDescriptionStyles(element) {
-      element.style.position = 'relative';
-      element.style.font = '1em Montserrat';
-      element.style.color = 'burlywood';
-      element.style.backgroundColor = 'rgba(222, 184, 135, 0.1)';
-      element.style.width = 'fit-content';
-      element.style.margin = '0 0 1em';
-      element.style.padding = '0.4em 0.8em';
-      element.style.setProperty('border-radius', '0.4em', 'important');
-      element.style.left = '50%';
-      element.style.transform = 'translateX(-50%)';
-    }
-
-    // Helper function to assign styles to hide elements
-    function assignHideElementStyles(element) {
-      element.style.position = 'relative';
-      element.style.font = '1em Montserrat';
-      element.style.color = 'lightgreen';
-      element.style.backgroundColor = 'rgba(222, 184, 135, 0.1)';
-      element.style.margin = '0 0 3em 0';
-      element.style.padding = '0.4em 0.8em';
-      element.style.setProperty('border-radius', '0.4em', 'important');
-      element.style.left = '50%';
-      element.style.transform = 'translateX(-50%)';
-      element.style.cursor = 'pointer';
-      element.style.transition = 'background-color 0.3s ease';
-      element.style.border = 'none';
-
-      // Hover effect
-      element.addEventListener('mouseenter', () => {
-        element.style.backgroundColor = 'rgba(222, 184, 135, 0.25)';
-      });
-
-      // Restore original style when mouse leaves
-      element.addEventListener('mouseleave', () => {
-        element.style.backgroundColor = 'rgba(222, 184, 135, 0.1)';
-      });
-    }
 
     // Array of settings types with corresponding emoji
     const settingsTypes = [
@@ -8766,16 +7527,13 @@ import * as icons from './icons.js';
       { type: 'toggle', emoji: '🔘' }
     ];
 
-    // Loop through each type and create description and container elements
     settingsTypes.forEach(({ type, emoji }) => {
       const description = document.createElement('div');
-      description.className = `settings-${type}-description`; // Add specific class for description
-
-      assignDescriptionStyles(description);
+      description.className = `settings-${type}-description settings-description`; // Add specific class and settings-description
 
       // Create the description container directly
       const container = document.createElement('div');
-      container.className = `settings-${type}-container`; // Add specific class for container
+      container.className = `settings-${type}-container`;
 
       // Set the text content with first letter capitalized and append emoji
       description.textContent = `${type.charAt(0).toUpperCase()}${type.slice(1).toLowerCase()} ${emoji}`;
@@ -8786,52 +7544,6 @@ import * as icons from './icons.js';
 
     // Append the settings content container to the settings panel
     settingsPanel.appendChild(settingsContainer);
-
-    // Applies common styles to an settings input field element
-    function styleInput(input) {
-      input.style.height = '30px';
-      input.style.maxWidth = '200px';
-      input.style.minWidth = '150px';
-      input.style.padding = '0.4em';
-      input.style.font = '1em Montserrat';
-      input.style.fontFamily = 'Montserrat';
-      input.style.color = 'bisque';
-      input.style.setProperty('border-radius', '0.2em', 'important');
-      input.style.boxSizing = 'border-box';
-      input.style.backgroundColor = 'rgb(17,17,17)';
-      input.style.border = '1px solid rgb(34,34,34)';
-    }
-
-    /* Applies common styles to a button element for saving or removing actions.
-    * @param {HTMLElement} button - The button element to style.
-    * @param {string} strokeColor - The stroke color for the button.
-    * @param {string} backgroundColor - The background color for the button.
-    * @param {boolean} disabled - Whether the button should be styled as disabled.
-    */
-    function styleButton(button, strokeColor, backgroundColor, disabled) {
-      button.style.stroke = strokeColor;
-      button.style.width = '30px';
-      button.style.height = '30px';
-      button.style.display = 'flex';
-      button.style.justifyContent = 'center';
-      button.style.alignItems = 'center';
-      button.style.backgroundColor = backgroundColor;
-      button.style.setProperty('border-radius', '0.2em', 'important');
-      button.style.cursor = 'pointer';
-      button.style.transition = 'filter 0.3s';
-
-      // Compact event listeners for mouse over and mouse out
-      button.addEventListener('mouseover', () => (button.style.filter = 'brightness(0.8)'));
-      button.addEventListener('mouseout', () => (button.style.filter = 'brightness(1)'));
-
-      if (disabled) {
-        button.style.filter = 'grayscale(1)';
-        button.style.pointerEvents = 'none';
-        button.style.opacity = '0.5';
-      } else {
-        button.style.filter = 'grayscale(0)';
-      }
-    }
 
     // Applies common styles to a select element and its options
     function styleSelect(select) {
@@ -8890,35 +7602,31 @@ import * as icons from './icons.js';
     // Helper function to create an input element
     function createInput(type, value = '', placeholder = '') {
       const input = document.createElement('input');
-      input.className = `${type}-field`;
+      input.className = `settings-field ${type}-field`;
       input.value = value;
       input.placeholder = placeholder;
-      styleInput(input);
       return input;
     }
 
     // Helper function to create a remove button with styles and event listener
     function createRemoveButton(type, item) {
       const removeButton = document.createElement('div');
-      removeButton.className = `remove-${type}-word`;
+      removeButton.className = `settings-button remove-settings-button remove-${type}-word`;
       removeButton.innerHTML = icons.removeSVG;
       attachRemoveListener(removeButton, item);
-      styleButton(removeButton, '#ee9090', '#6b2f2f', false);
       return removeButton;
     }
 
     // Helper function to create a snowflake button with styles and event listener
     function createSnowflakeButton(state = 'thawed', username) {
       const snowflakeButton = document.createElement('div');
-      snowflakeButton.className = `assigned-${state}-config`;
+      snowflakeButton.className = `settings-button assigned-settings-button assigned-${state}-config`;
 
       // Set initial opacity based on the state
       snowflakeButton.style.opacity = state === 'thawed' ? '0.3' : '1';
       snowflakeButton.innerHTML = icons.snowflakeSVG;
 
       attachSnowflakeListener(snowflakeButton, username); // Pass username here
-      styleButton(snowflakeButton, 'lightsteelblue', 'steelblue', false);
-
       return snowflakeButton;
     }
 
@@ -8942,8 +7650,6 @@ import * as icons from './icons.js';
       toggleButton.textContent = options.showText || 'Show Content';
 
       contentElement.style.display = 'none';
-      // Apply hide element styles when hiding content
-      assignHideElementStyles(toggleButton);
 
       toggleButton.addEventListener('click', () => {
         const isHidden = contentElement.style.display === 'none';
@@ -9125,20 +7831,14 @@ import * as icons from './icons.js';
       Object.entries(data).forEach(([key, items]) => {
         const container = document.querySelector(containers[key]);
         if (!container) return;
-
-        // Apply styling to the container
-        container.style.width = '100%';
-        container.style.display = 'flex';
-        container.style.flexWrap = 'wrap';
-        container.style.alignItems = 'start';
-        container.style.flexDirection = 'column';
+        container.classList.add("settings-container");
 
         if (key === 'mentionKeywords' || key === 'moderator' || key === 'ignored') {
           container.style.flexDirection = 'row';
         }
 
         // Clear existing items and add buttons, but ensure the add button is not removed
-        const existingAddButton = container.querySelector('.add-button');
+        const existingAddButton = container.querySelector('.add-settings-button');
         while (container.firstChild) {
           if (container.firstChild !== existingAddButton) {
             container.removeChild(container.firstChild);
@@ -9218,9 +7918,8 @@ import * as icons from './icons.js';
 
       const addButton = document.createElement('div');
       // Set class, content, and style for the button
-      addButton.className = `add-button add-setting-button add-${middleWord}-item`;
+      addButton.className = `settings-button add-settings-button add-${middleWord}-item`;
       addButton.innerHTML = icons.addSVG; // Add SVG icon to the button
-      styleButton(addButton, '#d190ee', '#502f6b', false); // Style the button
       addButton.style.margin = '0.4em';
 
       // On click, validate the last item and create a new one if valid
@@ -9260,39 +7959,8 @@ import * as icons from './icons.js';
     }
 
     // Create and append scroll buttons
-    const {
-      scrollButtonsContainer,
-      fullScrollUpButton,
-      partialScrollUpButton,
-      partialScrollDownButton,
-      fullScrollDownButton
-    } = createScrollButtons(settingsContainer);
+    const { scrollButtonsContainer } = createScrollButtons(settingsContainer);
     settingsPanel.appendChild(scrollButtonsContainer);
-
-    // Create an array containing the buttons we want to apply the events to
-    const buttons = [
-      clearCacheButton,
-      closePanelButton,
-      importSettingsButton,
-      exportSettingsButton,
-      fullScrollUpButton,
-      partialScrollUpButton,
-      partialScrollDownButton,
-      fullScrollDownButton
-    ];
-
-    // Iterate through each button in the array
-    buttons.forEach(button => {
-      // Add a mouseover event listener to change the button's brightness on hover
-      button.addEventListener('mouseover', () => {
-        button.style.filter = 'brightness(0.8)'; // Dim the button
-      });
-
-      // Add a mouseout event listener to reset the button's brightness when not hovered
-      button.addEventListener('mouseout', () => {
-        button.style.filter = 'brightness(1)'; // Reset to original brightness
-      });
-    });
 
     // Append the settings panel to the body
     document.body.appendChild(settingsPanel);
@@ -9460,26 +8128,6 @@ import * as icons from './icons.js';
     createToggleButton();
     wipeDeletedMessages();
   } // executeMessageRemover function END
-
-  // Functions to assign different toggle button styles
-  // Red color tones
-  function assignHiddenButtonStyle(toggleButton) {
-    toggleButton.style.backgroundColor = 'hsl(0, 20%, 10%)';
-    toggleButton.style.color = 'hsl(0, 50%, 50%)';
-    toggleButton.style.border = '1px solid hsl(0, 50%, 50%)';
-  }
-  // Green color tones
-  function assignShowButtonStyle(toggleButton) {
-    toggleButton.style.backgroundColor = 'hsl(90, 20%, 10%)';
-    toggleButton.style.color = 'hsl(90, 50%, 50%)';
-    toggleButton.style.border = '1px solid hsl(90, 50%, 50%)';
-  }
-  // Yellow color tones
-  function assignHideButtonStyle(toggleButton) {
-    toggleButton.style.backgroundColor = 'hsl(50, 20%, 10%)';
-    toggleButton.style.color = 'hsl(50, 50%, 50%)';
-    toggleButton.style.border = '1px solid hsl(50, 50%, 50%)';
-  }
 
   // Function to assign styles to the delete button
   function assignDeleteButtonStyles(deleteButton, event) {
@@ -9756,6 +8404,7 @@ import * as icons from './icons.js';
         // Create the toggle button
         toggleButton = document.createElement('button');
         toggleButton.id = 'toggleButton';
+        toggleButton.classList.add("toggle-button-hidden");
         toggleButton.addEventListener('click', toggleHiddenMessages);
         toggleButton.style.position = 'absolute';
         toggleButton.style.top = '0';
@@ -9764,7 +8413,6 @@ import * as icons from './icons.js';
         // Initial textContent if at least one message is hidden
         toggleButton.innerText = 'Hidden';
         // Initial styles for the Hidden button
-        assignHiddenButtonStyle(toggleButton);
         toggleButton.style.transition = 'filter 300ms';
         toggleButton.style.filter = 'hue-rotate(0) brightness(1)';
         let backupTextContent = toggleButton.textContent;
@@ -9865,10 +8513,10 @@ import * as icons from './icons.js';
       // Toggle the button text and style
       if (toggleButton.innerText === 'Hide') {
         toggleButton.innerText = 'Show';
-        assignShowButtonStyle(toggleButton);
+        toggleButton.className = 'toggle-button-show'; // Replace the class with the show style
       } else {
         toggleButton.innerText = 'Hide';
-        assignHideButtonStyle(toggleButton);
+        toggleButton.className = 'toggle-button-hide'; // Replace the class with the hide style
       }
 
     }
