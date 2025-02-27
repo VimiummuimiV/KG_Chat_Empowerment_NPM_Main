@@ -23,7 +23,7 @@ const lostConnectionMessage = 'Связь с сервером потеряна';
 // ---- DOM Utilities ----
 // Dynamically retrieves the current chat elements based on the active tab.
 export const getChatElements = () => {
-  const activeTab = localStorage.getItem('activeChatTab');
+  const activeTab = localStorage.getItem('activeChatTab') || 'game'; // Defaults to 'game' if not found or empty
   const isGameLocation = window.location.href.includes('gmid');
 
   // Default to general chat elements
