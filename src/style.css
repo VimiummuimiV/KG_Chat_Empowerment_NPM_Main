@@ -732,13 +732,19 @@
 }
 
 .fetch-mode-button {
-  stroke: darkslateblue;
   background-color: #b2a4f9;
 }
 
+.fetch-mode-button svg {
+  stroke: darkslateblue;
+}
+
 .cache-mode-button {
-  stroke: #b2a4f9;
   background-color: darkslateblue;
+}
+
+.cache-mode-button svg {
+  stroke: #b2a4f9;
 }
 
 .cached-users-panel .fetched-users {
