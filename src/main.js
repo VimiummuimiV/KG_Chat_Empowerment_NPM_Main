@@ -12,22 +12,35 @@ import { createPersonalMessagesButton } from './modules/messages.js'; // message
 import { createChatLogsButton } from './modules/chatlogs.js'; // chatlogs
 import { createSettingsButton } from './modules/settings.js'; // settings
 
-// helpers
+// helpers && helpers definitions
 import {
+  // helpers
   debounce,
-  isValidEncodedURL,
   addPulseEffect,
   processEncodedLinks,
   getRandomEmojiAvatar,
   getUserProfileData,
-  convertToSingleHours,
   refreshFetchedUsers,
   shouldEnableSetting,
   scrollMessagesToBottom,
   getCurrentTimeFormatted,
   updatePersonalMessageCounts,
-  highlightMentionWords
+  highlightMentionWords,
+  // helpers definitions
+  isCtrlKeyPressed,
+  isAltKeyPressed
 } from './modules/helpers.js';
+
+// chat
+import {
+  // helpers
+  restoreChatTab,
+  setChatFieldFocus,
+  setupInputBackup,
+  setupChatInputListener,
+  // definitions
+
+} from './modules/chat.js';
 
 // notifications
 import { createCustomTooltip } from './modules/tooltip.js';
@@ -47,17 +60,12 @@ import {
   moderator,
   ignored,
   debounceTimeout,
-  fetchedUsers,
   profileBaseUrl,
-  state,
-  defaultCacheRefreshThresholdHours
+  cacheRefreshThresholdHours
 } from './modules/definitions.js';
 
-// Define dynamic variables
-let {
-  isCtrlKeyPressed,
-  isAltKeyPressed
-} = state;
+// Array to store user IDs and their status titles
+let fetchedUsers = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
 
 (function () {
   // Function to dynamically append font link to the head
@@ -368,72 +376,6 @@ let {
   // Append panel element inside the body
   bodyElement.appendChild(empowermentButtonsPanel);
 
-  // POPUPS
-
-  // Helper for pausing execution
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-  async function purgeStaticChatNotifications(
-    removalDelay = 40,
-    scrollDuration = 600,
-    animationDuration = 140
-  ) {
-    const chat = document.querySelector(".messages-content");
-    if (!chat) return;
-
-    // Save original scroll behavior and set to smooth once
-    const originalScrollBehavior = chat.style.scrollBehavior;
-    chat.style.scrollBehavior = 'smooth';
-
-    const elements = [...document.querySelectorAll('.static-chat-notification')].reverse();
-
-    for (const el of elements) {
-      const needsScroll = !isVisibleInContainer(el, chat);
-
-      if (needsScroll) {
-        // Smooth scroll to element
-        chat.scrollTop = el.offsetTop - chat.offsetTop - chat.clientHeight / 2;
-        await sleep(scrollDuration);
-      }
-
-      Object.assign(el.style, {
-        transition: [
-          `opacity ${animationDuration / 1000}s cubic-bezier(.3,.1,1,.1)`,
-          `transform ${animationDuration / 1000}s cubic-bezier(0,.7,.3,0.95)`
-        ].join(','),
-        opacity: 0,
-        transformOrigin: 'left',
-        transform: 'translateX(8em) skewX(-20deg)'
-      });
-
-      // Wait for animation to complete before removal
-      await sleep(animationDuration);
-      el.remove();
-
-      // Standard delay between elements
-      await sleep(removalDelay);
-    }
-
-    // Final scroll to bottom only if needed
-    const isAtBottom = chat.scrollHeight - chat.scrollTop <= chat.clientHeight;
-    if (!isAtBottom) {
-      chat.scrollTop = chat.scrollHeight;
-      await sleep(scrollDuration);
-    }
-
-    // Restore original scroll behavior
-    chat.style.scrollBehavior = originalScrollBehavior;
-  }
-
-  function isVisibleInContainer(el, container) {
-    const containerRect = container.getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
-    return (
-      elRect.top >= containerRect.top &&
-      elRect.bottom <= containerRect.bottom
-    );
-  }
-
 
 
 
@@ -657,9 +599,6 @@ let {
 
     return percentage;
   }
-
-  // Array to store user IDs and their status titles
-  // let fetchedUsers = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
 
   // Function to create a user element with avatar, name, and profile link based on user details
   function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked) {
@@ -3103,355 +3042,6 @@ let {
 
   } // toggleHiddenMessages END
 
-  // CHAT SWITCHER
-
-  const currentLocationIncludes = part => window.location.href.includes(part);
-
-  // Helper function to dynamically retrieve the current chat elements.
-  const getChatElements = () => ({
-    chatField: document.querySelector('.chat .text'),
-    chatSend: document.querySelector('.chat .send')
-  });
-
-  // Function to extract a system message from the chat field's value.
-  // Returns the message string if found, or null otherwise.
-  function getChatSystemMessage(chatField) {
-    if (!chatField) return null;
-    const value = chatField.value;
-    if (value.includes(blockedChatMessage)) return blockedChatMessage;
-    if (value.includes(lostConnectionMessage)) return lostConnectionMessage;
-    return null;
-  }
-
-  // Timeout settings.
-  const extraTimeout = 5000;
-  const minimalTimeout = 1000;
-
-  // Define system messages.
-  const blockedChatMessage = 'Вы не можете отправлять сообщения';
-  const lostConnectionMessage = 'Связь с сервером потеряна';
-
-  if (currentLocationIncludes('gamelist')) {
-    // Function to handle changes when the chat field is disabled.
-    function handleChatStateChange(timeout, chatField, chatSend) {
-      if (chatField.disabled) {
-        const systemMessage = getChatSystemMessage(chatField);
-        if (systemMessage === blockedChatMessage) {
-          // Re-enable the chat field and send button, and update their styles.
-          chatField.disabled = chatSend.disabled = false;
-          chatSend.style.setProperty('background-color', 'rgb(160, 35, 35)', 'important');
-          chatSend.style.setProperty(
-            'background-image',
-            `url("data:image/svg+xml,${encodeURIComponent(icons.deniedSVG)}")`,
-            'important'
-          );
-          chatSend.style.setProperty('background-repeat', 'no-repeat', 'important');
-          chatSend.style.setProperty('background-position', 'center', 'important');
-          chatSend.style.setProperty('color', 'transparent', 'important');
-          chatField.value = null;
-          console.log('Chat field was blocked, re-enabled.');
-        } else if (systemMessage === lostConnectionMessage) {
-          // Schedule a reload using timeout.
-          console.log('Lost connection, reloading...');
-          setTimeout(() => {
-            window.location.reload();
-          }, timeout);
-        }
-      }
-    }
-
-    // Create a MutationObserver to watch for attribute changes.
-    const observer = new MutationObserver(() => {
-      // Get updated chat elements.
-      const { chatField, chatSend } = getChatElements();
-      // Handle the change when the 'disabled' attribute is modified.
-      handleChatStateChange(extraTimeout, chatField, chatSend);
-    });
-
-    // Get the chat field element.
-    const { chatField: chatInputText } = getChatElements();
-    // Start observing the chatField for changes to the 'disabled' attribute.
-    if (chatInputText)
-      observer.observe(chatInputText, { attributes: true, attributeFilter: ['disabled'] });
-
-    // Compact visibilitychange event: When the document becomes visible,
-    // set a shorter timeout duration and check the chat state.
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        const { chatField, chatSend } = getChatElements();
-        handleChatStateChange(minimalTimeout, chatField, chatSend);
-      }
-    });
-  }
-
-  // Get all elements with the 'general' class
-  let generalChatTabs = document.querySelectorAll('.general');
-  // Get all elements with the 'game' class
-  let gameChatTabs = document.querySelectorAll('.game');
-
-  // Function to set focus on the chat input field based on the current URL on page load
-  function setChatFieldFocus() {
-    // Check if the chat is closed or opened
-    const chatHidden = document.querySelector('#chat-wrapper.chat-hidden');
-
-    // Determine the current URL and chat type based on URL keywords
-    const currentURL = window.location.href;
-    let chatInput; // Variable to store the chat input element
-
-    if (currentURL.includes('gamelist')) {
-      // If the URL contains "gamelist," it's a general chat
-      chatInput = document.querySelector('#chat-general .text');
-    } else if (currentURL.includes('gmid')) {
-      // If the URL contains "gmid," it's a game chat
-      chatInput = document.querySelector('[id^="chat-game"] .text');
-    }
-
-    // Run if the chat is not closed and a chat input element is found
-    if (!chatHidden && chatInput) {
-      chatInput.focus(); // Set focus on the selected chat input field
-    }
-  }
-
-  // Function to set focus on the chat input field based on active chat tab on tab key press
-  function toggleFocusAndSwitchTab() {
-    // Check if the chat is closed or opened
-    const chatHidden = document.querySelector('#chat-wrapper.chat-hidden');
-
-    // Get general chat tabs and game chat tabs
-    let generalChatTabs = document.querySelectorAll('.general.c, .general.c.active');
-    let gameChatTabs = document.querySelectorAll('.game.c, .game.c.active');
-
-    // Find the first visible general chat tab that is not active
-    let visibleGeneralChatTab = Array.from(generalChatTabs).find(function (tab) {
-      let computedStyle = window.getComputedStyle(tab);
-      return computedStyle.display !== 'none' && !tab.classList.contains('active');
-    });
-
-    // Find the first visible game chat tab that is not active
-    let visibleGameChatTab = Array.from(gameChatTabs).find(function (tab) {
-      let computedStyle = window.getComputedStyle(tab);
-      return computedStyle.display !== 'none' && !tab.classList.contains('active');
-    });
-
-    // Run if a chat tab is found
-    if (!chatHidden && (visibleGeneralChatTab || visibleGameChatTab)) {
-      // Click on the visible chat tab
-      if (visibleGeneralChatTab) {
-        visibleGeneralChatTab.click();
-      } else if (visibleGameChatTab) {
-        visibleGameChatTab.click();
-      }
-
-      // Determine the chat input element based on visible tabs
-      let chatInput; // Variable to store the chat input element
-
-      if (visibleGeneralChatTab) {
-        // If the visible chat tab is a general chat tab, focus on general chat input
-        chatInput = document.querySelector('#chat-general .text');
-      } else if (visibleGameChatTab) {
-        // If the visible chat tab is a game chat tab, focus on game chat input
-        chatInput = document.querySelector('[id^="chat-game"] .text');
-      }
-
-      // Run if a chat input element is found
-      if (chatInput) {
-        chatInput.focus(); // Set focus on the selected chat input field
-      }
-    }
-  }
-
-  // Function to handle click event and log the clicked element
-  function switchChatTab(event) {
-    console.log('Clicked element:', event.target);
-    let activeTab = event.target.classList.contains('general') ? 'general' : 'game';
-    localStorage.setItem('activeChatTab', activeTab);
-  }
-
-  // Add click event listeners to the general chat tabs
-  generalChatTabs.forEach(function (tab) {
-    tab.addEventListener('click', switchChatTab);
-  });
-
-  // Add click event listeners to the game chat tabs
-  gameChatTabs.forEach(function (tab) {
-    tab.addEventListener('click', switchChatTab);
-  });
-
-  // Add keydown event listener to the document
-  document.addEventListener('keydown', function (event) {
-    // Check if the Tab key is pressed
-    if (event.key === 'Tab') {
-      // Call toggleFocusAndSwitchTab function when Tab key is pressed
-      toggleFocusAndSwitchTab();
-      // Prevent the default tab behavior (moving focus to the next element in the DOM)
-      event.preventDefault();
-    }
-  });
-
-  // Function to restore chat tab from localStorage and set the focus for game page
-  function restoreChatTabAndFocus() {
-    let activeTab = localStorage.getItem('activeChatTab');
-    let chatInput; // Variable to store the chat input element to be focused
-
-    if (activeTab === 'general') {
-      let visibleGeneralChatTab = Array.from(generalChatTabs).find(function (tab) {
-        let computedStyle = window.getComputedStyle(tab);
-        return computedStyle.display !== 'none' && !tab.classList.contains('active');
-      });
-      if (visibleGeneralChatTab) {
-        visibleGeneralChatTab.click();
-        chatInput = document.querySelector('#chat-general .text');
-      }
-    } else if (activeTab === 'game') {
-      let visibleGameChatTab = Array.from(gameChatTabs).find(function (tab) {
-        let computedStyle = window.getComputedStyle(tab);
-        return computedStyle.display !== 'none' && !tab.classList.contains('active');
-      });
-      if (visibleGameChatTab) {
-        visibleGameChatTab.click();
-        chatInput = document.querySelector('[id^="chat-game"] .text');
-      }
-    }
-
-    // Set focus on the chat input field if chatInput is defined
-    if (chatInput) {
-      chatInput.focus();
-    }
-  }
-
-  // Function to break text into pieces of a maximum length
-  function breakSentence(text) {
-    const maxLength = 300; // Maximum length of each piece
-    const words = text.split(' '); // Split the text into words
-    const pieces = []; // Array to hold the final pieces
-    let currentPiece = ''; // Variable to build the current piece
-
-    words.forEach((word) => {
-      // Check if adding the next word would exceed maxLength
-      if ((currentPiece + word).length > maxLength) {
-        // Push the current piece to pieces and reset currentPiece
-        pieces.push(currentPiece.trim());
-        currentPiece = word + ' '; // Start a new piece with the current word
-      } else {
-        currentPiece += word + ' '; // Add the word to the current piece
-      }
-    });
-
-    // Push the last piece if it exists
-    if (currentPiece) {
-      pieces.push(currentPiece.trim());
-    }
-
-    return pieces;
-  }
-
-  // Function to send the message in parts
-  async function sendMessageInParts(message) {
-    const pieces = breakSentence(message); // Break the message into pieces
-    const inputField = document.querySelector('.text'); // Get the input field element
-    const sendButton = document.querySelector('.send'); // Get the send button element
-
-    // Disable the input field only if the message is longer than 300 characters
-    const isLongMessage = message.length > 300;
-    if (isLongMessage) {
-      inputField.disabled = true; // Disable input field for long messages
-    }
-
-    for (let index = 0; index < pieces.length; index++) {
-      // Set the input field to the current piece
-      const fullMessage = pieces[index]; // Use the current piece
-      inputField.value = fullMessage;
-
-      // Log each piece and its length
-      console.log(`Sending piece ${index + 1}: "${fullMessage}" (Length: ${fullMessage.length})`);
-
-      // Simulate sending the message
-      sendButton.click(); // Click the send button
-
-      // If not the last piece, generate a random delay before sending the next one
-      if (index < pieces.length - 1) {
-        const randomDelay = Math.floor(Math.random() * 500) + 500; // 500 ms to 1000 ms
-        console.log(`Waiting for ${randomDelay} ms before sending the next piece.`);
-        await new Promise(resolve => setTimeout(resolve, randomDelay)); // Use await for async delay
-      }
-    }
-
-    // Re-enable the input field after all pieces have been sent, if it was disabled
-    if (isLongMessage) {
-      inputField.disabled = false;
-    }
-  }
-
-  function setupInputFieldListener() {
-    const inputField = document.querySelector('.text');
-    inputField.setAttribute('maxlength', '1000');
-
-    // Listen for the paste event on the input field
-    inputField.addEventListener('paste', (event) => {
-      // Prevent the default paste behavior
-      event.preventDefault();
-      // Get the pasted value from the clipboard
-      const pastedValue = event.clipboardData.getData('text');
-      // Initialize the processed value to the pasted value
-      let processedValue = pastedValue;
-
-      // If the pasted value is a valid and encoded URL, decode it
-      if (isValidEncodedURL(pastedValue)) {
-        processedValue = decodeURL(pastedValue);
-      }
-
-      // Get the current selection's start and end positions in the input field
-      const start = inputField.selectionStart;
-      const end = inputField.selectionEnd;
-
-      // Insert the processed value into the input field at the current cursor position
-      inputField.value = inputField.value.slice(0, start) + processedValue + inputField.value.slice(end);
-      // Set the cursor position after the pasted value
-      inputField.setSelectionRange(start + processedValue.length, start + processedValue.length);
-    });
-
-
-    inputField.addEventListener('keydown', (event) => {
-      const message = inputField.value;
-      if (event.key === 'Enter') {
-        if (message.length > 300) {
-          event.preventDefault();
-          sendMessageInParts(message);
-          console.log(`Long message processed: "${message}"`);
-          inputField.value = '';
-        } else {
-          console.log(`Short message processed: "${message}"`);
-        }
-      }
-    });
-  }
-
-  // Function to set up input field backup and restore
-  function setupInputBackup(inputSelector) {
-    const inputField = document.querySelector(inputSelector); // Select the input element
-    if (inputField) {
-      // Restore the input value
-      inputField.value = localStorage.getItem('inputBackup') || '';
-
-      // Backup on input with debounce, but only if there's no system message.
-      inputField.addEventListener('input', debounce(() => {
-        if (!getChatSystemMessage(inputField)) {
-          localStorage.setItem('inputBackup', inputField.value);
-        }
-      }, 250));
-
-      // Clear local storage on Enter
-      inputField.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') localStorage.removeItem('inputBackup');
-      });
-    }
-  }
-
-  const storageKey = 'cacheRefreshThresholdHours';
-  let storedThreshold = localStorage.getItem(storageKey);
-  if (!storedThreshold) localStorage.setItem(storageKey, storedThreshold = defaultCacheRefreshThresholdHours);
-  const cacheRefreshThresholdHours = convertToSingleHours(storedThreshold);
-
   // create a new MutationObserver to wait for the chat to fully load with all messages
   let waitForChatObserver = new MutationObserver(() => {
     // Get the container for all chat messages
@@ -3475,10 +3065,10 @@ let {
         // Decodes links within the general messages section.
         processEncodedLinks('generalMessages');
         // Restore chat tab from localStorage
-        restoreChatTabAndFocus();
+        restoreChatTab();
         // Call the function with the selector for the input field
         setupInputBackup('#chat-general .text');
-        // Call the function to re-highlight all the mention words of the messages
+        // Call the function eo re-highlight all the mention words of the messages
         highlightMentionWords();
         // Call the function to apply the chat message grouping
         applyChatMessageGrouping();
@@ -3493,7 +3083,7 @@ let {
         // Execute the function to trigger the process of chat cleaning after the youtube and images convertation to avoid issues
         executeMessageRemover();
         // Initialize the input field listener to handle message sending when Enter is pressed
-        setupInputFieldListener();
+        setupChatInputListener();
       }
     }
   });

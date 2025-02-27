@@ -11,14 +11,18 @@ import {
   addSVG
 } from './icons.js';
 
-// helpers
+// helpers && helpers definitions
 import {
+  // helpers
   addPulseEffect,
   removePreviousPanel,
   createScrollButtons,
   debounce,
   triggerDimmingElement,
-  triggerTargetElement
+  triggerTargetElement,
+  // helpers definitions
+  isAltKeyPressed,
+  isCtrlKeyPressed
 } from './helpers.js';
 
 // definitions
@@ -36,9 +40,7 @@ import {
 
 // Define dynamic variables
 let {
-  panelsEvents,
-  isCtrlKeyPressed,
-  isAltKeyPressed
+  panelsEvents
 } = state;
 
 // Array of setting keys and their corresponding exported arrays

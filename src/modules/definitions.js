@@ -1,3 +1,6 @@
+// helpers
+import { convertToSingleHours } from "./helpers";
+
 export const debounceTimeout = 300;
 
 // Define the base URL for user profiles
@@ -29,8 +32,6 @@ export let ignored = [];
 // Define empty array for the toggle settings
 export let toggle = [];
 
-export let fetchedUsers = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
-
 export const emojiFaces = [
   // People Emojis (Facial expressions)
   '😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆',
@@ -61,15 +62,17 @@ export const state = {
   bigImageEvents: {},
   // Define an object to store event handlers
   panelsEvents: {},
-  // Ctrl && Alt keys definitions
-  isCtrlKeyPressed: false,
-  isAltKeyPressed: false
+  fetchedUsers: JSON.parse(localStorage.getItem('fetchedUsers')) || {}
 }
 
 // Timeout before the dynamicChatNotification should be removed
 export const dynamicChatNotificationTimeout = 5000;
 
-export const defaultCacheRefreshThresholdHours = 24;
+const defaultCacheRefreshThresholdHours = 24;
+export const cacheRefreshThresholdHours = convertToSingleHours(
+  localStorage.getItem('cacheRefreshThresholdHours') ||
+  (localStorage.setItem('cacheRefreshThresholdHours', defaultCacheRefreshThresholdHours), defaultCacheRefreshThresholdHours)
+);
 
 // List of trusted domains
 export const trustedDomains = [

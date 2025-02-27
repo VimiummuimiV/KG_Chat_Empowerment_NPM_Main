@@ -204,3 +204,70 @@ export function showUserAction(user, iconType, presence) {
     createDynamicNotification(user, iconType, time, presence);
   }
 }
+
+// NOTIFICATIONS TERMINATOR 
+
+// Helper for pausing execution
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+async function purgeStaticChatNotifications(
+  removalDelay = 40,
+  scrollDuration = 600,
+  animationDuration = 140
+) {
+  const chat = document.querySelector(".messages-content");
+  if (!chat) return;
+
+  // Save original scroll behavior and set to smooth once
+  const originalScrollBehavior = chat.style.scrollBehavior;
+  chat.style.scrollBehavior = 'smooth';
+
+  const elements = [...document.querySelectorAll('.static-chat-notification')].reverse();
+
+  for (const el of elements) {
+    const needsScroll = !isVisibleInContainer(el, chat);
+
+    if (needsScroll) {
+      // Smooth scroll to element
+      chat.scrollTop = el.offsetTop - chat.offsetTop - chat.clientHeight / 2;
+      await sleep(scrollDuration);
+    }
+
+    Object.assign(el.style, {
+      transition: [
+        `opacity ${animationDuration / 1000}s cubic-bezier(.3,.1,1,.1)`,
+        `transform ${animationDuration / 1000}s cubic-bezier(0,.7,.3,0.95)`
+      ].join(','),
+      opacity: 0,
+      transformOrigin: 'left',
+      transform: 'translateX(8em) skewX(-20deg)'
+    });
+
+    // Wait for animation to complete before removal
+    await sleep(animationDuration);
+    el.remove();
+
+    // Standard delay between elements
+    await sleep(removalDelay);
+  }
+
+  // Final scroll to bottom only if needed
+  const isAtBottom = chat.scrollHeight - chat.scrollTop <= chat.clientHeight;
+  if (!isAtBottom) {
+    chat.scrollTop = chat.scrollHeight;
+    await sleep(scrollDuration);
+  }
+
+  // Restore original scroll behavior
+  chat.style.scrollBehavior = originalScrollBehavior;
+}
+
+function isVisibleInContainer(el, container) {
+  const containerRect = container.getBoundingClientRect();
+  const elRect = el.getBoundingClientRect();
+  return (
+    elRect.top >= containerRect.top &&
+    elRect.bottom <= containerRect.bottom
+  );
+}
+

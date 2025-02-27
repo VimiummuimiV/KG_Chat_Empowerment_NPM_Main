@@ -12,15 +12,18 @@ import {
   closeSVG
 } from "./icons";
 
-// helpers
+// helpers && helpers definitions
 import {
+  // helpers
   removePreviousPanel,
   createScrollButtons,
   triggerDimmingElement,
   triggerTargetElement,
   addPulseEffect,
   processEncodedLinks,
-  highlightMentionWords
+  highlightMentionWords,
+  // helpers definitions
+  isCtrlKeyPressed
 } from './helpers.js';
 
 // definitions
@@ -31,8 +34,7 @@ import {
 
 // Define dynamic variables
 let {
-  panelsEvents,
-  isCtrlKeyPressed
+  panelsEvents
 } = state;
 
 // Function to create the button for opening personal messages
@@ -892,6 +894,4 @@ async function showPersonalMessagesPanel() {
   document.addEventListener('keydown', panelsEvents.handlePersonalMessagesKeydown);
 }
 
-// Initialize previousTotalCount with the current personal messages count from localStorage
-let previousTotalCount =
-  (localStorage.personalMessages && Object.keys(JSON.parse(localStorage.personalMessages)).length) || 0;
+

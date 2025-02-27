@@ -18,12 +18,12 @@ import {
 let {
   panelsEvents,
   bigImageEvents,
-  isCtrlKeyPressed,
-  isAltKeyPressed,
   lastFocusedIframeTextarea,
   lastEmojiAvatar
 } = state;
 
+// Initialize global variables to track the state of Ctrl and Alt keys
+export let isCtrlKeyPressed = false, isAltKeyPressed = false;
 // Helper function to update key states
 const setKeyState = (key, value) => {
   if (key === 'Control') isCtrlKeyPressed = value;
@@ -559,7 +559,7 @@ export function refreshFetchedUsers(isManual = false, thresholdHours = 24) {
     localStorage.removeItem('fetchedUsers');
 
     // Reset the in-memory fetchedUsers object
-    fetchedUsers = {};
+    state.fetchedUsers = {};
 
     // Reset the timer by updating 'lastClearTime' and 'nextClearTime'
     const nextClearTime = new Date().getTime() + thresholdHours * 60 * 60 * 1000;
@@ -818,6 +818,9 @@ export function highlightMentionWords(containerType = 'generalMessages') {
   }
 }
 
+// Initialize previousTotalCount with the current personal messages count from localStorage
+let previousTotalCount =
+  (localStorage.personalMessages && Object.keys(JSON.parse(localStorage.personalMessages)).length) || 0;
 /**
  * Updates total and new personal message counts near the personal messages button.
  * - Increments new message count only when total message count increases.

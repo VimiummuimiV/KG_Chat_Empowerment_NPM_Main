@@ -1,5 +1,6 @@
-// helpers
+// helpers && helpers definitions
 import {
+  // helpers
   addPulseEffect,
   removePreviousPanel,
   createScrollButtons,
@@ -10,7 +11,9 @@ import {
   adjustVisibility,
   getUserIDsByName,
   getUserProfileData,
-  refreshFetchedUsers
+  refreshFetchedUsers,
+  // helpers definitions
+  isCtrlKeyPressed
 } from './helpers.js';
 
 // notifications
@@ -30,18 +33,15 @@ import {
 
 // definitions
 import {
+  cacheRefreshThresholdHours,
   debounceTimeout,
-  fetchedUsers,
   profileBaseUrl,
   myUserId,
   state
 } from './definitions.js';
 
-// Define dynamic variables
-let {
-  panelsEvents,
-  isCtrlKeyPressed
-} = state;
+// Array to store user IDs and their status titles
+let fetchedUsers = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
 
 // Rank order mapping
 const rankOrder = {
@@ -95,27 +95,24 @@ function showCachePanel() {
   // Remove any previous panel before creating a new one
   removePreviousPanel();
 
-  // Get data from localStorage
-  const fetchedUsersData = localStorage.getItem('fetchedUsers');
-
   // Initialize users by parsing fetched data or setting as empty object
-  let users = JSON.parse(fetchedUsersData) || {};
+  let users = fetchedUsers;
 
   // Create a container div with class 'cached-users-panel'
   const cachedUsersPanel = document.createElement('div');
   cachedUsersPanel.className = 'cached-users-panel popup-panel';
 
   // Define the event handler function for the cache panel
-  panelsEvents.handleCacheKeydown = (event) => { // Assign the function to the object
+  state.panelsEvents.handleCacheKeydown = (event) => { // Assign the function to the object
     if (event.key === 'Escape') {
       triggerTargetElement(cachedUsersPanel, 'hide');
       triggerDimmingElement('hide');
-      document.removeEventListener('keydown', panelsEvents.handleCacheKeydown); // Remove the event listener
+      document.removeEventListener('keydown', state.panelsEvents.handleCacheKeydown); // Remove the event listener
     }
   };
 
   // Attach the event listener
-  document.addEventListener('keydown', panelsEvents.handleCacheKeydown);
+  document.addEventListener('keydown', state.panelsEvents.handleCacheKeydown);
 
   // Create a container div with class 'panel-header'
   const panelHeaderContainer = document.createElement('div');
@@ -905,7 +902,6 @@ export function createCacheButton(panel) {
   cacheUserCount.classList.add('cache-user-count');
 
   // Initially set the count based on localStorage
-  const fetchedUsers = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
   const cacheUserCountValue = Object.keys(fetchedUsers).length;
   cacheUserCount.textContent = cacheUserCountValue;
 
@@ -932,7 +928,8 @@ export function updateUserCountText() {
   const userCountElement = document.querySelector('.cache-panel-load-button .cache-user-count');
   if (!userCountElement) return; // Ensure the element exists
 
-  const newUserCount = Object.keys(JSON.parse(localStorage.getItem('fetchedUsers')) || {}).length.toString();
+  // Get count from state instead of localStorage
+  const newUserCount = Object.keys(fetchedUsers).length.toString();
 
   // Update the text content and add pulse effect if the count has changed
   if (newUserCount !== userCountElement.textContent) {
