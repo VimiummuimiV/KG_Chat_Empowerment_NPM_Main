@@ -1,18 +1,28 @@
-import { addMessageToQueue } from "../helpers";
+import {
+  addMessageToQueue,
+  processEncodedLinks,
+  scrollMessagesToBottom,
+  updatePersonalMessageCounts,
+  normalizeAndResetUsernames
+} from "../helpers"; // helpers
+
+import { convertImageLinksToImage } from "../converters/image-converter.js"; // image converter
+import { convertVideoLinksToPlayer } from "../converters/video-converter.js"; // video converter
+import { showPopupMessage } from "../popup-messages"; // popup messages
+import { groupChatMessages } from "./chat-workers"; // chat workers
+import { isInitializedChat } from "../../main"; // main
+import { usualMessageFrequencies, mentionMessageFrequencies } from "../voice-engine"; // voice engine definitions
 
 // Set the flag as false for the mention beep sound to trigger at first usual beep sound for usual messages
 let isMention = false;
 
 // Create a mutation observer to watch for new messages being added
 const newMessagesObserver = new MutationObserver(async mutations => {
-  // If isInitializedChat is false, return without doing anything
-  if (!isInitializedChat) {
-    // Normalize chat usernames color for dark theme
-    const allUsernameElements = document.querySelectorAll('.username'); // Get all username elements
-    normalizeAndResetUsernames(allUsernameElements, 'all'); // Process all username elements
+  // Normalize chat usernames color for dark theme
+  const allUsernameElements = document.querySelectorAll('.username'); // Get all username elements
+  normalizeAndResetUsernames(allUsernameElements, 'all'); // Process all username elements
 
-    return; // Stop processing further
-  }
+  if (!isInitializedChat) return;
 
   for (let mutation of mutations) {
     if (mutation.type === 'childList') {
@@ -85,15 +95,13 @@ const newMessagesObserver = new MutationObserver(async mutations => {
 
           // If the page is initialized, perform various UI updates and processing
           if (isInitializedChat) {
-            attachEventsToMessages();
             convertImageLinksToImage('generalMessages');
             convertVideoLinksToPlayer('generalMessages');
             processEncodedLinks('generalMessages');
-            applyChatMessageGrouping();
+            groupChatMessages();
             scrollMessagesToBottom();
-            banSpammer();
             showPopupMessage();
-            updatePersonalMessageCounts();
+            updatePersonalMessageCounts(); // Rethink when to call
           }
         }
       }
@@ -101,6 +109,10 @@ const newMessagesObserver = new MutationObserver(async mutations => {
   }
 });
 
-// Observe changes to the messages container element
-const messagesContainer = document.querySelector('.messages-content div');
-newMessagesObserver.observe(messagesContainer, { childList: true, subtree: true });
+// Define a function to start observing the messages container
+export function startChatMessagesObserver() {
+  // Make sure the messages container is available before starting the observer
+  const messagesContainer = document.querySelector('.messages-content div');
+  if (messagesContainer) { newMessagesObserver.observe(messagesContainer, { childList: true, subtree: true }); }
+  else { console.warn('Messages container not found!'); }
+}

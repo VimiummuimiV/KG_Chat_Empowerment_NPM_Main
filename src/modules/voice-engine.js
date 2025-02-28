@@ -1,4 +1,4 @@
-
+import { shouldEnableSetting } from "./helpers"; // helpers
 
 // SOUND NOTIFICATION
 
@@ -20,8 +20,8 @@ const audioContextPromise = createAudioContext();
 // List of frequencies to play for "User Left" && "User Entered" && "New Messages"
 const userEnteredFrequencies = [300, 600];
 const userLeftFrequencies = [600, 300];
-const usualMessageFrequencies = [500];
-const mentionMessageFrequencies = [600, 800];
+export const usualMessageFrequencies = [500];
+export const mentionMessageFrequencies = [600, 800];
 
 // Volume of the reader voice
 const voiceVolume = 0.8;

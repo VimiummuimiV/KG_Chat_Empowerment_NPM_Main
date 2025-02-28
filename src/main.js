@@ -40,6 +40,7 @@ import ChatMessagesRemover from "./modules/chat/chat-messages-remover.js"; // ch
 import { pruneDeletedMessages } from "./modules/chat/chat-messages-remover.js";
 import { createChatUserCounter } from "./modules/users-counter.js"; // counter
 import { startChatUserObserver } from "./modules/chat/chat-users-observer.js"; // users observer
+import { startChatMessagesObserver } from "./modules/chat/chat-messages-observer.js" // messages observer
 
 // definitions
 import {
@@ -101,6 +102,10 @@ export let isInitializedChat = false;
 
   // OBSERVERS
   // 1 ======================================================================
+  startChatMessagesObserver();
+  // ========================================================================
+
+  // 2 ======================================================================
   startChatUserObserver();
   // ========================================================================
 
