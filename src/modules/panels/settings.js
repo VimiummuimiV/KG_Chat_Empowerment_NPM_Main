@@ -9,12 +9,13 @@ import {
   removeSVG,
   snowflakeSVG,
   addSVG
-} from './icons.js';
+} from '../icons.js';
+
+import { addPulseEffect } from '../animations.js'; // animations
 
 // helpers && helpers definitions
 import {
   // helpers
-  addPulseEffect,
   removePreviousPanel,
   createScrollButtons,
   debounce,
@@ -23,27 +24,29 @@ import {
   // helpers definitions
   isAltKeyPressed,
   isCtrlKeyPressed
-} from './helpers.js';
+} from '../helpers.js';
 
 // definitions
 import {
   myNickname,
-  usersToTrack,
-  mentionKeywords,
-  usernameReplacements,
-  moderator,
-  ignored,
-  toggle,
   debounceTimeout,
   state
-} from './definitions.js';
+} from '../definitions.js';
 
 // Define dynamic variables
 let {
   panelsEvents
 } = state;
 
-// Array of setting keys and their corresponding exported arrays
+// 1. First declare and initialize all arrays as empty
+export let usersToTrack = [];
+export let mentionKeywords = [];
+export let usernameReplacements = [];
+export let moderator = [];
+export let ignored = [];
+export let toggle = [];
+
+// 2. Create settings map AFTER array declarations
 const settingsMap = [
   ['usersToTrack', usersToTrack],
   ['mentionKeywords', mentionKeywords],
@@ -52,13 +55,18 @@ const settingsMap = [
   ['ignored', ignored]
 ];
 
+// 3. Load data from localStorage and immediately fill the arrays with the stored data
 settingsMap.forEach(([key, arr]) => {
   const stored = JSON.parse(localStorage.getItem(key)) || [];
-  if (stored.length) arr.splice(0, arr.length, ...stored);
+  if (stored.length) {
+    arr.splice(0, arr.length, ...stored);  // Clear existing data and fill with stored data
+  }
 });
 
-// Assuming myNickname is defined somewhere in your code:
+// 4. Add myNickname to mentionKeywords after loading stored data
+// (Assuming myNickname is defined elsewhere)
 mentionKeywords.push(myNickname);
+
 
 // Global function to handle file input and process uploaded settings
 async function handleUploadSettings(event) {

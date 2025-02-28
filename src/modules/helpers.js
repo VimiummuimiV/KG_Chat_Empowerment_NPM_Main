@@ -4,15 +4,16 @@ import {
   chevronUpSVG,
   chevronDownSVG,
   chevronsDownSVG
-} from './icons.js';
+} from "./icons.js";
 
 // definitions
 import {
-  mentionKeywords,
   emojiFaces,
   trustedDomains,
   state
-} from './definitions.js';
+} from "./definitions.js";
+
+import { ignored, mentionKeywords } from "./panels/settings.js"; // settings
 
 // Define dynamic variables
 let {
@@ -45,13 +46,6 @@ const setKeyState = (key, value) => {
     }
   })
 );
-
-export function addPulseEffect(element) {
-  element.classList.add('pulse-effect');
-  setTimeout(() => {
-    element.classList.remove('pulse-effect');
-  }, 500);
-}
 
 // Function to remove all event listeners from the panel
 export function removeAllPanelEventListeners() {
@@ -253,7 +247,7 @@ export function triggerTargetElement(element, action) {
 }
 
 // Function to check if a URL is valid and contains encoded characters
-export function isValidEncodedURL(url) {
+export function isEncodedURL(url) {
   const urlPattern = /^https?:\/\//; // Regex pattern to check if the value is a URL
   const encodedPattern = /%[0-9A-Fa-f]{2}/; // Regex pattern to check if the URL is encoded
   return urlPattern.test(url) && encodedPattern.test(url);
@@ -274,7 +268,7 @@ export function processEncodedLinks(type) {
   })[type])?.querySelectorAll('a:not(.media):not(.decoded)').forEach(link => { // Select all <a> links that haven't been decoded yet
     try {
       // Ensure the link is a valid encoded URL before decoding
-      if (isValidEncodedURL(link.href)) {
+      if (isEncodedURL(link.href)) {
         let decoded = decodeURL(link.href); // Decode the URL
         link.href = link.textContent = decoded; // Set the decoded URL as both the link href and text content
         link.classList.add('decoded'); // Mark the link as decoded by adding the 'decoded' class
@@ -330,7 +324,7 @@ export const loadProfileIntoIframe = (url) => {
       const iframeWindow = profileIframe.contentWindow;
       const iframeDoc = iframeWindow.document;
 
-      // Track focused textareas within iframe
+      // Track focused text areas within iframe
       iframeDoc.addEventListener('focusin', (e) => {
         if (e.target.tagName === 'TEXTAREA') {
           lastFocusedIframeTextarea = e.target;
@@ -432,6 +426,11 @@ function convertSecondsToDate(seconds) {
 function convertToUpdatedTimestamp(sec, usec) {
   // Create the full timestamp by combining sec and usec (in microseconds)
   return sec.toString() + Math.floor(usec / 1000).toString();
+}
+
+export function getUserGender(userName) {
+  const user = usersToTrack.find((user) => user.name === userName);
+  return user ? user.gender : null;
 }
 
 // Function to get profile summary and registration data
@@ -569,27 +568,64 @@ export function refreshFetchedUsers(isManual = false, thresholdHours = 24) {
 }
 
 export function getUserChatDuration(username, actionTime) {
-  // Retrieve stored user data and find the target user by login
-  const user = Object.values(JSON.parse(localStorage.getItem('fetchedUsers') || '[]'))
-    .find(u => u?.login === username);
+  // Use manageData to search for the user by login
+  const user = manageData('fetchedUsers', 'find', { query: { login: username } });
+
   if (!user) return `❌ User "${username}" not found`;
 
   const actionLog = user.actionLog || [];
   const current = actionLog.find(entry => entry.timestamp === actionTime);
+
   if (!current) return `Action not found at ${actionTime}`;
 
   const actionIndex = actionLog.indexOf(current);
+
   if (actionIndex === 0) return `🙌 ${username}'s first action`;
 
-  // Find the most recent action before the current one that has a different type
   const prev = actionLog.slice(0, actionIndex).reverse().find(a => a.type !== current.type);
+
   if (!prev) return `❌ No valid previous action found for ${actionTime}`;
 
-  // Calculate the duration between the two timestamps
   const duration = calculateDuration(prev.timestamp, current.timestamp);
+
   return current.type === 'leave'
     ? `🛑 ${username} stayed in chat for ${duration}`
     : `✅ ${username} was absent for ${duration}`;
+}
+
+// Function to calculate time spent on the site
+export function calculateTimeOnSite(registeredDate) {
+  const totalSeconds = Math.floor((new Date() - new Date(registeredDate)) / 1000);
+  const years = Math.floor(totalSeconds / (365 * 24 * 60 * 60));
+  const months = Math.floor((totalSeconds % (365 * 24 * 60 * 60)) / (30.44 * 24 * 60 * 60));
+  const days = Math.floor((totalSeconds % (30.44 * 24 * 60 * 60)) / (24 * 60 * 60));
+  const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+  const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+  const seconds = totalSeconds % 60;
+
+  const timeComponents = [];
+
+  if (years > 0) {
+    timeComponents.push(`${years} year${years > 1 ? 's' : ''}`);
+    if (months > 0) timeComponents.push(`${months} month${months > 1 ? 's' : ''}`);
+  } else if (months > 1 || (months === 1 && days > 0)) {
+    timeComponents.push(`${months} month${months > 1 ? 's' : ''}`);
+    if (days > 0) timeComponents.push(`${days} day${days > 1 ? 's' : ''}`);
+  } else if (days > 0) {
+    timeComponents.push(`${days} day${days > 1 ? 's' : ''}`);
+    if (hours > 0) timeComponents.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+    if (minutes > 0) timeComponents.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+  } else if (hours > 0) {
+    timeComponents.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+    if (minutes > 0) timeComponents.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+  } else if (minutes > 0) {
+    timeComponents.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+    if (seconds > 0) timeComponents.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
+  } else {
+    timeComponents.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
+  }
+
+  return timeComponents.filter(Boolean).join(' '); // Filter out empty strings and join components
 }
 
 function calculateDuration(start, end) {
@@ -691,14 +727,31 @@ export async function scrollMessagesToMiddle(parent, element) {
   addShakeEffect(element); // Add a shake effect to the found element
 }
 
+// ---- User actions logger (enter && leave) ----
 // Helper function to get current time formatted as [HH:MM:SS]
-export function getCurrentTimeFormatted() {
+export function getCurrentTimeString() {
   return new Date().toLocaleTimeString('en-US', {
     hour12: false,
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit'
   });
+}
+
+export function logUserAction(userId, actionType) {
+  if (userId && actionType) {
+    // Initialize user object and ensure actionLog is an array
+    fetchedUsers[userId] = fetchedUsers[userId] || {};
+    fetchedUsers[userId].actionLog = fetchedUsers[userId].actionLog || [];
+
+    // Log the action
+    fetchedUsers[userId].actionLog.push({
+      type: actionType,
+      timestamp: getCurrentTimeString()
+    });
+  } else {
+    console.error('Missing userId or actionType');
+  }
 }
 
 /**
@@ -853,4 +906,453 @@ export function updatePersonalMessageCounts() {
   if (totalCount !== previousTotalCount) addPulseEffect(totalCountElement);
 
   previousTotalCount = totalCount; // Update previous count
+}
+
+// ========================================================================
+// MANAGE CACHE
+// ========================================================================
+/**
+ * Manages localStorage data with various operations.
+ * @param {string} key - localStorage key to manage.
+ * @param {string} operation - Operation to perform: 'get', 'set', 'clear', 'length', 'values', 'keys', 'find', 'findAll'.
+ * @param {object} [options] - Optional parameters.
+ * @param {*} [options.data] - Data to store (required for 'set').
+ * @param {string[]} [options.path] - Path array for nested data access (default: ['data'] for read operations).
+ * @param {object} [options.query] - Query object for find operations.
+ * @returns {*|boolean} Result depends on operation: data for 'get', boolean for write ops, array/list for queries.
+ * 
+ * Usage Examples:
+ * - get: manageData('user', 'get', { path: ['profile', 'address'] })
+ * - set: manageData('user', 'set', { data: { profile: { name: 'John' } } })
+ * - clear: manageData('user', 'clear')
+ * - find: manageData('products', 'find', { query: { category: 'books' } })
+ * - length: manageData('products', 'length', { path: ['items'] })
+ */
+export function manageData(key, operation, { data, path, query } = {}) {
+  try {
+    const parseSafe = v => { try { return JSON.parse(v) } catch { return v } };
+    const stored = parseSafe(localStorage.getItem(key));
+
+    const effectivePath = path ?? (['get', 'find', 'findAll'].includes(operation) ? ['data'] : []);
+    const dataAtPath = effectivePath?.reduce((a, k) => a?.[k], stored) ?? stored;
+
+    const queryAction = (method) => {
+      if (!dataAtPath || !query) return method === 'find' ? null : [];
+      const items = Array.isArray(dataAtPath) ? dataAtPath : Object.values(dataAtPath);
+      return items[method](item => Object.entries(query).every(([k, v]) => item[k] === v));
+    };
+
+    return {
+      get: () => dataAtPath,
+      set: () => (localStorage.setItem(key, JSON.stringify(data)), true),
+      clear: () => (localStorage.removeItem(key), true),
+      length: () => !dataAtPath ? 0 : dataAtPath.length ?? Object.keys(dataAtPath).length,
+      values: () => dataAtPath ? Object.values(dataAtPath) : [],
+      keys: () => dataAtPath ? Object.keys(dataAtPath) : [],
+      find: () => queryAction('find'),
+      findAll: () => queryAction('filter'),
+    }[operation]?.() ?? null;
+  } catch (e) {
+    return operation === 'get' ? null : false;
+  }
+}
+
+// Function to convert Cyrillic characters to Latin
+function convertCyrillicToLatin(input) {
+  const cyrillicToLatinMap = {
+    'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D',
+    'Е': 'E', 'Ё': 'Yo', 'Ж': 'Zh', 'З': 'Z', 'И': 'I',
+    'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N',
+    'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T',
+    'У': 'U', 'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch',
+    'Ш': 'Sh', 'Щ': 'Shch', 'Ъ': 'y', // 'ъ' maps to 'y'
+    'Ы': 'Y', 'Ь': 'i', // 'ь' maps to 'i'
+    'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
+    'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
+    'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
+    'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
+    'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch',
+    'ш': 'sh', 'щ': 'shch', 'ъ': 'y', // 'ъ' maps to 'y'
+    'ы': 'y', 'ь': 'i', // 'ь' maps to 'i'
+    'э': 'e', 'ю': 'yu', 'я': 'ya'
+  };
+
+  // Convert the input string to Latin using the mapping
+  return input.split('').map(char => cyrillicToLatinMap[char] || char).join('');
+}
+
+// Function to convert Russian usernames
+export function convertRussianUsernameToLatin(username) {
+  // Use the conversion function on the username
+  return convertCyrillicToLatin(username);
+}
+
+// Function to play sound as a notification for system message banned
+export function playSound() {
+  const marioGameOver = 'https://github.com/VimiummuimiV/Sounds/raw/refs/heads/main/Mario_Game_Over.mp3';
+  const audio = new Audio(marioGameOver);
+  audio.play();
+}
+
+// Function to detect a ban message based on the message text content
+export function isBanMessage(messageText) {
+  if (!messageText) return false; // Return false if messageText is null, undefined, or an empty string
+  return ['Клавобот', 'Пользователь', 'заблокирован'].every(word => messageText.includes(word));
+}
+
+/**
+ * Updates the given user count element with the count, adjusting the font size based on the number of digits.
+ * @param {HTMLElement} element - The DOM element displaying the user count.
+ * @param {number} count - The user count.
+ */
+export function updateUserCount(element, count) {
+  if (!element) return; // Exit if the element doesn't exist.
+  const digits = count.toString().length;
+  element.textContent = count;
+  element.style.fontSize = Math.max(24 - (digits - 1) * 2, 12) + 'px';
+}
+
+// Function to animate user count change
+export function animateUserCount(actualUserCount, userCountElement) {
+  let count = 0;
+  const speed = 20;
+
+  const userCountIncrement = () => {
+    if (count <= actualUserCount) {
+      const progress = Math.min(count / (actualUserCount || 1), 1); // Handle zero case
+      updateUserCount(userCountElement, count++);
+      userCountElement.style.filter = `grayscale(${100 - progress * 100}%)`;
+      setTimeout(userCountIncrement, speed);
+    } else {
+      addPulseEffect(userCountElement);
+      isAnimated = true;
+    }
+  };
+
+  setTimeout(userCountIncrement, speed);
+}
+
+// ---- DOM Utilities ----
+export const getChatElements = () => {
+  const activeTab = localStorage.getItem('activeChatTab') || 'game'; // Defaults to 'game' if not found or empty
+  const isGameLocation = window.location.href.includes('gmid');
+
+  // Determine selectors based on activeTab and isGameLocation
+  const chatFieldSelector = isGameLocation
+    ? (activeTab === 'game' ? '[id^="chat-game"] .text' : '#chat-general .text')
+    : '#chat-general .text';
+
+  const chatSendSelector = isGameLocation
+    ? (activeTab === 'game' ? '[id^="chat-game"] .send' : '#chat-general .send')
+    : '#chat-general .send';
+
+  const messagesContainerSelector = isGameLocation
+    ? (activeTab === 'game' ? '[id^="chat-game"] .messages' : '#chat-general .messages')
+    : '#chat-general .messages';
+
+  // Get user lists for both chat types
+  const userList = {
+    game: document.querySelector('[id^="chat-game"] .userlist-content'),
+    general: document.querySelector('#chat-general .userlist-content')
+  };
+
+  // Get the currently active tab based on localStorage's activeTab value (used for restore)
+  const activeChatTab = document.querySelector(
+    isGameLocation
+      ? (activeTab === 'game' ? '.game.c' : '.general.c') // Select the active tab (game or general)
+      : (activeTab === 'general' ? '.general.c' : '.game.c') // If activeTab is general, select general
+  );
+
+  // Get next tab to switch (either general or game)
+  const nextChatTab = document.querySelector(
+    isGameLocation
+      ? (document.querySelector('.game.c.active') ? '.general.c' : '.game.c')
+      : (document.querySelector('.general.c.active') ? '.game.c' : '.general.c')
+  );
+
+  // Select all messages from both general and game chats
+  const allMessages = document.querySelectorAll('.messages-content p'); // Selecting all messages
+
+  // Query the messages container
+  const messagesContainer = document.querySelector(messagesContainerSelector);
+
+  return {
+    chatField: document.querySelector(chatFieldSelector),
+    chatSend: document.querySelector(chatSendSelector),
+    activeChatTab, // Return the currently active tab element (either general or game)
+    nextChatTab, // Return the next tab to switch to
+    chatHidden: document.querySelector('#chat-wrapper.chat-hidden'),
+    allMessages, // Return all the messages
+    messagesContainer, // Return the messages container for the active chat
+    userList // Now returns { game: Element, general: Element }
+  };
+};
+
+// ---- Chat ignored messages remover ----
+export function removeIgnoredUserMessages() {
+  const { allMessages } = getChatElements(); // Get all messages from getChatElements
+
+  allMessages.forEach(message => {
+    const usernameElement = message.querySelector('.username'); // Adjust selector if needed
+    const username = usernameElement?.textContent?.replace(/[<>]/g, '') || null;
+
+    if (username && ignored.includes(username)) {
+      // console.log(`Hidden message from ignored user: ${username}`);
+      // Convert Cyrillic username to Latin
+      const latinUsername = convertRussianUsernameToLatin(username);
+      message.classList.add('ignored-user', latinUsername);
+      message.style.display = 'none'; // Hide the message
+    }
+  });
+}
+
+// ---- Chat usernames color normalizer ----
+const rgbToHsl = (r, g, b) => {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0; // Achromatic
+  } else {
+    const delta = max - min;
+    s = l < 0.5 ? delta / (max + min) : delta / (2 - max - min);
+    h = (
+      max === r
+        ? (g - b) / delta + (g < b ? 6 : 0)
+        : max === g
+          ? (b - r) / delta + 2
+          : (r - g) / delta + 4
+    ) / 6;
+  }
+
+  h = Math.round(h * 360); // Convert to degrees
+  s = Math.min(Math.round(s * 100), 90); // Cap saturation at 90
+  l = Math.round(l * 100); // Convert lightness to 0–100
+
+  // Adjust hue to allow only 0–230 and 280–360 ranges
+  if (h > 215 && h < 280) {
+    h = h < 255 ? 215 : 280; // Shift to nearest valid range
+  }
+
+  return { h, s, l };
+};
+
+const hslToRgb = (h, s, l) => {
+  s /= 100; l /= 100;
+  let r, g, b;
+  if (s === 0) r = g = b = l * 255; // Achromatic
+  else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      return t < 1 / 6 ? p + (q - p) * 6 * t :
+        t < 1 / 2 ? q :
+          t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 :
+            p;
+    };
+    r = Math.round(hue2rgb(p, q, h / 360 + 1 / 3) * 255);
+    g = Math.round(hue2rgb(p, q, h / 360) * 255);
+    b = Math.round(hue2rgb(p, q, h / 360 - 1 / 3) * 255);
+  }
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
+function normalizeUsernameColor(initialColor) {
+  const [r, g, b] = initialColor.match(/\d+/g).map(Number);
+  const { h, s, l } = rgbToHsl(r, g, b);
+
+  // Adjust lightness to ensure it's at least 50
+  const normalizedLightness = l < 50 ? 50 : l;
+  const finalColor = hslToRgb(h, s, normalizedLightness);
+
+  // Round the RGB values in one go
+  return finalColor;
+}
+
+/**
+ * Normalizes the color of usernames and resets their filter based on the specified mode.
+ *
+ * @param {NodeList|Element} usernameElements - A NodeList of username elements or a single username element.
+ * @param {string} mode - The mode of operation; either 'one' to process a single username or 'all' to process multiple.
+ */
+export function normalizeAndResetUsernames(usernameElements, mode) {
+  if (!usernameElements) return; // Skip processing if undefined or null
+
+  if (mode === 'one') {
+    // Process a single username element.
+    const userSpan = usernameElements.querySelector('span[data-user]');
+    if (!userSpan) return; // Skip processing if child span is missing
+    const computedColor = getComputedStyle(usernameElements).color;
+    const normalizedColor = normalizeUsernameColor(computedColor);
+    usernameElements.style.setProperty('color', normalizedColor, 'important');
+    userSpan.style.setProperty('filter', 'invert(0)', 'important');
+  } else if (mode === 'all') {
+    // Process all username elements using forEach with return (which acts like continue)
+    Array.from(usernameElements).forEach(usernameElement => {
+      if (!usernameElement) return; // Skip this iteration if the element is falsy
+      const userSpan = usernameElement.querySelector('span[data-user]');
+      if (!userSpan) return; // Skip if child span is missing
+      const computedColor = getComputedStyle(usernameElement).color;
+      const normalizedColor = normalizeUsernameColor(computedColor);
+      usernameElement.style.setProperty('color', normalizedColor, 'important');
+      userSpan.style.setProperty('filter', 'invert(0)', 'important');
+    });
+  } else {
+    console.error("Invalid mode. Use 'one' or 'all'.");
+  }
+}
+
+// ---- Get chat latest message data ----
+export async function getLatestMessageData() {
+  const messageElement = document.querySelector('.messages-content div p:last-of-type');
+  if (!messageElement) return null;
+
+  // Inline helper: collects text parts from a container's child nodes.
+  const collectMessageParts = async (container) =>
+    Array.from(container.childNodes)
+      .map(node =>
+        node.nodeType === Node.TEXT_NODE && node.textContent.trim() ? node.textContent.trim() :
+          node.nodeName === 'IMG' && node.getAttribute('title') ? node.getAttribute('title') :
+            node.nodeName === 'A' && node.getAttribute('href') ? node.getAttribute('href') : ''
+      )
+      .filter(Boolean);
+
+  // 1. Extract common message text.
+  let finalMessageText = (await collectMessageParts(messageElement)).join(' ').trim();
+  let messageType = "common"; // Default message type
+
+  // 2. Check for private messages
+  const privateMessageContainer = messageElement.querySelector('.room.private');
+  if (privateMessageContainer && privateMessageContainer.textContent.includes('[шепчет ')) {
+    const privateMessageElement = messageElement.querySelector('span.private');
+    if (privateMessageElement) {
+      finalMessageText = (await collectMessageParts(privateMessageElement)).join(' ').trim();
+      messageType = "private";
+    }
+  }
+
+  // 3. Check for system messages
+  const systemMessageElement = messageElement.querySelector('.system-message');
+  if (systemMessageElement) {
+    let systemMessageText = (await collectMessageParts(systemMessageElement)).join(' ').trim();
+    systemMessageText = systemMessageText.replace(/<Клавобот>\s*/g, '');
+    finalMessageText = systemMessageText;
+    messageType = "system";
+  }
+
+  // 4. If still "common" and it mentions the user, mark as "mention".
+  if (messageType === "common" && isMentionForMe(finalMessageText)) {
+    messageType = "mention";
+  }
+
+  // Process localStorage: retrieve or initialize personalMessages.
+  const personalMessages = JSON.parse(localStorage.getItem('personalMessages')) || {};
+  const getCurrentDate = () => new Date().toLocaleDateString('en-CA');
+
+  // Extract message metadata.
+  const time = messageElement.querySelector('.time')?.textContent || 'N/A';
+  const usernameDataElement = messageElement.querySelector('.username span[data-user]');
+  const userId = usernameDataElement ? usernameDataElement.getAttribute('data-user') : null;
+  const extractedUsername = usernameDataElement ? usernameDataElement.textContent : 'SYSTEM';
+  const usernameColor = usernameDataElement ? usernameDataElement.parentElement.style.color : 'rgb(180,180,180)';
+  const normalizedColor = normalizeUsernameColor(usernameColor);
+  const messageKey = `${time}_${extractedUsername}`;
+
+  // Check if the message type is "mention" or "private", and if the username is not in the ignore list
+  const shouldSaveMessage = (
+    messageType === "mention" ||
+    messageType === "private"
+  ) && !ignored.includes(extractedUsername);
+
+  // If the condition is met, save the message to localStorage
+  if (shouldSaveMessage) {
+    personalMessages[messageKey] = {
+      time,
+      date: getCurrentDate(),
+      username: extractedUsername,
+      usernameColor: normalizedColor,
+      message: finalMessageText,
+      type: messageType,
+      userId
+    };
+    localStorage.setItem('personalMessages', JSON.stringify(personalMessages));
+  }
+
+  // Extract username (defaulting to "SYSTEM") and build prefix.
+  const usernameContainer = messageElement.querySelector('.username');
+  const usernameText = usernameContainer ? usernameContainer.textContent.replace(/[<>]/g, '') : 'SYSTEM';
+
+  highlightMentionWords(); // Apply highlight for all message types
+
+  let prefix = (messageType === "mention" || messageType === "private")
+    ? `${replaceWithPronunciation(usernameText)} обращается: `
+    : (usernameText !== lastUsername ? `${replaceWithPronunciation(usernameText)} пишет: ` : "");
+
+  lastUsername = usernameText;
+
+  const messageText = prefix + replaceWithPronunciation(finalMessageText);
+  return { messageText, usernameText };
+}
+
+// ---- Highlighter and Replacer ----
+// Initialize the variable to keep track of the last username seen
+let lastUsername = null;
+
+
+// Function to check if a username is mentioned in the message
+function isMentionForMe(message) {
+  const messageLowercase = message.toLowerCase();
+  return mentionKeywords.some(keyword => messageLowercase.includes(keyword.toLowerCase()));
+}
+
+function replaceWithPronunciation(text) {
+  if (text === null) return text;
+
+  // Combine all usernames that need replacement
+  const allUsernames = [
+    ...usersToTrack.map(user => user.name),
+    ...usernameReplacements.map(replacement => replacement.original)
+  ];
+
+  // Create a pattern to match any character that is part of a word (including Cyrillic characters).
+  const pattern = new RegExp(`(${allUsernames.join('|')})`, 'gu');
+
+  return text.replace(pattern, (matched) => {
+    // Priority 1: Check username replacements
+    const replacement = usernameReplacements.find(r => r.original === matched);
+    if (replacement) return replacement.replacement;
+
+    // Priority 2: Check tracked user pronunciations
+    const trackedUser = usersToTrack.find(user => user.name === matched);
+    return trackedUser?.pronunciation || matched;
+  });
+}
+
+// ---- Messages reader ----
+let isReading = false;
+const newMessages = new Set();
+
+export function addMessageToQueue(message) {
+  if (!newMessages.has(message)) {
+    newMessages.add(message);
+    if (!isReading) {
+      isReading = true;
+      processMessages();
+    }
+  }
+}
+
+async function processMessages() {
+  for (const message of newMessages) {
+    await textToSpeech(message, voiceSpeed);
+    newMessages.delete(message);
+  }
+  isReading = false;
 }

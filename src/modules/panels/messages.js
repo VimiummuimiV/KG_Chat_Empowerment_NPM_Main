@@ -1,5 +1,5 @@
-import { convertImageLinksToImage } from "./image-converter.js"; // image converter
-import { convertVideoLinksToPlayer } from "./video-converter.js"; // video converter
+import { convertImageLinksToImage } from "../image-converter.js"; // image converter
+import { convertVideoLinksToPlayer } from "../video-converter.js"; // video converter
 
 // icons
 import {
@@ -10,7 +10,7 @@ import {
   clipboardSVG,
   trashSVG,
   closeSVG
-} from "./icons";
+} from "../icons";
 
 // helpers && helpers definitions
 import {
@@ -19,18 +19,19 @@ import {
   createScrollButtons,
   triggerDimmingElement,
   triggerTargetElement,
-  addPulseEffect,
   processEncodedLinks,
   highlightMentionWords,
   // helpers definitions
   isCtrlKeyPressed
-} from './helpers.js';
+} from '../helpers.js';
+
+import { addJumpEffect, addPulseEffect } from "../animations.js"; // animations
 
 // definitions
 import {
   today,
   state
-} from './definitions.js';
+} from '../definitions.js';
 
 // Define dynamic variables
 let {
@@ -38,7 +39,7 @@ let {
 } = state;
 
 // Function to create the button for opening personal messages
-export function createPersonalMessagesButton(panel) {
+export function createMessagesButton(panel) {
   // Create a new element with class 'personal-messages-button'
   const showPersonalMessagesButton = document.createElement('div');
   showPersonalMessagesButton.classList.add("empowerment-button", "personal-messages-button");
@@ -71,7 +72,7 @@ export function createPersonalMessagesButton(panel) {
   // Add a click event listener to the button
   showPersonalMessagesButton.addEventListener('click', function () {
     addPulseEffect(showPersonalMessagesButton); // Add pulse effect
-    showPersonalMessagesPanel(); // Show the personal messages panel
+    showMessagesPanel(); // Show the personal messages panel
     const personalMessagesCount = Object.keys(JSON.parse(localStorage.getItem('personalMessages')) || {}).length;
     // Open the personal messages panel only when there are messages present.
     if (personalMessagesCount > 0) {
@@ -316,7 +317,7 @@ function updateMessageCount() {
 }
 
 // Function to display the personal messages panel
-async function showPersonalMessagesPanel() {
+async function showMessagesPanel() {
   // Check if the panel already exists
   const existingPanel = document.querySelector('.cached-messages-panel');
   if (existingPanel) {
@@ -515,7 +516,6 @@ async function showPersonalMessagesPanel() {
 
   // Event listener to copy the text content of the messages container
   copyPersonalMessagesButton.addEventListener('click', () => {
-    addJumpEffect(copyPersonalMessagesButton, 0, 0);
     const textContent = Array.from(document.querySelector('.messages-container').children)
       .filter(node => {
         const style = window.getComputedStyle(node);
@@ -529,8 +529,9 @@ async function showPersonalMessagesPanel() {
 
     // Check if there's content to copy
     if (textContent.trim()) {
+      // Only add the jump effect if there is content to copy
+      addJumpEffect(copyPersonalMessagesButton, 0, 0);
       navigator.clipboard.writeText(textContent)
-        .then(() => addJumpEffect(copyPersonalMessagesButton, 0, 0))
         .catch(console.error);
     } else {
       alert('No messages to copy.');
@@ -769,7 +770,7 @@ async function showPersonalMessagesPanel() {
                 if (!foundChatLogsMessage) {
                   const chatLogsPanel = document.querySelector('.chat-logs-panel'); // Get the chat logs panel
                   triggerTargetElement(chatLogsPanel, 'hide'); // Hide the chat logs panel
-                  showPersonalMessagesPanel(); // Show the personal messages panel again
+                  showMessagesPanel(); // Show the personal messages panel again
                 }
               }, 500); // Adjust the delay as needed
             });

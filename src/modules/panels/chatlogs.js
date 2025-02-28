@@ -1,5 +1,5 @@
-import { convertImageLinksToImage } from "./image-converter.js"; // image converter
-import { convertVideoLinksToPlayer } from "./video-converter.js"; // video converter
+import { convertImageLinksToImage } from "../image-converter.js"; // image converter
+import { convertVideoLinksToPlayer } from "../video-converter.js"; // video converter
 
 // icons
 import {
@@ -14,7 +14,7 @@ import {
   chevronLeftSVG,
   chevronRightSVG,
   shuffleSVG
-} from "./icons";
+} from "../icons";
 
 // helpers
 import {
@@ -22,17 +22,18 @@ import {
   createScrollButtons,
   triggerDimmingElement,
   triggerTargetElement,
-  addPulseEffect,
   processEncodedLinks,
   highlightMentionWords
-} from './helpers.js';
+} from '../helpers.js';
 
 // definitions
 import {
-  ignored,
   today,
   state
-} from './definitions.js';
+} from '../definitions.js';
+
+import { ignored } from "./settings.js"; // settings
+import { addJumpEffect, addPulseEffect } from "../animations.js"; // animations
 
 // Define dynamic variables
 let {

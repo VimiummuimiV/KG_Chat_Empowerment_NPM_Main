@@ -1,15 +1,16 @@
 // definitions
 import {
-  dynamicChatNotificationTimeout,
-  usersToTrack
+  dynamicChatNotificationTimeout
 } from "./definitions";
+
+import { usersToTrack } from "./panels/settings"; // settings
 
 // helpers
 import {
   getUserChatDuration,
   shouldEnableSetting,
   scrollMessagesToBottom,
-  getCurrentTimeFormatted
+  getCurrentTimeString
 } from "./helpers";
 
 // tooltip
@@ -193,7 +194,7 @@ export function showUserAction(user, iconType, presence) {
   if (!shouldShowStatic && !shouldShowDynamic) return;
 
   // Get current time formatted as [HH:MM:SS]
-  const time = getCurrentTimeFormatted();
+  const time = getCurrentTimeString();
 
   if (shouldShowStatic && isTrackedUser) {
     createStaticNotification(user, iconType, time, presence, 'generalChat');

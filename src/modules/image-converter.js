@@ -1,7 +1,7 @@
 // helpers
 import {
   decodeURL,
-  isValidEncodedURL,
+  isEncodedURL,
   scrollMessagesToBottom,
   isTrustedDomain,
   addBigImageEventListeners,
@@ -90,7 +90,7 @@ export function convertImageLinksToImage(containerType) {
     link.classList.add("media");
 
     const { isTrusted, domain } = isTrustedDomain(link.href);
-    link.title = isValidEncodedURL(link.href) ? decodeURL(link.href) : link.href;
+    link.title = isEncodedURL(link.href) ? decodeURL(link.href) : link.href;
 
     // Handle untrusted domains
     if (!isTrusted) {

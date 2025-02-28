@@ -1,7 +1,7 @@
 // helpers
 import {
   decodeURL,
-  isValidEncodedURL,
+  isEncodedURL,
   scrollMessagesToBottom,
   isTrustedDomain
 } from "./helpers";
@@ -123,7 +123,7 @@ export function convertVideoLinksToPlayer(containerType) {
     }
 
     // Set link attributes and insert elements
-    link.title = isValidEncodedURL(url) ? decodeURL(url) : url;
+    link.title = isEncodedURL(url) ? decodeURL(url) : url;
     link.style.display = 'inline-flex';
     link.parentNode.insertBefore(wrapper, link);
     wrapper.append(link, embedElement);

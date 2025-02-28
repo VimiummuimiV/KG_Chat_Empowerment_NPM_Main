@@ -1,14 +1,18 @@
+import { deniedSVG } from "../icons.js"; // icons
+import { isInitializedChat } from "../../main.js"; // main
+
 // helpers
 import {
-  isValidEncodedURL,
-  debounce
-} from "./helpers";
+  isEncodedURL,
+  debounce,
+  getChatElements
+} from "../helpers.js";
 
 // ========================================================================
 // DEFINITIONS
 // ========================================================================
 
-const currentLocationIncludes = part => window.location.href.includes(part);
+export const locationHas = part => window.location.href.includes(part);
 
 const extraTimeout = 5000;
 const minimalTimeout = 1000;
@@ -20,43 +24,17 @@ const lostConnectionMessage = 'Связь с сервером потеряна';
 // HELPER FUNCTIONS
 // ========================================================================
 
-// ---- DOM Utilities ----
-// Dynamically retrieves the current chat elements based on the active tab.
-export const getChatElements = () => {
-  const activeTab = localStorage.getItem('activeChatTab') || 'game'; // Defaults to 'game' if not found or empty
-  const isGameLocation = window.location.href.includes('gmid');
-
-  // Default to general chat elements
-  const chatFieldSelector = isGameLocation
-    ? (activeTab === 'game' ? '[id^="chat-game"] .text' : '#chat-general .text')
-    : '#chat-general .text';
-
-  const chatSendSelector = isGameLocation
-    ? (activeTab === 'game' ? '[id^="chat-game"] .send' : '#chat-general .send')
-    : '#chat-general .send';
-
-  // Get the currently active tab based on localStorage's activeTab value (used for restore)
-  const activeChatTab = document.querySelector(
-    isGameLocation
-      ? (activeTab === 'game' ? '.game.c' : '.general.c') // Select the active tab (game or general)
-      : (activeTab === 'general' ? '.general.c' : '.game.c') // If activeTab is general, select general
-  );
-
-  // Get next tab to switch (either general or game)
-  const nextChatTab = document.querySelector(
-    isGameLocation
-      ? (document.querySelector('.game.c.active') ? '.general.c' : '.game.c')
-      : (document.querySelector('.general.c.active') ? '.game.c' : '.general.c')
-  );
-
-  return {
-    chatField: document.querySelector(chatFieldSelector),
-    chatSend: document.querySelector(chatSendSelector),
-    activeChatTab, // Return the currently active tab element (either general or game)
-    nextChatTab, // Return the next tab to switch to
-    chatHidden: document.querySelector('#chat-wrapper.chat-hidden')
-  };
-};
+// ---- Set proper background color to user list ----
+function applyDynamicBackgroundColor() {
+  const dynamicBackgroundColor = getComputedStyle(document.querySelector('.chat .messages')).backgroundColor;
+  const style = document.createElement('style');
+  style.innerHTML = `
+    #chat-general .smile-tab, .chat-user-list {
+      background-color: ${dynamicBackgroundColor};
+    }
+  `;
+  document.head.appendChild(style);
+} applyDynamicBackgroundColor();
 
 // ---- Chat System Helpers ----
 // Extracts a system message from the chat field's value.
@@ -72,7 +50,7 @@ export function getChatSystemMessage(chatField) {
 // ========================================================================
 // CHAT CONNECTION RESTORATION AND UNBLOCK HANDLER
 // ========================================================================
-if (currentLocationIncludes('gamelist')) {
+if (locationHas('gamelist')) {
   // Function to handle changes when the chat field is disabled.
   function handleChatStateChange(timeout, chatField, chatSend) {
     if (chatField.disabled) {
@@ -83,7 +61,7 @@ if (currentLocationIncludes('gamelist')) {
         chatSend.style.setProperty('background-color', 'rgb(160, 35, 35)', 'important');
         chatSend.style.setProperty(
           'background-image',
-          `url("data:image/svg+xml,${encodeURIComponent(icons.deniedSVG)}")`,
+          `url("data:image/svg+xml,${encodeURIComponent(deniedSVG)}")`,
           'important'
         );
         chatSend.style.setProperty('background-repeat', 'no-repeat', 'important');
@@ -126,13 +104,23 @@ if (currentLocationIncludes('gamelist')) {
 }
 
 // ========================================================================
-// CHAT FOCUS
+// CHAT FOCUS && INSERT PRIVATE
 // ========================================================================
+
+export function insertPrivate(userId) {
+  const userName = document.querySelector(`.name[data-user="${userId}"]`).textContent;
+  const message = `<${userName}>`;
+
+  const textElement = document.querySelector('.messages .text');
+  textElement.value = message;
+
+  textElement.focus();
+  textElement.selectionEnd = textElement.value.length;
+}
 
 // Function to set focus on the chat input field based on the active tab.
 export function setChatFieldFocus() {
   const { chatHidden, chatField } = getChatElements(); // Get chat field elements
-
   if (!chatHidden && chatField) {
     chatField.focus(); // Set focus on the chat input field
   }
@@ -168,7 +156,6 @@ export function restoreChatTab() {
 // CHAT EVENTS & LISTENERS
 // ========================================================================
 
-
 [...document.querySelectorAll('.general.c, .game.c')].forEach(tab =>
   tab.addEventListener('click', switchChatByClick)
 );
@@ -183,7 +170,7 @@ document.addEventListener('keydown', event => {
 // ========================================================================
 // INPUT BACKUP & RESTORATION
 // ========================================================================
-
+// ---- Restore message from backup ----
 export function setupInputBackup() {
   const { chatField } = getChatElements();
   if (chatField) {
@@ -198,6 +185,33 @@ export function setupInputBackup() {
     });
   }
 }
+
+// ---- Restore chat state (Opened or Closed) ----
+export function restoreChatState() {
+  const chatMainWrapper = document.querySelector('#chat-fixed-placeholder');
+  if (!localStorage.getItem('shouldShowPopupMessage')) localStorage.setItem('shouldShowPopupMessage', 'false');
+  chatMainWrapper.style.display = JSON.parse(localStorage.getItem('shouldShowPopupMessage')) ? 'none' : 'unset';
+}
+
+// ---- Manual chat (Open and Close) ----
+const chatCloseButton = document.querySelector('.mostright');
+
+// Event listener for mostright click event
+chatCloseButton.addEventListener('click', () => {
+  setTimeout(() => {
+    const chatHidden = document.querySelector('#chat-wrapper.chat-hidden');
+    if (chatHidden) {
+      localStorage.setItem('shouldShowPopupMessage', 'true');
+      isInitializedChat = false;
+    } else {
+      pruneDeletedMessages();
+      setChatFieldFocus();
+      isInitializedChat = false;
+      setTimeout(() => (isInitializedChat = false), 3000);
+      localStorage.setItem('shouldShowPopupMessage', 'false');
+    }
+  }, 300);
+});
 
 // ========================================================================
 // MESSAGE SENDING
@@ -244,7 +258,6 @@ async function sendMessageInParts(message) {
 // ========================================================================
 // CHAT INPUT EVENTS
 // ========================================================================
-
 export function setupChatInputListener() {
   const { chatField } = getChatElements();
   chatField.setAttribute('maxlength', '1000');
@@ -254,7 +267,7 @@ export function setupChatInputListener() {
     const pastedValue = event.clipboardData.getData('text');
     let processedValue = pastedValue;
 
-    if (isValidEncodedURL(pastedValue)) {
+    if (isEncodedURL(pastedValue)) {
       processedValue = decodeURL(pastedValue);
     }
 
@@ -278,3 +291,16 @@ export function setupChatInputListener() {
     }
   });
 }
+
+// ---- Chat Toggle (Ctrl + Space) ----
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.code === 'Space') {
+    const chat = document.querySelector('#chat-fixed-placeholder');
+    const wasHidden = chat.style.display === 'none';
+    chat.style.display = wasHidden ? 'unset' : 'none';
+    localStorage.setItem('shouldShowPopupMessage', !wasHidden);
+    !wasHidden
+      ? document.querySelector('.popup-messages-container')?.remove()
+      : getChatElements().chatField?.focus();
+  }
+});
