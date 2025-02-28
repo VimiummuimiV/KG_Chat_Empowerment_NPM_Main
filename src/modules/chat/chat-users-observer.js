@@ -1,13 +1,19 @@
+import { enterSVG, leaveSVG } from "../icons"; // icons
+
 import {
   debounce,
-  animateUserCount,
   getChatElements,
   logUserAction,
-  updateUserCount
+  getUserGender
 } from "../helpers"; // helpers
 
 import { debounceTimeout } from "../definitions"; // definitions
-import { isInitializedChat } from "../../main";
+import { isInitializedChat } from "../../main"; // main
+import { addPulseEffect } from "../animations"; // animations
+import { usersToTrack } from "../panels/settings"; // settings
+import { showUserAction } from "../notifications"; // notifications
+import { refreshUserList } from "./chat-userlist"; // chat userlist
+import { userAction } from "../voice-engine"; // voice engine
 
 const userList = getChatElements().userList.general;
 
@@ -16,6 +22,38 @@ let userMap = new Map(); // Store as [userId]: {userName, ...}
 let prevUserCount = 0;
 
 let isAnimated = false;
+
+/**
+ * Updates the given user count element with the count, adjusting the font size based on the number of digits.
+ * @param {HTMLElement} element - The DOM element displaying the user count.
+ * @param {number} count - The user count.
+ */
+export function updateUserCount(element, count) {
+  if (!element) return; // Exit if the element doesn't exist.
+  const digits = count.toString().length;
+  element.textContent = count;
+  element.style.fontSize = Math.max(24 - (digits - 1) * 2, 12) + 'px';
+}
+
+// Function to animate user count change
+export function animateUserCount(actualUserCount, userCountElement) {
+  let count = 0;
+  const speed = 20;
+
+  const userCountIncrement = () => {
+    if (count <= actualUserCount) {
+      const progress = Math.min(count / (actualUserCount || 1), 1); // Handle zero case
+      updateUserCount(userCountElement, count++);
+      userCountElement.style.filter = `grayscale(${100 - progress * 100}%)`;
+      setTimeout(userCountIncrement, speed);
+    } else {
+      addPulseEffect(userCountElement);
+      isAnimated = true;
+    }
+  };
+
+  setTimeout(userCountIncrement, speed);
+}
 
 // Mutation Observer for new users
 const chatUsersObserver = new MutationObserver(debounce((mutations) => {
@@ -44,8 +82,6 @@ const chatUsersObserver = new MutationObserver(debounce((mutations) => {
           })
           .filter(Boolean) // Remove null entries
       );
-
-      console.log(isInitializedChat);
 
       if (!isInitializedChat) return;
 
@@ -85,7 +121,7 @@ const chatUsersObserver = new MutationObserver(debounce((mutations) => {
         const userGender = getUserGender(userName);
         const isTracked = usersToTrack.some(u => u.name === userName && u.state === 'thawed');
 
-        showUserAction(userName, actionType === "enter" ? icons.enterSVG : icons.leaveSVG, actionType === "enter");
+        showUserAction(userName, actionType === "enter" ? enterSVG : leaveSVG, actionType === "enter");
         refreshUserList(userName, actionType);
         logUserAction(userId, actionType);
 
@@ -105,7 +141,6 @@ const chatUsersObserver = new MutationObserver(debounce((mutations) => {
     }
   });
 }, debounceTimeout));
-
 
 // Define a function to start the observer
 export function startChatUserObserver() {

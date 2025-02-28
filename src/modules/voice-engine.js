@@ -1,39 +1,4 @@
-// Define voice speed limits
-const minVoiceSpeed = 0;
-const maxVoiceSpeed = 2.5;
 
-// Define voice pitch limits
-const minVoicePitch = 0;
-const maxVoicePitch = 2.0;
-
-// Define default voice speed and pitch
-const defaultVoiceSpeed = 1.5;
-const defaultVoicePitch = 1.0;
-
-// Retrieve KG_Chat_Empowerment from localStorage or create an object with empty voiceSettings if it doesn't exist
-// This is the main key for the settings
-let KG_Chat_Empowerment = JSON.parse(localStorage.getItem('KG_Chat_Empowerment'));
-
-// If KG_Chat_Empowerment doesn't exist in localStorage, create it with an empty voiceSettings object
-if (!KG_Chat_Empowerment) {
-  KG_Chat_Empowerment = {
-    voiceSettings: {
-      voiceSpeed: defaultVoiceSpeed, // Set default values for voiceSpeed
-      voicePitch: defaultVoicePitch, // Set default values for voicePitch
-    },
-    messageSettings: {},
-  };
-  localStorage.setItem('KG_Chat_Empowerment', JSON.stringify(KG_Chat_Empowerment));
-}
-
-// Define the default voice speed and pitch
-let voiceSpeed = KG_Chat_Empowerment.voiceSettings.voiceSpeed !== null
-  ? KG_Chat_Empowerment.voiceSettings.voiceSpeed
-  : defaultVoiceSpeed; // Default value if KG_Chat_Empowerment.voiceSettings.voiceSpeed is null
-
-let voicePitch = KG_Chat_Empowerment.voiceSettings.voicePitch !== null
-  ? KG_Chat_Empowerment.voiceSettings.voicePitch
-  : defaultVoicePitch; // Default value if KG_Chat_Empowerment.voiceSettings.voicePitch is null
 
 // SOUND NOTIFICATION
 
@@ -237,7 +202,7 @@ const verbs = {
 
 
 // Handles user entering and leaving actions
-function userAction(user, actionType, userGender) {
+export function userAction(user, actionType, userGender) {
   const shouldPlayAction = shouldEnableSetting('sound', 'presence');
   // If neither beep and voice is enabled, exit early.
   if (!shouldPlayAction) return;

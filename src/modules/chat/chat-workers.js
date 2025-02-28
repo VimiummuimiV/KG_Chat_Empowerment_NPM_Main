@@ -5,14 +5,13 @@ import { isInitializedChat } from "../../main.js"; // main
 import {
   isEncodedURL,
   debounce,
-  getChatElements
+  getChatElements,
+  locationHas
 } from "../helpers.js";
 
 // ========================================================================
 // DEFINITIONS
 // ========================================================================
-
-export const locationHas = part => window.location.href.includes(part);
 
 const extraTimeout = 5000;
 const minimalTimeout = 1000;
@@ -25,7 +24,7 @@ const lostConnectionMessage = 'Связь с сервером потеряна';
 // ========================================================================
 
 // ---- Set proper background color to user list ----
-function applyDynamicBackgroundColor() {
+export function applyDynamicBackgroundColor() {
   const dynamicBackgroundColor = getComputedStyle(document.querySelector('.chat .messages')).backgroundColor;
   const style = document.createElement('style');
   style.innerHTML = `
@@ -34,7 +33,7 @@ function applyDynamicBackgroundColor() {
     }
   `;
   document.head.appendChild(style);
-} applyDynamicBackgroundColor();
+}
 
 // ---- Chat System Helpers ----
 // Extracts a system message from the chat field's value.
@@ -45,6 +44,56 @@ export function getChatSystemMessage(chatField) {
   if (value.includes(blockedChatMessage)) return blockedChatMessage;
   if (value.includes(lostConnectionMessage)) return lostConnectionMessage;
   return null;
+}
+
+// ---- Chat messages grouper ----
+export function groupChatMessages() {
+  const messagesContainer = document.getElementById('chat-content');
+  const chatMessages = messagesContainer.querySelectorAll('.messages-content div p');
+  const spacing = '14px';
+
+  // Preprocess messages into an array of objects
+  const messages = Array.from(chatMessages).map(element => ({
+    element,
+    isSystem: !!element.querySelector('.system-message'),
+    username: (() => {
+      const usernameElement = element.querySelector('span.username span[data-user]');
+      return usernameElement ? usernameElement.textContent.replace(/[<>]/g, '') : null;
+    })()
+  }));
+
+  let previousUser = null;
+  let hasPreviousUserMessage = false;
+
+  messages.forEach((current, index) => {
+    const { element, isSystem, username } = current;
+
+    // Reset margins before applying new styles
+    element.style.marginTop = '';
+    element.style.marginBottom = '';
+
+    if (isSystem) {
+      element.style.marginTop = spacing;
+      element.style.marginBottom = spacing;
+      return;
+    }
+
+    if (!username) return;
+
+    // Apply top margin if user changes (after first message)
+    if (hasPreviousUserMessage && username !== previousUser) {
+      element.style.marginTop = spacing;
+    }
+
+    // Apply bottom margin if next message is different user
+    const next = messages[index + 1];
+    if (next && !next.isSystem && next.username !== username) {
+      element.style.marginBottom = spacing;
+    }
+
+    previousUser = username;
+    hasPreviousUserMessage = true;
+  });
 }
 
 // ========================================================================
@@ -196,22 +245,25 @@ export function restoreChatState() {
 // ---- Manual chat (Open and Close) ----
 const chatCloseButton = document.querySelector('.mostright');
 
-// Event listener for mostright click event
-chatCloseButton.addEventListener('click', () => {
-  setTimeout(() => {
-    const chatHidden = document.querySelector('#chat-wrapper.chat-hidden');
-    if (chatHidden) {
-      localStorage.setItem('shouldShowPopupMessage', 'true');
-      isInitializedChat = false;
-    } else {
-      pruneDeletedMessages();
-      setChatFieldFocus();
-      isInitializedChat = false;
-      setTimeout(() => (isInitializedChat = false), 3000);
-      localStorage.setItem('shouldShowPopupMessage', 'false');
-    }
-  }, 300);
-});
+// Check if the current location is 'gmid' or 'gamelist'
+if (locationHas('gmid') || locationHas('gamelist')) {
+  // Event listener for mostright click event
+  chatCloseButton.addEventListener('click', () => {
+    setTimeout(() => {
+      const chatHidden = document.querySelector('#chat-wrapper.chat-hidden');
+      if (chatHidden) {
+        localStorage.setItem('shouldShowPopupMessage', 'true');
+        isInitializedChat = false;
+      } else {
+        pruneDeletedMessages();
+        setChatFieldFocus();
+        isInitializedChat = false;
+        setTimeout(() => (isInitializedChat = false), 3000);
+        localStorage.setItem('shouldShowPopupMessage', 'false');
+      }
+    }, 300);
+  });
+}
 
 // ========================================================================
 // MESSAGE SENDING
@@ -293,14 +345,17 @@ export function setupChatInputListener() {
 }
 
 // ---- Chat Toggle (Ctrl + Space) ----
-document.addEventListener('keydown', e => {
-  if (e.ctrlKey && e.code === 'Space') {
-    const chat = document.querySelector('#chat-fixed-placeholder');
-    const wasHidden = chat.style.display === 'none';
-    chat.style.display = wasHidden ? 'unset' : 'none';
-    localStorage.setItem('shouldShowPopupMessage', !wasHidden);
-    !wasHidden
-      ? document.querySelector('.popup-messages-container')?.remove()
-      : getChatElements().chatField?.focus();
-  }
-});
+// Check if the current location is 'gmid' or 'gamelist'
+if (locationHas('gmid') || locationHas('gamelist')) {
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.code === 'Space') {
+      const chat = document.querySelector('#chat-fixed-placeholder');
+      const wasHidden = chat.style.display === 'none';
+      chat.style.display = wasHidden ? 'unset' : 'none';
+      localStorage.setItem('shouldShowPopupMessage', !wasHidden);
+      !wasHidden
+        ? document.querySelector('.popup-messages-container')?.remove()
+        : getChatElements().chatField?.focus();
+    }
+  });
+}

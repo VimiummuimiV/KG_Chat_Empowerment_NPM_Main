@@ -6,8 +6,14 @@ import {
 
 import {
   myUserId,
-  profileBaseUrl
+  profileBaseUrl,
+  state
 } from "../definitions.js"; // definitions
+
+// Define dynamic variables
+let {
+  fetchedUsers
+} = state;
 
 import {
   usersToTrack,
@@ -16,18 +22,19 @@ import {
 } from "../panels/settings.js" // settings
 
 import {
+  // helpers
   getUserProfileData,
   getRandomEmojiAvatar,
-  manageData
- } from "../helpers.js"; // helpers
+  loadProfileIntoIframe,
+  // helpers definitions
+  isCtrlKeyPressed
+} from "../helpers.js"; // helpers
 
- import { createCustomTooltip } from "../tooltip"; // tooltip
- import { updateUserCountText } from "../panels/cache"; // cache panel
+import { createCustomTooltip } from "../tooltip"; // tooltip
+import { updateUserCountText } from "../panels/cache"; // cache panel
 import { isInitializedChat } from "../../main.js";
 import { addShakeEffect } from "../animations.js"; // animations
 import { insertPrivate } from "./chat-workers.js"; // chat workers
-
-let fetchedUsers = manageData('fetchedUsers', 'get') || {};
 
 // Function to get rank information (class, color, and icon) based on status title in English
 function getRankInfo(mainTitle) {

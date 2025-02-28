@@ -180,7 +180,35 @@ function createDynamicNotification(user, iconType, time, presence) {
   }, 300);
 }
 
-// Main function which now calls the appropriate notification function(s)
+// Global queue and state for dynamic notifications
+const notificationQueue = [];
+let processingQueue = false;
+const delayBetween = 500; // 500 ms delay
+
+// Helper for pausing execution
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// Function to process the queue one notification at a time
+function processQueue() {
+  if (notificationQueue.length === 0) {
+    processingQueue = false;
+    return;
+  }
+  processingQueue = true;
+  const { user, iconType, time, presence } = notificationQueue.shift();
+  createDynamicNotification(user, iconType, time, presence);
+  setTimeout(processQueue, delayBetween);
+}
+
+// Enqueue a new dynamic notification
+function enqueueNotification(user, iconType, time, presence) {
+  notificationQueue.push({ user, iconType, time, presence });
+  if (!processingQueue) {
+    processQueue();
+  }
+}
+
+// Main function updated to use the queue for dynamic notifications
 export function showUserAction(user, iconType, presence) {
   // Check if the user is tracked and in the correct state
   const isTrackedUser = usersToTrack.some(
@@ -190,26 +218,25 @@ export function showUserAction(user, iconType, presence) {
   const shouldShowStatic = isTrackedUser && shouldEnableSetting('notifications', 'static');
   const shouldShowDynamic = shouldEnableSetting('notifications', 'dynamic');
 
-  // If neither notification is enabled, exit early.
+  // Exit early if no notification type is enabled
   if (!shouldShowStatic && !shouldShowDynamic) return;
 
   // Get current time formatted as [HH:MM:SS]
   const time = getCurrentTimeString();
 
+  // Show static notification if applicable
   if (shouldShowStatic && isTrackedUser) {
     createStaticNotification(user, iconType, time, presence, 'generalChat');
     scrollMessagesToBottom();
   }
 
+  // Instead of immediately creating a dynamic notification, enqueue it
   if (shouldShowDynamic) {
-    createDynamicNotification(user, iconType, time, presence);
+    enqueueNotification(user, iconType, time, presence);
   }
 }
 
 // NOTIFICATIONS TERMINATOR 
-
-// Helper for pausing execution
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function purgeStaticChatNotifications(
   removalDelay = 40,
@@ -271,4 +298,3 @@ function isVisibleInContainer(el, container) {
     elRect.bottom <= containerRect.bottom
   );
 }
-

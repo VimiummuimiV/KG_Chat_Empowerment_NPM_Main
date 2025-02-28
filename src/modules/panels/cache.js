@@ -12,7 +12,6 @@ import {
   getUserProfileData,
   refreshFetchedUsers,
   calculateTimeOnSite,
-  manageData,
   // helpers definitions
   isCtrlKeyPressed
 } from "../helpers.js";
@@ -91,7 +90,7 @@ function showCachePanel() {
   }
 
   removePreviousPanel();
-  let users = manageData('fetchedUsers', 'get') || {};
+  let users = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
 
   const cachedUsersPanel = document.createElement('div');
   cachedUsersPanel.className = 'cached-users-panel popup-panel';
@@ -140,7 +139,7 @@ function showCachePanel() {
         const [hours, minutes = '00', seconds = '00'] = userInput.split(':').map(part => part.padStart(2, '0'));
         dropTimeThreshold.textContent = `${hours}:${minutes}:${seconds}`;
         localStorage.setItem('cacheRefreshThresholdHours', `${hours}:${minutes}:${seconds}`);
-        manageData('fetchedUsers', 'clear');
+        localStorage.removeItem('fetchedUsers');
         localStorage.removeItem('lastClearTime');
         localStorage.removeItem('nextClearTime');
         setTimeout(() => location.reload(), 1000);
@@ -436,7 +435,7 @@ function showCachePanel() {
       visitsElement.addEventListener('click', (event) => {
         shouldProcessActionLog = true;
         const userId = visitsElement.dataset.userId;
-        const users = manageData('fetchedUsers', 'get');
+        const users = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
         const user = users ? users[userId] : null;
         const actionLog = user?.actionLog;
 
@@ -565,13 +564,13 @@ function showCachePanel() {
       if (remainingTime <= 0) {
         refreshFetchedUsers(true, cacheRefreshThresholdHours);
       } else {
-        updatedropTimeExpiration(dropTimeExpiration, remainingTime);
+        updateDropTimeExpiration(dropTimeExpiration, remainingTime);
       }
     }
   }
 
   const emojiMap = { 0: '🕛', 5: '🕐', 10: '🕑', 15: '🕒', 20: '🕓', 25: '🕔', 30: '🕕', 35: '🕖', 40: '🕗', 45: '🕘', 50: '🕙', 55: '🕚' };
-  function updatedropTimeExpiration(dropTimeExpiration, remainingTime) {
+  function updateDropTimeExpiration(dropTimeExpiration, remainingTime) {
     const hours = String(Math.floor(remainingTime / 3600000)).padStart(2, '0');
     const minutes = String(Math.floor((remainingTime % 3600000) / 60000)).padStart(2, '0');
     const seconds = String(Math.floor((remainingTime % 60000) / 1000)).padStart(2, '0');
@@ -600,7 +599,7 @@ export function createCacheButton(panel) {
 
   const cacheUserCount = document.createElement('div');
   cacheUserCount.className = 'cache-user-count';
-  cacheUserCount.textContent = manageData('fetchedUsers', 'length');
+  cacheUserCount.textContent = Object.keys(JSON.parse(localStorage.getItem('fetchedUsers')) || {}).length;
   showUserListCacheButton.appendChild(cacheUserCount);
 
   showUserListCacheButton.title = 'Show Cache Panel';
@@ -615,7 +614,7 @@ export function createCacheButton(panel) {
 export function updateUserCountText() {
   const userCountElement = document.querySelector('.cache-panel-load-button .cache-user-count');
   if (!userCountElement) return;
-  const newUserCount = manageData('fetchedUsers', 'length').toString();
+  const newUserCount = Object.keys(JSON.parse(localStorage.getItem('fetchedUsers')) || {}).length.toString();
   if (newUserCount !== userCountElement.textContent) {
     userCountElement.textContent = newUserCount;
     addPulseEffect(userCountElement);

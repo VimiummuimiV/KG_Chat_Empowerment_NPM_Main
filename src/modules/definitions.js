@@ -32,17 +32,13 @@ export const emojiFaces = [
   '🙈', '🙉', '🙊', '🐔', '🦄'
 ];
 
-export const state = {
-  // Variable to store the last selected emoji
-  lastEmojiAvatar: null,
-  // Tracks the last focused textarea within the iframe to manage input interactions
+export let state = {
   lastFocusedIframeTextarea: null,
-  // Object to store event handlers for big image
   bigImageEvents: {},
-  // Define an object to store event handlers
   panelsEvents: {},
+  // Remove the extra closing parenthesis after getItem('fetchedUsers')
   fetchedUsers: JSON.parse(localStorage.getItem('fetchedUsers')) || {}
-}
+};
 
 // Timeout before the dynamicChatNotification should be removed
 export const dynamicChatNotificationTimeout = 5000;

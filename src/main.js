@@ -1,7 +1,7 @@
 import "./style.css"; // styles
 
-import { convertImageLinksToImage } from "./modules/image-converter.js"; // image converter
-import { convertVideoLinksToPlayer } from "./modules/video-converter.js"; // video converter
+import { convertImageLinksToImage } from "./modules/converters/image-converter.js"; // image converter
+import { convertVideoLinksToPlayer } from "./modules/converters/video-converter.js"; // video converter
 
 import { createMessageModeButton } from "./modules/message-mode.js"; // message mode button
 import { createSoundSwitcherButton } from "./modules/sound-mode.js"; // sound switcher button
@@ -18,7 +18,8 @@ import {
   refreshFetchedUsers,
   scrollMessagesToBottom,
   highlightMentionWords,
-  removeIgnoredUserMessages
+  removeIgnoredUserMessages,
+  locationHas
 } from "./modules/helpers.js";
 
 // chat
@@ -29,14 +30,15 @@ import {
   setupInputBackup,
   setupChatInputListener,
   restoreChatState,
-  locationHas
+  groupChatMessages,
+  applyDynamicBackgroundColor
 } from "./modules/chat/chat-workers.js";
 
-import { setupFonts } from "./modules/fonts.js"; // fonts 
+import { setupFonts } from "./modules/fonts.js"; // fonts
 import { refreshUserList } from "./modules/chat/chat-userlist.js"; // chat userlist
 import ChatMessagesRemover from "./modules/chat/chat-messages-remover.js"; // chat messages remover
 import { pruneDeletedMessages } from "./modules/chat/chat-messages-remover.js";
-import { createChatUserCounter } from "./modules/users-counter.js"; // counter 
+import { createChatUserCounter } from "./modules/users-counter.js"; // counter
 import { startChatUserObserver } from "./modules/chat/chat-users-observer.js"; // users observer
 
 // definitions
@@ -60,21 +62,25 @@ export let isInitializedChat = false;
     return panel;
   })();
 
-
   // 1 ======================================================================
   // Check if the current location is 'gmid' or 'gamelist'
   if (locationHas('gmid') || locationHas('gamelist')) {
     createChatUserCounter(empowermentPanel);
+    applyDynamicBackgroundColor();
   }
   // ========================================================================
 
-  // 2 ======================================================================
-  createSoundSwitcherButton(empowermentPanel);
-  // ========================================================================
 
-  // 3 ======================================================================
-  createMessageModeButton(empowermentPanel);
-  // ========================================================================
+  // Check if the current location is 'gmid' or 'gamelist'
+  if (locationHas('gmid') || locationHas('gamelist')) {
+    // 2 ======================================================================
+    createSoundSwitcherButton(empowermentPanel);
+    // ========================================================================
+
+    // 3 ======================================================================
+    createMessageModeButton(empowermentPanel);
+    // ========================================================================
+  }
 
   // 4 ======================================================================
   createCacheButton(empowermentPanel);
@@ -98,6 +104,8 @@ export let isInitializedChat = false;
   startChatUserObserver();
   // ========================================================================
 
+  // Check if the current location is 'gmid' or 'gamelist'
+  if (!(locationHas('gmid') || locationHas('gamelist'))) return;
 
   // Instantiate ChatMessagesRemover before using it
   const chatMessagesRemover = new ChatMessagesRemover();
@@ -122,7 +130,7 @@ export let isInitializedChat = false;
         window.location.href.includes('gmid') && restoreChatTab();
         setupInputBackup('#chat-general .text');
         highlightMentionWords();
-        applyChatMessageGrouping();
+        groupChatMessages();
         scrollMessagesToBottom();
         refreshFetchedUsers(false, cacheRefreshThresholdHours);
         refreshUserList();

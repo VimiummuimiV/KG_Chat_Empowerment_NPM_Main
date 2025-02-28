@@ -1,5 +1,5 @@
-import { convertImageLinksToImage } from "../image-converter.js"; // image converter
-import { convertVideoLinksToPlayer } from "../video-converter.js"; // video converter
+import { convertImageLinksToImage } from "../converters/image-converter.js"; // image converter
+import { convertVideoLinksToPlayer } from "../converters/video-converter.js"; // video converter
 
 // icons
 import {

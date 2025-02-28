@@ -4,11 +4,11 @@ import {
   isEncodedURL,
   scrollMessagesToBottom,
   isTrustedDomain
-} from "./helpers";
+} from "../helpers";
 
 const videoExtensionEmoji = '🎥';
 const webDomainEmoji = '🖥️';
-const untrustedEoji = '💀️️';
+const untrustedEmoji = '💀️️';
 
 // List of allowed video extensions
 const allowedVideoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi'];
@@ -78,7 +78,7 @@ export function convertVideoLinksToPlayer(containerType) {
     // For untrusted domains, add classes and update text before waiting for a click
     if (!isTrusted) {
       link.classList.add("skipped");
-      link.textContent = `${videoExtensionEmoji} ${videoInfo.videoType} ${webDomainEmoji} Hostname (${domain}) ${untrustedEoji} Untrusted`;
+      link.textContent = `${videoExtensionEmoji} ${videoInfo.videoType} ${webDomainEmoji} Hostname (${domain}) ${untrustedEmoji} Untrusted`;
       link.addEventListener("click", e => {
         if (!link.classList.contains("processed-video")) {
           e.preventDefault();

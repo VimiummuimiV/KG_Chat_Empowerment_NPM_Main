@@ -13,15 +13,18 @@ import {
   state
 } from "./definitions.js";
 
-import { ignored, mentionKeywords } from "./panels/settings.js"; // settings
+import { ignored, mentionKeywords, usersToTrack } from "./panels/settings.js"; // settings
+import { addPulseEffect } from "./animations.js"; // animations
 
 // Define dynamic variables
 let {
   panelsEvents,
   bigImageEvents,
   lastFocusedIframeTextarea,
-  lastEmojiAvatar
+  fetchedUsers
 } = state;
+
+export const locationHas = part => window.location.href.includes(part);
 
 // Initialize global variables to track the state of Ctrl and Alt keys
 export let isCtrlKeyPressed = false, isAltKeyPressed = false;
@@ -361,6 +364,8 @@ export const loadProfileIntoIframe = (url) => {
     }
   };
 };
+// Variable to store the last selected emoji
+let lastEmojiAvatar = null;
 
 // Helper function to get a random emoji avatar
 export function getRandomEmojiAvatar() {
@@ -554,12 +559,9 @@ export function refreshFetchedUsers(isManual = false, thresholdHours = 24) {
 
   // If clearing manually or the time threshold has been reached, clear the cache
   if (isManual || timeElapsed >= thresholdHours) {
-    // Clear the fetchedUsers from localStorage
     localStorage.removeItem('fetchedUsers');
-
-    // Reset the in-memory fetchedUsers object
-    state.fetchedUsers = {};
-
+    // fetchedUsers = {};
+    Object.keys(fetchedUsers).forEach(key => delete fetchedUsers[key]);
     // Reset the timer by updating 'lastClearTime' and 'nextClearTime'
     const nextClearTime = new Date().getTime() + thresholdHours * 60 * 60 * 1000;
     localStorage.setItem('lastClearTime', new Date().getTime().toString());
@@ -568,29 +570,40 @@ export function refreshFetchedUsers(isManual = false, thresholdHours = 24) {
 }
 
 export function getUserChatDuration(username, actionTime) {
-  // Use manageData to search for the user by login
-  const user = manageData('fetchedUsers', 'find', { query: { login: username } });
-
+  // Retrieve stored user data and find the target user by login
+  const user = Object.values(JSON.parse(localStorage.getItem('fetchedUsers') || '[]'))
+    .find(u => u?.login === username);
   if (!user) return `❌ User "${username}" not found`;
 
   const actionLog = user.actionLog || [];
   const current = actionLog.find(entry => entry.timestamp === actionTime);
-
   if (!current) return `Action not found at ${actionTime}`;
 
   const actionIndex = actionLog.indexOf(current);
-
   if (actionIndex === 0) return `🙌 ${username}'s first action`;
 
+  // Find the most recent action before the current one that has a different type
   const prev = actionLog.slice(0, actionIndex).reverse().find(a => a.type !== current.type);
-
   if (!prev) return `❌ No valid previous action found for ${actionTime}`;
 
+  // Calculate the duration between the two timestamps
   const duration = calculateDuration(prev.timestamp, current.timestamp);
-
   return current.type === 'leave'
     ? `🛑 ${username} stayed in chat for ${duration}`
     : `✅ ${username} was absent for ${duration}`;
+}
+
+function calculateDuration(start, end) {
+  const toSeconds = t => t.split(':').reduce((acc, val, i) =>
+    acc + val * [3600, 60, 1][i], 0); // Convert HH:MM:SS to total seconds
+
+  const diff = Math.abs(toSeconds(end) - toSeconds(start)); // Get absolute difference in seconds
+
+  return [
+    Math.floor(diff / 3600), // Hours
+    Math.floor((diff % 3600) / 60), // Minutes
+    diff % 60 // Seconds
+  ].map(n => n.toString().padStart(2, '0')).join(':'); // Format as HH:MM:SS
 }
 
 // Function to calculate time spent on the site
@@ -626,19 +639,6 @@ export function calculateTimeOnSite(registeredDate) {
   }
 
   return timeComponents.filter(Boolean).join(' '); // Filter out empty strings and join components
-}
-
-function calculateDuration(start, end) {
-  const toSeconds = t => t.split(':').reduce((acc, val, i) =>
-    acc + val * [3600, 60, 1][i], 0); // Convert HH:MM:SS to total seconds
-
-  const diff = Math.abs(toSeconds(end) - toSeconds(start)); // Get absolute difference in seconds
-
-  return [
-    Math.floor(diff / 3600), // Hours
-    Math.floor((diff % 3600) / 60), // Minutes
-    diff % 60 // Seconds
-  ].map(n => n.toString().padStart(2, '0')).join(':'); // Format as HH:MM:SS
 }
 
 // Function to check if a specific setting should be enabled based on localStorage settings
@@ -908,55 +908,6 @@ export function updatePersonalMessageCounts() {
   previousTotalCount = totalCount; // Update previous count
 }
 
-// ========================================================================
-// MANAGE CACHE
-// ========================================================================
-/**
- * Manages localStorage data with various operations.
- * @param {string} key - localStorage key to manage.
- * @param {string} operation - Operation to perform: 'get', 'set', 'clear', 'length', 'values', 'keys', 'find', 'findAll'.
- * @param {object} [options] - Optional parameters.
- * @param {*} [options.data] - Data to store (required for 'set').
- * @param {string[]} [options.path] - Path array for nested data access (default: ['data'] for read operations).
- * @param {object} [options.query] - Query object for find operations.
- * @returns {*|boolean} Result depends on operation: data for 'get', boolean for write ops, array/list for queries.
- * 
- * Usage Examples:
- * - get: manageData('user', 'get', { path: ['profile', 'address'] })
- * - set: manageData('user', 'set', { data: { profile: { name: 'John' } } })
- * - clear: manageData('user', 'clear')
- * - find: manageData('products', 'find', { query: { category: 'books' } })
- * - length: manageData('products', 'length', { path: ['items'] })
- */
-export function manageData(key, operation, { data, path, query } = {}) {
-  try {
-    const parseSafe = v => { try { return JSON.parse(v) } catch { return v } };
-    const stored = parseSafe(localStorage.getItem(key));
-
-    const effectivePath = path ?? (['get', 'find', 'findAll'].includes(operation) ? ['data'] : []);
-    const dataAtPath = effectivePath?.reduce((a, k) => a?.[k], stored) ?? stored;
-
-    const queryAction = (method) => {
-      if (!dataAtPath || !query) return method === 'find' ? null : [];
-      const items = Array.isArray(dataAtPath) ? dataAtPath : Object.values(dataAtPath);
-      return items[method](item => Object.entries(query).every(([k, v]) => item[k] === v));
-    };
-
-    return {
-      get: () => dataAtPath,
-      set: () => (localStorage.setItem(key, JSON.stringify(data)), true),
-      clear: () => (localStorage.removeItem(key), true),
-      length: () => !dataAtPath ? 0 : dataAtPath.length ?? Object.keys(dataAtPath).length,
-      values: () => dataAtPath ? Object.values(dataAtPath) : [],
-      keys: () => dataAtPath ? Object.keys(dataAtPath) : [],
-      find: () => queryAction('find'),
-      findAll: () => queryAction('filter'),
-    }[operation]?.() ?? null;
-  } catch (e) {
-    return operation === 'get' ? null : false;
-  }
-}
-
 // Function to convert Cyrillic characters to Latin
 function convertCyrillicToLatin(input) {
   const cyrillicToLatinMap = {
@@ -999,38 +950,6 @@ export function playSound() {
 export function isBanMessage(messageText) {
   if (!messageText) return false; // Return false if messageText is null, undefined, or an empty string
   return ['Клавобот', 'Пользователь', 'заблокирован'].every(word => messageText.includes(word));
-}
-
-/**
- * Updates the given user count element with the count, adjusting the font size based on the number of digits.
- * @param {HTMLElement} element - The DOM element displaying the user count.
- * @param {number} count - The user count.
- */
-export function updateUserCount(element, count) {
-  if (!element) return; // Exit if the element doesn't exist.
-  const digits = count.toString().length;
-  element.textContent = count;
-  element.style.fontSize = Math.max(24 - (digits - 1) * 2, 12) + 'px';
-}
-
-// Function to animate user count change
-export function animateUserCount(actualUserCount, userCountElement) {
-  let count = 0;
-  const speed = 20;
-
-  const userCountIncrement = () => {
-    if (count <= actualUserCount) {
-      const progress = Math.min(count / (actualUserCount || 1), 1); // Handle zero case
-      updateUserCount(userCountElement, count++);
-      userCountElement.style.filter = `grayscale(${100 - progress * 100}%)`;
-      setTimeout(userCountIncrement, speed);
-    } else {
-      addPulseEffect(userCountElement);
-      isAnimated = true;
-    }
-  };
-
-  setTimeout(userCountIncrement, speed);
 }
 
 // ---- DOM Utilities ----

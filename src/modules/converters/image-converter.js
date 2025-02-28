@@ -8,10 +8,10 @@ import {
   removeBigImageEventListeners,
   triggerDimmingElement,
   triggerTargetElement
-} from "./helpers";
+} from "../helpers";
 
 // definitions
-import { state } from "./definitions";
+import { state } from "../definitions";
 
 // Define dynamic variables
 let {
@@ -95,7 +95,7 @@ export function convertImageLinksToImage(containerType) {
     // Handle untrusted domains
     if (!isTrusted) {
       link.classList.add("skipped");
-      link.textContent = `${imageExtensionEmoji} Image (${extension.toUpperCase()}) ${webDomainEmoji} Hostname (${domain}) ${untrustedEoji} Untrusted`;
+      link.textContent = `${imageExtensionEmoji} Image (${extension.toUpperCase()}) ${webDomainEmoji} Hostname (${domain}) ${untrustedEmoji} Untrusted`;
 
       // Directly handle the image loading on link click
       link.addEventListener("click", e => {
