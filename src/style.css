@@ -1399,7 +1399,7 @@
 
 /* message-mode */
 .selected-message.message-mode {
-  background-color: hsla(0, 50%, 30%, 0.2) !important;
+  background-color: hsla(0, 50%, 50%, 0.2) !important;
   box-shadow: inset 0px 0px 0px 1px hsl(0, 50%, 50%, 0.4) !important;
 }
 
