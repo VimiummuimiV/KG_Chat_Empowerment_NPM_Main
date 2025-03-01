@@ -14,18 +14,37 @@ export default class ChatMessagesRemover {
 
   attachEvents() {
     document.addEventListener('mousedown', e => {
-      // if (e.button === 2 && e.target.closest('.messages-content p')) {
-      if (e.button === 2 && e.target.closest('.messages-content p')) {
-        this.isDragging = true;
-        this.toggleSelect(e.target.closest('p'), true);
+      // Check if the target is within a message paragraph
+      const msgEl = e.target.closest('.messages-content p');
+      if (e.button === 2 && msgEl) {
+        // Check if the clicked element (or its ancestor) is a username element
+        const usernameEl = e.target.closest('.username');
+        if (usernameEl) {
+          // Get the username text (trimmed)
+          const usernameText = usernameEl.textContent.trim();
+          // Select all messages with the same username and add the additional class
+          document.querySelectorAll('.messages-content p').forEach(msg => {
+            const msgUsernameEl = msg.querySelector('.username');
+            if (msgUsernameEl && msgUsernameEl.textContent.trim() === usernameText) {
+              this.toggleSelect(msg, true);
+              // Add an additional classname to indicate username selection
+              msg.classList.add('username-mode');
+            }
+          });
+        } else {
+          // Normal behavior: select the single message (with dragging support)
+          this.isDragging = true;
+          this.toggleSelect(msgEl, true);
+        }
       }
     });
 
     document.addEventListener('mouseup', () => this.isDragging = false);
 
     document.addEventListener('mousemove', e => {
-      if (this.isDragging && e.target.closest('.messages-content p')) {
-        this.toggleSelect(e.target.closest('p'), true);
+      const msgEl = e.target.closest('.messages-content p');
+      if (this.isDragging && msgEl) {
+        this.toggleSelect(msgEl, true);
       }
     });
 
@@ -38,8 +57,13 @@ export default class ChatMessagesRemover {
     });
   }
 
+  // Update toggleSelect so that when deselecting (state is false),
+  // it also removes the "username-mode" class.
   toggleSelect(el, state) {
     el.classList.toggle('selected-message', state);
+    if (!state) {
+      el.classList.remove('username-mode');
+    }
     const id = getMessageId(el);
     state ? this.selected.add(id) : this.selected.delete(id);
   }
@@ -65,8 +89,10 @@ export default class ChatMessagesRemover {
     });
 
     btn.onclick = () => {
+      // Remove both the selection and the username-mode class when deleting
       document.querySelectorAll('.selected-message').forEach(msg => {
         msg.classList.remove('selected-message');
+        msg.classList.remove('username-mode');
         if (msg.classList.length === 0) msg.removeAttribute('class');
       });
       this.storeDeleted([...this.selected]);
@@ -79,22 +105,24 @@ export default class ChatMessagesRemover {
     // Set up removal after 1 second if not hovered
     let timeoutId;
     btn.addEventListener('mouseenter', () => {
-      if (timeoutId) clearTimeout(timeoutId); // Clear previous timeouts
+      if (timeoutId) clearTimeout(timeoutId);
     });
 
     btn.addEventListener('mouseleave', () => {
       timeoutId = setTimeout(() => {
         btn.remove();
         this.clearSelection();
-      }, 1000); // 1000 ms timeout to remove if not hovered
+      }, 1000);
     });
 
     document.body.append(btn);
   }
 
+  // Clear selection by removing both the "selected-message" and "username-mode" classes.
   clearSelection() {
     document.querySelectorAll('.selected-message').forEach(msg => {
       msg.classList.remove('selected-message');
+      msg.classList.remove('username-mode');
       if (msg.classList.length === 0) {
         msg.removeAttribute('class');
       }
@@ -110,22 +138,17 @@ export default class ChatMessagesRemover {
 
   updateDeletedMessages() {
     const stored = new Set(JSON.parse(localStorage.deletedChatMessagesContent || '[]'));
-    // Iterate over all message paragraphs
     document.querySelectorAll('.messages-content p').forEach(msg => {
       const id = getMessageId(msg);
-      // Always remove 'shown-message' class from all messages
       msg.classList.remove('shown-message');
-      // Add 'hidden-message' class if the message is deleted
       msg.classList.toggle('hidden-message', stored.has(id));
     });
-    // Save the updated deleted messages state
     localStorage.deletedChatMessagesContent = JSON.stringify([...stored]);
   }
 
   renderToggle() {
     const hasDeleted = JSON.parse(localStorage.deletedChatMessagesContent || '[]').length > 0;
 
-    // If no deleted messages, remove toggle button if it exists
     if (!hasDeleted) {
       if (this.toggleBtn) {
         this.toggleBtn.remove();
@@ -134,30 +157,23 @@ export default class ChatMessagesRemover {
       return;
     }
 
-    // If there are deleted messages and toggle button does not exist, create it
     if (!this.toggleBtn) {
       this.toggleBtn = document.createElement('button');
-      this.toggleBtn.className = 'toggle-button toggle-hidden';  // Initial class set to 'toggle-hidden'
-      this.toggleBtn.textContent = 'Show';  // Initial text content
+      this.toggleBtn.className = 'toggle-button toggle-hidden';
+      this.toggleBtn.textContent = 'Show';
 
       this.toggleBtn.onclick = (e) => {
         if (e.ctrlKey) {
-          // Restore all messages by removing hidden and shown classes
           document.querySelectorAll('.messages-content p').forEach(msg => {
             msg.classList.remove('hidden-message', 'shown-message');
           });
-
-          // Update localStorage with an empty array instead of removing it
           localStorage.setItem('deletedChatMessagesContent', JSON.stringify([]));
-
-          // Clear selection and update the UI
           this.selected.clear();
           this.updateDeletedMessages();
-          this.renderToggle();  // Re-render the toggle button with updated state
+          this.renderToggle();
           return;
         }
 
-        // Normal Show/Hide functionality
         const shouldShow = this.toggleBtn.textContent === 'Show';
         const storedIds = JSON.parse(localStorage.deletedChatMessagesContent || '[]');
 
@@ -169,7 +185,6 @@ export default class ChatMessagesRemover {
           }
         });
 
-        // Toggle button text and class based on the current state
         if (shouldShow) {
           this.toggleBtn.textContent = 'Hide';
           this.toggleBtn.classList.remove('toggle-hidden');
@@ -200,14 +215,10 @@ function getMessageId(el) {
 
 // This function is separated out for reuse in other logic
 export function pruneDeletedMessages() {
-  // Collect the IDs of all messages currently in the DOM
   const currentIds = new Set(
     [...document.querySelectorAll('.messages-content p')].map(msg => getMessageId(msg))
   );
-  // Retrieve the stored deleted IDs from localStorage
   const stored = new Set(JSON.parse(localStorage.deletedChatMessagesContent || '[]'));
-  // Filter stored IDs to keep only those that exist in the DOM
   const updatedStored = [...stored].filter(id => currentIds.has(id));
-  // Update localStorage with the filtered list
   localStorage.deletedChatMessagesContent = JSON.stringify(updatedStored);
 }
