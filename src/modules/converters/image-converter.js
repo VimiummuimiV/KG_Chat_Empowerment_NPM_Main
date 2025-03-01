@@ -37,7 +37,7 @@ let isChangingImage = false; // Flag to track if an image change is in progress
 
 const imageExtensionEmoji = '📸';
 const webDomainEmoji = '🖥️';
-const untrustedEoji = '💀️️';
+const untrustedEmoji = '💀️️';
 
 // List of allowed image extensions
 const allowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];

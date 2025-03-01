@@ -1392,16 +1392,32 @@
   filter: brightness(1.5);
 }
 
-/* Message selection styling */
+/* Common styles for all selected messages */
 .selected-message {
-  background-color: hsla(0, 50%, 30%, 0.5) !important;
-  box-shadow: inset 0px 0px 0px 1px hsl(0, 50%, 50%) !important;
   background-clip: padding-box !important;
 }
 
+/* message-mode */
+.selected-message.message-mode {
+  background-color: hsla(0, 50%, 30%, 0.2) !important;
+  box-shadow: inset 0px 0px 0px 1px hsl(0, 50%, 50%, 0.4) !important;
+}
+
+/* username-mode */
+.selected-message.username-mode {
+  background-color: hsla(145, 50%, 30%, 0.2) !important;
+  box-shadow: inset 0px 0px 0px 1px hsl(145, 50%, 50%, 0.4) !important;
+}
+
+/* time-mode */
+.selected-message.time-mode {
+  background-color: hsla(200, 50%, 30%, 0.2) !important;
+  box-shadow: inset 0px 0px 0px 1px hsl(200, 50%, 50%, 0.4) !important;
+}
+
 .shown-message {
-  background-color: hsla(30, 60%, 30%, 0.5) !important;
-  box-shadow: inset 0px 0px 0px 1px hsl(30, 60%, 50%) !important;
+  background-color: hsla(30, 60%, 30%, 0.2) !important;
+  box-shadow: inset 0px 0px 0px 1px hsl(30, 60%, 50%, 0.4) !important;
   background-clip: padding-box !important;
 }
 
