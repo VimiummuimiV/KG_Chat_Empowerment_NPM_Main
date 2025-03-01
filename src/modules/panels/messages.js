@@ -21,6 +21,7 @@ import {
   triggerTargetElement,
   processEncodedLinks,
   highlightMentionWords,
+  scrollMessagesToMiddle,
   // helpers definitions
   isCtrlKeyPressed
 } from '../helpers.js';

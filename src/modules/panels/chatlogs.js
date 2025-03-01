@@ -23,7 +23,8 @@ import {
   triggerDimmingElement,
   triggerTargetElement,
   processEncodedLinks,
-  highlightMentionWords
+  highlightMentionWords,
+  scrollMessagesToMiddle
 } from '../helpers.js';
 
 // definitions
