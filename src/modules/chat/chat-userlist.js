@@ -15,11 +15,8 @@ let {
   fetchedUsers
 } = state;
 
-import {
-  usersToTrack,
-  ignored,
-  moderator
-} from "../panels/settings.js" // settings
+import { settingsState } from "../panels/settings.js" // settings
+const { usersToTrack, ignored, moderator } = settingsState
 
 import {
   // helpers

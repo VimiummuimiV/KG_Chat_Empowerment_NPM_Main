@@ -33,8 +33,10 @@ import {
   state
 } from '../definitions.js';
 
-import { ignored } from "./settings.js"; // settings
 import { addJumpEffect, addPulseEffect } from "../animations.js"; // animations
+import { settingsState } from "../panels/settings.js"; // settings
+
+const { ignored } = settingsState;
 
 // Define dynamic variables
 let {

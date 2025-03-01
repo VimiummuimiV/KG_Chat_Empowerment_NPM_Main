@@ -10,10 +10,11 @@ import {
 import { debounceTimeout } from "../definitions"; // definitions
 import { isInitializedChat } from "../../main"; // main
 import { addJumpEffect, addPulseEffect } from "../animations"; // animations
-import { usersToTrack } from "../panels/settings"; // settings
 import { showUserAction } from "../notifications"; // notifications
 import { refreshUserList } from "./chat-userlist"; // chat userlist
 import { userAction } from "../voice-engine"; // voice engine
+import { settingsState } from "../panels/settings"; // settings
+const { usersToTrack } = settingsState;
 
 const userList = getChatElements().userList.general;
 

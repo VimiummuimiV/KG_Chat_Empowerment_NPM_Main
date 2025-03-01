@@ -16,8 +16,10 @@ import { showPopupMessage } from "../popup-messages"; // popup messages
 import { groupChatMessages } from "./chat-workers"; // chat workers
 import { isInitializedChat } from "../../main"; // main
 import { usualMessageFrequencies, mentionMessageFrequencies, playBeep, beepVolume } from "../voice-engine"; // voice engine definitions
-import { ignored } from "../panels/settings.js"; // settings
 import { myNickname } from "../definitions.js"; // definitions
+import { settingsState } from "../panels/settings.js"; // settings
+
+const { ignored } = settingsState;
 
 // Set the flag as false for the mention beep sound to trigger at first usual beep sound for usual messages
 let isMention = false;

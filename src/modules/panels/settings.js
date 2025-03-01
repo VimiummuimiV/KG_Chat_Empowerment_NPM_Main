@@ -11,7 +11,7 @@ import {
   addSVG
 } from '../icons.js';
 
-import { addPulseEffect } from '../animations.js'; // animations
+import { addPulseEffect, addShakeEffect } from '../animations.js'; // animations
 
 // helpers && helpers definitions
 import {
@@ -50,35 +50,65 @@ if (!stored) {
   localStorage.setItem('KG_Chat_Empowerment', JSON.stringify(KG_Chat_Empowerment));
 }
 
-// 1. First declare and initialize all arrays as empty
-export let usersToTrack = [];
-export let mentionKeywords = [];
-export let usernameReplacements = [];
-export let moderator = [];
-export let ignored = [];
-export let toggle = [];
-
-// 2. Create settings map AFTER array declarations
-const settingsMap = [
-  ['usersToTrack', usersToTrack],
-  ['mentionKeywords', mentionKeywords],
-  ['usernameReplacements', usernameReplacements],
-  ['moderator', moderator],
-  ['ignored', ignored]
+// 1. Define all settings keys in camelCase format
+const settingsConfig = [
+  {
+    type: 'tracked',
+    emoji: '👀',
+    key: 'usersToTrack',
+    selector: '.settings-tracked-container'
+  },
+  {
+    type: 'mention',
+    emoji: '📢',
+    key: 'mentionKeywords',
+    selector: '.settings-mention-container'
+  },
+  {
+    type: 'replacement',
+    emoji: '♻️',
+    key: 'usernameReplacements',
+    selector: '.settings-replacement-container'
+  },
+  {
+    type: 'moderator',
+    emoji: '⚔️',
+    key: 'moderator',
+    selector: '.settings-moderator-container'
+  },
+  {
+    type: 'ignored',
+    emoji: '🛑',
+    key: 'ignored',
+    selector: '.settings-ignored-container'
+  },
+  {
+    type: 'toggle',
+    emoji: '🔘',
+    key: 'toggle',
+    selector: '.settings-toggle-container'
+  }
 ];
 
-// 3. Load data from localStorage and immediately fill the arrays with the stored data
-settingsMap.forEach(([key, arr]) => {
+// 2. Declare and initialize all arrays dynamically
+export const settingsState = Object.fromEntries(
+  settingsConfig.map(config => [config.key, []])
+);
+
+// 3. Load data from localStorage and populate arrays
+settingsConfig.forEach(config => {
+  const key = config.key;
   const stored = JSON.parse(localStorage.getItem(key)) || [];
   if (stored.length) {
-    arr.splice(0, arr.length, ...stored);  // Clear existing data and fill with stored data
+    settingsState[key].splice(0, settingsState[key].length, ...stored);
   }
 });
 
 // 4. Add myNickname to mentionKeywords after loading stored data
-// (Assuming myNickname is defined elsewhere)
-mentionKeywords.push(myNickname);
-
+const mentionConfig = settingsConfig.find(config => config.type === 'mention');
+if (typeof myNickname !== 'undefined' && myNickname && mentionConfig) {
+  settingsState[mentionConfig.key].push(myNickname);
+}
 
 // Global function to handle file input and process uploaded settings
 async function handleUploadSettings(event) {
@@ -182,27 +212,9 @@ function handleDownloadSettings(settingsData) {
   }
 }
 
-// Function to retrieve settings from localStorage and combine them into a single object
-function getSettingsData() {
-  // Retrieve data from localStorage using the appropriate keys
-  const usersToTrack = JSON.parse(localStorage.getItem('usersToTrack')) || [];
-  const mentionKeywords = JSON.parse(localStorage.getItem('mentionKeywords')) || [];
-  const usernameReplacements = JSON.parse(localStorage.getItem('usernameReplacements')) || [];
-  const moderator = JSON.parse(localStorage.getItem('moderator')) || [];
-  const ignored = JSON.parse(localStorage.getItem('ignored')) || [];
-  const toggle = JSON.parse(localStorage.getItem('toggle')) || [];
 
-  // Combine the retrieved data into a single object
-  const settingsData = {
-    usersToTrack: usersToTrack,
-    mentionKeywords: mentionKeywords,
-    usernameReplacements: usernameReplacements,
-    moderator: moderator,
-    ignored: ignored,
-    toggle: toggle
-  };
-
-  return settingsData;
+export function getSettingsData() {
+  return Object.fromEntries(settingsConfig.map(config => [config.key, JSON.parse(localStorage.getItem(config.key)) || []]));
 }
 
 // Create a button to upload and apply new settings,
@@ -238,43 +250,26 @@ export function createSettingsButton(panel) {
   panel.appendChild(showSettingsButton);
 }
 
-// Save the current settings to localStorage
 function saveSettingsToLocalStorage() {
-  localStorage.setItem('usersToTrack', JSON.stringify(usersToTrack));
-  localStorage.setItem('mentionKeywords', JSON.stringify(mentionKeywords));
-  localStorage.setItem('usernameReplacements', JSON.stringify(usernameReplacements));
-  localStorage.setItem('moderator', JSON.stringify(moderator));
-  localStorage.setItem('ignored', JSON.stringify(ignored));
-  localStorage.setItem('toggle', JSON.stringify(toggle));
+  settingsConfig.forEach(config => {
+    localStorage.setItem(config.key, JSON.stringify(settingsState[config.key]));
+  });
 }
 
-// Process and apply uploaded settings
-function processUploadedSettings({
-  usersToTrack: u = [],
-  mentionKeywords: mk = [],
-  usernameReplacements: ur = [],
-  moderator: md = [],
-  ignored: i = [],
-  toggle: t = []
-}) {
-  // Ensure the uploaded values are valid arrays
-  usersToTrack = Array.isArray(u) ? u : usersToTrack;
-  mentionKeywords = Array.isArray(mk) ? mk : mentionKeywords;
-  usernameReplacements = Array.isArray(ur) ? ur : usernameReplacements;
-  moderator = Array.isArray(md) ? md : moderator;
-  ignored = Array.isArray(i) ? i : ignored;
-  toggle = Array.isArray(t) ? t : toggle;
-
-  // Save to localStorage after applying the settings
-  saveSettingsToLocalStorage();
-  console.log('Uploaded settings applied:', {
-    usersToTrack,
-    mentionKeywords,
-    usernameReplacements, // Added to log
-    moderator,
-    ignored,
-    toggle
+// Process and apply uploaded settings dynamically
+function processUploadedSettings(uploadedSettings) {
+  // Iterate over settingsConfig and apply uploaded values dynamically
+  settingsConfig.forEach(config => {
+    if (Array.isArray(uploadedSettings[config.key])) {
+      settingsState[config.key] = uploadedSettings[config.key];
+    }
   });
+
+  // Save the updated settings to localStorage
+  saveSettingsToLocalStorage();
+
+  // Log the updated settings
+  console.log('Uploaded settings applied:', settingsState);
 }
 
 // Function to display the settings panel
@@ -373,14 +368,11 @@ function showSettingsPanel() {
     const previousValues = getSettingsData();
 
     const handleInputChange = () => {
-      const currentValues = {
-        usersToTrack: [],
-        mentionKeywords: [],
-        usernameReplacements: [],
-        moderator: [],
-        ignored: [],
-        toggle: []
-      };
+      // Dynamically create the currentValues object with empty arrays
+      const currentValues = {};
+      settingsConfig.forEach(config => {
+        currentValues[config.key] = [];
+      });
 
       // Process tracked items
       container.querySelectorAll('.settings-tracked-container .tracked-item').forEach(item => {
@@ -553,22 +545,15 @@ function showSettingsPanel() {
 
   // Function to clear the content of settings containers
   function clearSettingsContainers() {
-    const containers = [
-      '.settings-tracked-container',
-      '.settings-mention-container',
-      '.settings-replacement-container',
-      '.settings-moderator-container',
-      '.settings-ignored-container',
-      '.settings-toggle-container'
-    ];
-
-    containers.forEach(selector => {
-      const container = document.querySelector(selector);
-      if (container) container.replaceChildren(); // Clear the container
-
-      const addButton = container.querySelector('.add-settings-button');
-      // Re-add the .add-settings-button if it was found
-      addButton && container.appendChild(addButton);
+    // Generate container selectors from settingsConfig
+    settingsConfig.forEach(config => {
+      const container = document.querySelector(config.selector);
+      if (container) {
+        const addButton = container.querySelector('.add-settings-button');
+        container.replaceChildren(); // Clear the container
+        // Re-add the .add-settings-button if it was found
+        addButton && container.appendChild(addButton);
+      }
     });
   }
 
@@ -607,17 +592,7 @@ function showSettingsPanel() {
   const settingsContainer = document.createElement('div');
   settingsContainer.className = 'settings-content-container';
 
-  // Array of settings types with corresponding emoji
-  const settingsTypes = [
-    { type: 'tracked', emoji: '👀' },
-    { type: 'mention', emoji: '📢' },
-    { type: 'replacement', emoji: '♻️' },
-    { type: 'moderator', emoji: '⚔️' },
-    { type: 'ignored', emoji: '🛑' },
-    { type: 'toggle', emoji: '🔘' }
-  ];
-
-  settingsTypes.forEach(({ type, emoji }) => {
+  settingsConfig.forEach(({ type, emoji }) => {
     const description = document.createElement('div');
     description.className = `settings-${type}-description settings-description`; // Add specific class and settings-description
 
@@ -900,34 +875,35 @@ function showSettingsPanel() {
   }
 
   function populateSettings() {
-    const containers = {
-      usersToTrack: '.settings-tracked-container',
-      mentionKeywords: '.settings-mention-container',
-      usernameReplacements: '.settings-replacement-container',
-      moderator: '.settings-moderator-container',
-      ignored: '.settings-ignored-container'
-    };
-
+    // Create mappings of functions to create different item types
     const creators = {
-      usersToTrack: { name: 'tracked', createItem: createTrackedItem },
-      mentionKeywords: { name: 'mention', createItem: createMentionItem },
-      usernameReplacements: { name: 'replacement', createItem: createReplacementItem },
-      moderator: { name: 'moderator', createItem: createModeratorItem },
-      ignored: { name: 'ignored', createItem: createIgnoredItem }
+      usersToTrack: createTrackedItem,
+      mentionKeywords: createMentionItem,
+      usernameReplacements: createReplacementItem,
+      moderator: createModeratorItem,
+      ignored: createIgnoredItem,
+      toggle: createToggleItem
     };
 
+    // Get settings data
     const data = getSettingsData();
 
-    Object.entries(data).forEach(([key, items]) => {
-      const container = document.querySelector(containers[key]);
+    // Process all settings except toggle
+    settingsConfig.filter(config => config.type !== 'toggle').forEach(config => {
+      const key = config.key;
+      const type = config.type;
+      const container = document.querySelector(config.selector);
+
       if (!container) return;
+
       container.classList.add("settings-container");
 
-      if (key === 'mentionKeywords' || key === 'moderator' || key === 'ignored') {
+      // Set flex direction for specific containers
+      if (['mention', 'moderator', 'ignored'].includes(type)) {
         container.style.flexDirection = 'row';
       }
 
-      // Clear existing items and add buttons, but ensure the add button is not removed
+      // Clear existing items but keep the add button
       const existingAddButton = container.querySelector('.add-settings-button');
       while (container.firstChild) {
         if (container.firstChild !== existingAddButton) {
@@ -938,24 +914,27 @@ function showSettingsPanel() {
       }
 
       // Populate items
-      items.forEach(item => container.appendChild(creators[key].createItem(item)));
+      const items = data[key] || [];
+      items.forEach(item => container.appendChild(creators[key](item)));
 
-      const addButton = createAddButton(containers[key], creators[key].createItem);
+      // Add the "add" button
+      const addButton = createAddButton(config.selector, creators[key]);
       container.appendChild(addButton);
 
-      // Check if already wrapped in a spoiler
+      // Wrap in spoiler if not already wrapped
       const isAlreadyWrapped = container.closest('.settings-spoiler') !== null;
-
       if (!isAlreadyWrapped) {
         const parent = container.parentNode;
         if (parent) {
           const index = Array.from(parent.childNodes).indexOf(container);
           parent.removeChild(container);
+
           const spoiler = createSpoilerContainer(container, {
-            showText: `Show ${creators[key].name} settings`,
-            hideText: `Hide ${creators[key].name} settings`
+            showText: `Show ${type} settings`,
+            hideText: `Hide ${type} settings`
           });
           spoiler.classList.add('settings-spoiler-wrapper');
+
           if (index >= parent.childNodes.length) {
             parent.appendChild(spoiler);
           } else {
@@ -966,8 +945,6 @@ function showSettingsPanel() {
     });
 
     // Process toggle settings separately
-    const storedToggleSettings = JSON.parse(localStorage.getItem('toggle')) || [];
-    const toggleContainer = document.querySelector('.settings-toggle-container');
     const toggleSettings = [
       {
         name: 'showChatStaticNotifications',
@@ -991,10 +968,14 @@ function showSettingsPanel() {
       }
     ];
 
+    const toggleConfig = settingsConfig.find(config => config.type === 'toggle');
+    const storedToggleSettings = JSON.parse(localStorage.getItem(toggleConfig.key)) || [];
+    const toggleContainer = document.querySelector(toggleConfig.selector);
+
     toggleSettings.forEach(toggle => {
       const storedSetting = storedToggleSettings.find(item => item.name === toggle.name);
       const optionValue = storedSetting ? storedSetting.option : 'yes';
-      const toggleItem = createToggleItem(toggle, toggle.name, optionValue);
+      const toggleItem = creators.toggle(toggle, toggle.name, optionValue);
       toggleContainer.appendChild(toggleItem);
     });
   }

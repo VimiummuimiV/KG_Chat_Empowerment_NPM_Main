@@ -13,7 +13,9 @@ import {
   state
 } from "./definitions.js";
 
-import { ignored, mentionKeywords, usernameReplacements, usersToTrack } from "./panels/settings.js"; // settings
+import { settingsState } from "./panels/settings.js"; // settings
+const { ignored, mentionKeywords, usernameReplacements, usersToTrack } = settingsState;
+
 import { addPulseEffect, addShakeEffect, addJumpEffect } from "./animations.js"; // animations
 import { textToSpeech } from "./voice-engine.js"; // voice engine
 import { voiceSpeed } from "./sound-mode.js"; // sound mode
