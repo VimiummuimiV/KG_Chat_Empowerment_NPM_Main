@@ -1,4 +1,5 @@
 import { shouldEnableSetting } from "./helpers"; // helpers
+import { voiceSpeed, voicePitch } from "./sound-mode"; // sound mode
 
 // SOUND NOTIFICATION
 
@@ -24,9 +25,9 @@ export const usualMessageFrequencies = [500];
 export const mentionMessageFrequencies = [600, 800];
 
 // Volume of the reader voice
-const voiceVolume = 0.8;
+const voiceVolume = 1;
 // Volume of the beep signal
-const beepVolume = 0.2;
+export const beepVolume = 0.2;
 // Duration for each frequency
 const duration = 80;
 // Smooth inception and termination for each note
@@ -35,7 +36,7 @@ const fade = 10;
 const delay = 100;
 
 // Function to play a beep given a list of frequencies
-function playBeep(frequencies, volume) {
+export function playBeep(frequencies, volume) {
   audioContextPromise.then(audioContext => {
     for (let i = 0; i < frequencies.length; i++) {
       const frequency = frequencies[i];
@@ -154,7 +155,7 @@ async function webTextToSpeech(text, voiceSpeed = voiceSpeed) {
 }
 
 // Main TTS function: plays each language block in order.
-async function textToSpeech(text, voiceSpeed = voiceSpeed) {
+export async function textToSpeech(text, voiceSpeed = voiceSpeed) {
   const shouldUseGoogleTTS = shouldEnableSetting('sound', 'gTTS');
   // Clean the text using the new cleanText function asynchronously
   const cleanedText = await cleanText(text);
@@ -199,7 +200,6 @@ const verbs = {
   Male: { enter: 'зашёл', leave: 'вышел' },
   Female: { enter: 'зашла', leave: 'вышла' }
 };
-
 
 // Handles user entering and leaving actions
 export function userAction(user, actionType, userGender) {

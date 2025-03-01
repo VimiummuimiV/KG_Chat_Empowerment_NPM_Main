@@ -1,5 +1,4 @@
 import { deniedSVG } from "../icons.js"; // icons
-import { isInitializedChat } from "../../main.js"; // main
 
 // helpers
 import {

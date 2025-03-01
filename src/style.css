@@ -97,7 +97,7 @@
 }
 
 /* Chat user count element */
-.chat-user-count {
+.participant-count {
   filter: grayscale(100%);
   transition: 0.2s ease-in-out;
   font-family: 'Orbitron', sans-serif;
@@ -205,7 +205,7 @@
   white-space: nowrap;
   padding: 8px;
   display: inline-flex;
-  flex: auto;
+  flex: 0 auto;
   justify-content: center;
   margin: 4px;
   font-size: 1em;
@@ -823,10 +823,9 @@
   scrollbar-width: none;
   overflow-x: hidden;
   display: flex;
-  min-width: 5vw;
-  max-width: 50vw;
   flex-wrap: wrap;
   background-color: #111111;
+  justify-content: center;
   border: 3px dashed #212121;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
   border-radius: 0.2em !important;

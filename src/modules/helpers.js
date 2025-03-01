@@ -13,8 +13,10 @@ import {
   state
 } from "./definitions.js";
 
-import { ignored, mentionKeywords, usersToTrack } from "./panels/settings.js"; // settings
-import { addPulseEffect } from "./animations.js"; // animations
+import { ignored, mentionKeywords, usernameReplacements, usersToTrack } from "./panels/settings.js"; // settings
+import { addPulseEffect, addShakeEffect, addJumpEffect } from "./animations.js"; // animations
+import { textToSpeech } from "./voice-engine.js"; // voice engine
+import { voiceSpeed } from "./sound-mode.js"; // sound mode
 
 // Define dynamic variables
 let {

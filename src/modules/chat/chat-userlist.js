@@ -37,7 +37,7 @@ import { addShakeEffect } from "../animations.js"; // animations
 import { insertPrivate } from "./chat-workers.js"; // chat workers
 
 // Function to get rank information (class, color, and icon) based on status title in English
-function getRankInfo(mainTitle) {
+export function getRankInfo(mainTitle) {
   const statusData = {
     'Экстракибер': { class: 'extra', icon: '🚀', color: '#06B4E9' },
     'Кибергонщик': { class: 'cyber', icon: '🤖', color: '#5681ff' },

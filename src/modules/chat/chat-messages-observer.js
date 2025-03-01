@@ -3,7 +3,11 @@ import {
   processEncodedLinks,
   scrollMessagesToBottom,
   updatePersonalMessageCounts,
-  normalizeAndResetUsernames
+  normalizeAndResetUsernames,
+  convertRussianUsernameToLatin,
+  getLatestMessageData,
+  isBanMessage,
+  playSound
 } from "../helpers"; // helpers
 
 import { convertImageLinksToImage } from "../converters/image-converter.js"; // image converter
@@ -11,7 +15,9 @@ import { convertVideoLinksToPlayer } from "../converters/video-converter.js"; //
 import { showPopupMessage } from "../popup-messages"; // popup messages
 import { groupChatMessages } from "./chat-workers"; // chat workers
 import { isInitializedChat } from "../../main"; // main
-import { usualMessageFrequencies, mentionMessageFrequencies } from "../voice-engine"; // voice engine definitions
+import { usualMessageFrequencies, mentionMessageFrequencies, playBeep, beepVolume } from "../voice-engine"; // voice engine definitions
+import { ignored } from "../panels/settings.js"; // settings
+import { myNickname } from "../definitions.js"; // definitions
 
 // Set the flag as false for the mention beep sound to trigger at first usual beep sound for usual messages
 let isMention = false;
@@ -38,7 +44,6 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           const latestMessageData = await getLatestMessageData();
           const currentMessageText = latestMessageData?.messageText || null;
           const currentMessageUsername = latestMessageData?.usernameText || null;
-          console.log(currentMessageText);
 
           // Convert Cyrillic username to Latin
           const latinUsername = convertRussianUsernameToLatin(currentMessageUsername);

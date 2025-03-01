@@ -1,5 +1,24 @@
 import "./style.css"; // styles
 
+import {
+  processEncodedLinks,
+  refreshFetchedUsers,
+  scrollMessagesToBottom,
+  highlightMentionWords,
+  removeIgnoredUserMessages,
+  locationHas
+} from "./modules/helpers.js"; // helpers
+
+import {
+  restoreChatTab,
+  setChatFieldFocus,
+  setupInputBackup,
+  setupChatInputListener,
+  restoreChatState,
+  groupChatMessages,
+  applyDynamicBackgroundColor
+} from "./modules/chat/chat-workers.js"; // chat
+
 import { convertImageLinksToImage } from "./modules/converters/image-converter.js"; // image converter
 import { convertVideoLinksToPlayer } from "./modules/converters/video-converter.js"; // video converter
 
@@ -11,36 +30,14 @@ import { createMessagesButton } from "./modules/panels/messages.js"; // messages
 import { createChatLogsButton } from "./modules/panels/chatlogs.js"; // chatlogs panel
 import { createSettingsButton } from "./modules/panels/settings.js"; // settings panel
 
-// helpers && helpers definitions
-import {
-  // helpers
-  processEncodedLinks,
-  refreshFetchedUsers,
-  scrollMessagesToBottom,
-  highlightMentionWords,
-  removeIgnoredUserMessages,
-  locationHas
-} from "./modules/helpers.js";
-
-// chat
-import {
-  // helpers
-  restoreChatTab,
-  setChatFieldFocus,
-  setupInputBackup,
-  setupChatInputListener,
-  restoreChatState,
-  groupChatMessages,
-  applyDynamicBackgroundColor
-} from "./modules/chat/chat-workers.js";
-
 import { setupFonts } from "./modules/fonts.js"; // fonts
 import { refreshUserList } from "./modules/chat/chat-userlist.js"; // chat userlist
 import ChatMessagesRemover from "./modules/chat/chat-messages-remover.js"; // chat messages remover
 import { pruneDeletedMessages } from "./modules/chat/chat-messages-remover.js";
-import { createChatUserCounter } from "./modules/users-counter.js"; // counter
+import { createChatUserCounter } from "./modules/participant-count.js"; // counter
 import { startChatUserObserver } from "./modules/chat/chat-users-observer.js"; // users observer
 import { startChatMessagesObserver } from "./modules/chat/chat-messages-observer.js" // messages observer
+import { initChatEvents } from "./modules/popup-length-indicator.js"; // popup length indicator
 
 // definitions
 import {
@@ -143,7 +140,8 @@ export let isInitializedChat = false;
         chatMessagesRemover.updateDeletedMessages();
         setupChatInputListener();
         pruneDeletedMessages();
-        setTimeout(() => (isInitializedChat = true), 100);
+        setTimeout(() => { initChatEvents() }, 600);
+        setTimeout(() => (isInitializedChat = true), 600);
       }
     }
   });

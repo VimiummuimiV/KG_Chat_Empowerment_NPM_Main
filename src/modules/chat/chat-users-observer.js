@@ -9,7 +9,7 @@ import {
 
 import { debounceTimeout } from "../definitions"; // definitions
 import { isInitializedChat } from "../../main"; // main
-import { addPulseEffect } from "../animations"; // animations
+import { addJumpEffect, addPulseEffect } from "../animations"; // animations
 import { usersToTrack } from "../panels/settings"; // settings
 import { showUserAction } from "../notifications"; // notifications
 import { refreshUserList } from "./chat-userlist"; // chat userlist
@@ -20,7 +20,6 @@ const userList = getChatElements().userList.general;
 // Initialize user tracking map
 let userMap = new Map(); // Store as [userId]: {userName, ...}
 let prevUserCount = 0;
-
 let isAnimated = false;
 
 /**
@@ -48,6 +47,7 @@ export function animateUserCount(actualUserCount, userCountElement) {
       setTimeout(userCountIncrement, speed);
     } else {
       addPulseEffect(userCountElement);
+      addJumpEffect(userCountElement);
       isAnimated = true;
     }
   };
@@ -62,7 +62,7 @@ const chatUsersObserver = new MutationObserver(debounce((mutations) => {
       const soundSwitcher = document.querySelector('#voice, #beep, #silence');
       const isSilence = soundSwitcher && soundSwitcher.id === 'silence';
       const chatHidden = document.querySelector('#chat-wrapper.chat-hidden');
-      const userCountElement = document.querySelector('.chat-user-count');
+      const userCountElement = document.querySelector('.participant-count');
 
       if (chatHidden) {
         // If the chat is hidden, update the user count to 0 and exit early

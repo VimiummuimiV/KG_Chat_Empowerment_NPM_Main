@@ -38,10 +38,6 @@ let {
   panelsEvents
 } = state;
 
-// Define default voice speed and pitch
-const defaultVoiceSpeed = 1.5;
-const defaultVoicePitch = 1.0;
-
 const stored = localStorage.getItem('KG_Chat_Empowerment');
 export const KG_Chat_Empowerment = stored
   ? JSON.parse(stored)
@@ -53,9 +49,6 @@ export const KG_Chat_Empowerment = stored
 if (!stored) {
   localStorage.setItem('KG_Chat_Empowerment', JSON.stringify(KG_Chat_Empowerment));
 }
-
-export const voiceSpeed = KG_Chat_Empowerment.voiceSettings.voiceSpeed ?? defaultVoiceSpeed;
-export const voicePitch = KG_Chat_Empowerment.voiceSettings.voicePitch ?? defaultVoicePitch;
 
 // 1. First declare and initialize all arrays as empty
 export let usersToTrack = [];

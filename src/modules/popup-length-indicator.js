@@ -1,10 +1,11 @@
+import { getChatElements } from "./helpers"; // helpers
+
 // Select the input element and length popup container using the helper function
-const { inputField: chatField, lengthPopupContainer } = retrieveChatElementsByRoomType();
+const { chatField, messagesContainer } = getChatElements();
 
 const lengthPopup = document.createElement('div');
 lengthPopup.className = 'length-field-popup';
-
-lengthPopupContainer.appendChild(lengthPopup);
+messagesContainer.appendChild(lengthPopup);
 
 // Initialize once at startup
 const textMeasurementCanvas = document.createElement('canvas');
@@ -93,17 +94,24 @@ function resetPopup() {
   Object.assign(lengthPopup.style, { left: '0px', color: 'hsl(200, 20%, 50%)' });
 }
 
-chatField.addEventListener('input', () => {
+// Define your event handler functions (they can be kept local)
+function handleInputEvent() {
   clearTimeout(hidePopupTimeout);
   updateLengthPopup(chatField.value.length);
   updatePopupMetrics(chatField.value);
   togglePopup(true);
   hidePopupTimeout = setTimeout(() => togglePopup(false), 1000);
-});
+}
 
-chatField.addEventListener('keydown', (e) => {
+function handleKeydownEvent(e) {
   if (e.key !== 'Enter') return;
   resetPopup();
   togglePopup(true);
   hidePopupTimeout = setTimeout(() => togglePopup(false), 1000);
-});
+}
+
+// Export an initialization function that sets up the events
+export function initChatEvents() {
+  chatField.addEventListener('input', handleInputEvent);
+  chatField.addEventListener('keydown', handleKeydownEvent);
+}

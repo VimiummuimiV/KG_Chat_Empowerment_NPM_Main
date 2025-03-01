@@ -1,5 +1,5 @@
 import { silenceSVG, beepSVG, voiceSVG, rangeIsOutSVG } from './icons.js';
-import { KG_Chat_Empowerment, voiceSpeed, voicePitch } from './panels/settings.js'; // settings
+import { KG_Chat_Empowerment } from './panels/settings.js'; // settings
 
 import { isCtrlKeyPressed, isAltKeyPressed } from './helpers.js'; // helpers definitions
 
@@ -12,6 +12,13 @@ const maxVoiceSpeed = 2.5;
 // Define voice pitch limits
 const minVoicePitch = 0;
 const maxVoicePitch = 2.0;
+
+// Define default voice speed and pitch
+const defaultVoiceSpeed = 1.5;
+const defaultVoicePitch = 1.0;
+
+export let voiceSpeed = KG_Chat_Empowerment.voiceSettings.voiceSpeed ?? defaultVoiceSpeed;
+export let voicePitch = KG_Chat_Empowerment.voiceSettings.voicePitch ?? defaultVoicePitch;
 
 // Declare variables for the sound switcher button and its icon
 let soundSwitcher, soundSwitcherIcon;

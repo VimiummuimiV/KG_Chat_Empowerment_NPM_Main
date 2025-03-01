@@ -1,77 +1,90 @@
-let tooltipInstance = null;
-let tooltipHideTimeout = null;
-let tooltipShowTimeout = null;
-let isTooltipVisible = false;
-let isTooltipShown = false;
-let currentElement = null;
+let tooltipEl = null, tooltipHideTimer = null, tooltipShowTimer = null;
+let tooltipIsVisible = false, tooltipIsShown = false, tooltipCurrentTarget = null;
 
-const tooltipMousemoveHandler = (e) => {
-  if (tooltipInstance) {
-    tooltipInstance.style.left = `${e.clientX + 0}px`;
-    tooltipInstance.style.top = `${e.clientY + 18}px`;
-  }
+const positionTooltip = (clientX, clientY) => {
+  if (!tooltipEl) return;
+  let leftPos = clientX + 10;
+  const tooltipWidth = tooltipEl.offsetWidth;
+  const screenWidth = window.innerWidth;
+
+  // Adjust position if overflowing
+  leftPos = Math.min(Math.max(leftPos, 10), screenWidth - tooltipWidth - 10);
+
+  tooltipEl.style.left = `${leftPos}px`;
+  tooltipEl.style.top = `${clientY + 18}px`;
 };
 
-// Global hide function
-const hideTooltip = () => {
-  isTooltipVisible = false;
-  currentElement = null;
-  clearTimeout(tooltipShowTimeout);
-  tooltipShowTimeout = null;
+const tooltipTrackMouse = e => tooltipEl && positionTooltip(e.clientX, e.clientY);
 
-  clearTimeout(tooltipHideTimeout);
-  tooltipHideTimeout = setTimeout(() => {
-    if (tooltipInstance) {
-      tooltipInstance.style.opacity = '0';
-      isTooltipShown = false;
-      setTimeout(() => {
-        if (!isTooltipVisible && tooltipInstance) {
-          tooltipInstance.style.display = 'none';
-          document.removeEventListener('mousemove', tooltipMousemoveHandler);
-        }
-      }, 50);
-    }
+const hideTooltipElement = () => {
+  tooltipIsVisible = false;
+  tooltipCurrentTarget = null;
+  clearTimeout(tooltipShowTimer);
+  clearTimeout(tooltipHideTimer);
+
+  tooltipHideTimer = setTimeout(() => {
+    if (!tooltipEl) return;
+    tooltipEl.style.opacity = '0';
+    tooltipIsShown = false;
+
+    setTimeout(() => {
+      if (!tooltipIsVisible && tooltipEl) {
+        tooltipEl.style.display = 'none';
+        tooltipEl.textContent = ''; // Clear tooltip content
+        document.removeEventListener('mousemove', tooltipTrackMouse);
+      }
+    }, 50);
   }, 100);
 };
 
-// MutationObserver to check element removal
-const observer = new MutationObserver(() => {
-  if (currentElement && !document.contains(currentElement)) {
-    hideTooltip();
-  }
-});
-observer.observe(document, { childList: true, subtree: true });
+new MutationObserver(() => {
+  if (tooltipCurrentTarget && !document.contains(tooltipCurrentTarget)) hideTooltipElement();
+}).observe(document, { childList: true, subtree: true });
 
-export function createCustomTooltip(element, tooltipText) {
-  if (element.classList.contains('events-included')) return;
-  element.classList.add('events-included');
+export function createCustomTooltip(element, tooltipContent) {
+  if (tooltipContent == null) return; // Skip if content is null/undefined
 
-  tooltipInstance ||= (() => {
-    const tooltipElement = document.createElement('div');
-    tooltipElement.classList.add("custom-tooltip-popup");
-    document.body.appendChild(tooltipElement);
-    return tooltipElement;
-  })();
+  // Always update the tooltip content stored on the element.
+  element._tooltipContent = tooltipContent;
 
-  const showTooltip = (e) => {
-    isTooltipVisible = true;
-    currentElement = element;
-    clearTimeout(tooltipShowTimeout);
-    clearTimeout(tooltipHideTimeout);
-    tooltipInstance.textContent = tooltipText;
+  // If tooltip event listeners haven't been attached, attach them once.
+  if (!element._tooltipInitialized) {
+    element._tooltipInitialized = true;
 
-    document.addEventListener('mousemove', tooltipMousemoveHandler);
-    tooltipMousemoveHandler(e);
+    // Initialize tooltip element if it doesn't exist yet.
+    tooltipEl ||= (() => {
+      const tooltipDiv = document.createElement('div');
+      tooltipDiv.classList.add("custom-tooltip-popup");
+      // Optionally, set positioning styles here:
+      tooltipDiv.style.position = 'absolute';
+      tooltipDiv.style.display = 'none';
+      tooltipDiv.style.opacity = '0';
+      document.body.appendChild(tooltipDiv);
+      return tooltipDiv;
+    })();
 
-    if (!isTooltipShown) {
-      tooltipShowTimeout = setTimeout(() => {
-        tooltipInstance.style.display = 'flex';
-        tooltipInstance.style.opacity = '1';
-        isTooltipShown = true;
+    element.addEventListener('mouseenter', e => {
+      tooltipIsVisible = true;
+      tooltipCurrentTarget = element;
+      clearTimeout(tooltipHideTimer);
+      clearTimeout(tooltipShowTimer);
+
+      // Use the latest stored tooltip content
+      tooltipEl.textContent = element._tooltipContent;
+      tooltipEl.style.display = 'flex';
+      tooltipEl.style.opacity = '0';
+
+      // Force layout recalculation to ensure transition works
+      tooltipEl.offsetHeight;
+      positionTooltip(e.clientX, e.clientY);
+      document.addEventListener('mousemove', tooltipTrackMouse);
+
+      tooltipShowTimer = setTimeout(() => {
+        tooltipEl.style.opacity = '1';
+        tooltipIsShown = true;
       }, 600);
-    }
-  };
+    });
 
-  element.addEventListener('mouseenter', showTooltip);
-  element.addEventListener('mouseleave', hideTooltip);
+    element.addEventListener('mouseleave', hideTooltipElement);
+  }
 }

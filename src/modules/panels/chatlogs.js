@@ -283,7 +283,7 @@ async function toggleMessagesVisibility(selector) {
 
 //   Function to display the chat logs panel
 // Load initially with default date or date given by personal messages panel with parameter date
-async function showChatLogsPanel(personalMessagesDate) {
+export async function showChatLogsPanel(personalMessagesDate) {
   // Check if the panel already exists
   const existingPanel = document.querySelector('.chat-logs-panel');
   if (existingPanel) {

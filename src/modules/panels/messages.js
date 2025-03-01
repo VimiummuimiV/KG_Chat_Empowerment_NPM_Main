@@ -26,6 +26,7 @@ import {
 } from '../helpers.js';
 
 import { addJumpEffect, addPulseEffect } from "../animations.js"; // animations
+import { showChatLogsPanel } from "./chatlogs.js"; // chatlogs
 
 // definitions
 import {
