@@ -12,6 +12,7 @@ import {
   getUserProfileData,
   refreshFetchedUsers,
   calculateTimeOnSite,
+  loadProfileIntoIframe,
   // helpers definitions
   isCtrlKeyPressed
 } from "../helpers.js";
