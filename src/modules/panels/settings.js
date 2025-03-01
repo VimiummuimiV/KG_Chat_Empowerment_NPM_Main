@@ -50,43 +50,291 @@ if (!stored) {
   localStorage.setItem('KG_Chat_Empowerment', JSON.stringify(KG_Chat_Empowerment));
 }
 
+// Applies common styles to a select element and its options
+function styleSelect(select) {
+  select.style.height = '30px';
+  select.style.maxWidth = '120px';
+  select.style.minWidth = '105px';
+  select.style.padding = '0.4em';
+  select.style.font = '1em Montserrat';
+  select.style.fontFamily = 'Montserrat';
+  select.style.setProperty('color', 'bisque', 'important');
+  select.style.setProperty('border-radius', '0.2em', 'important');
+  select.style.boxSizing = 'border-box';
+  select.style.setProperty('background-color', 'rgb(17,17,17)', 'important');
+  select.style.setProperty('border', '1px solid rgb(34,34,34)', 'important');
+
+  Array.from(select.options).forEach(option => {
+    option.style.height = '30px';
+    option.style.setProperty('background-color', 'rgb(17,17,17)', 'important');
+    option.style.setProperty('color', 'bisque', 'important');
+    option.style.fontFamily = 'Montserrat';
+  });
+}
+
+// Common function to attach click event for removing an item
+function attachRemoveListener(removeButton, item) {
+  removeButton.addEventListener('click', () => {
+    item.remove();
+  });
+}
+
+// Function to attach click event for toggling snowflake states
+function attachSnowflakeListener(snowflakeButton, username) {
+  snowflakeButton.addEventListener('click', () => {
+    const isFrozen = snowflakeButton.classList.toggle('assigned-frozen-config');
+    snowflakeButton.classList.toggle('assigned-thawed-config');
+    snowflakeButton.style.opacity = isFrozen ? '1' : '0.3';
+    updateUserState(username, isFrozen ? 'frozen' : 'thawed');
+  });
+}
+
+// Helper function to create a container element
+function createContainer(type, layout = 'inline-flex') {
+  const item = document.createElement('div');
+  item.className = `${type}-item`;
+  item.style.display = layout;
+  item.style.gap = '0.5em';
+  item.style.padding = '0.25em';
+  return item;
+}
+
+// Helper function to create an input element
+function createInput(type, value = '', placeholder = '') {
+  const input = document.createElement('input');
+  input.className = `settings-field ${type}-field`;
+  input.value = value;
+  input.placeholder = placeholder;
+  return input;
+}
+
+// Helper function to create a remove button
+function createRemoveButton(type, item) {
+  const removeButton = document.createElement('div');
+  removeButton.className = `settings-button remove-settings-button remove-${type}-word`;
+  removeButton.innerHTML = removeSVG;
+  attachRemoveListener(removeButton, item);
+  return removeButton;
+}
+
+// Helper function to create a snowflake button
+function createSnowflakeButton(state = 'thawed', username) {
+  const snowflakeButton = document.createElement('div');
+  snowflakeButton.className = `settings-button assigned-settings-button assigned-${state}-config`;
+  snowflakeButton.style.opacity = state === 'thawed' ? '0.3' : '1';
+  snowflakeButton.innerHTML = snowflakeSVG;
+  attachSnowflakeListener(snowflakeButton, username);
+  return snowflakeButton;
+}
+
+// Function to update user state in localStorage
+function updateUserState(username, state) {
+  const usersData = localStorage.getItem("usersToTrack");
+  if (usersData) {
+    const updatedUsers = JSON.parse(usersData).map(user =>
+      user.name === username ? { ...user, state } : user
+    );
+    localStorage.setItem("usersToTrack", JSON.stringify(updatedUsers));
+  }
+}
+
+// Function to create a spoiler container
+function createSpoilerContainer(contentElement, options = {}) {
+  const container = document.createElement('div');
+  container.classList.add("settings-spoiler");
+  const toggleButton = document.createElement('button');
+  toggleButton.textContent = options.showText || 'Show Content';
+  contentElement.style.display = 'none';
+
+  toggleButton.addEventListener('click', () => {
+    const isHidden = contentElement.style.display === 'none';
+    contentElement.style.display = isHidden ? 'flex' : 'none';
+    toggleButton.textContent = isHidden
+      ? (options.hideText || 'Hide Content')
+      : (options.showText || 'Show Content');
+  });
+
+  container.appendChild(toggleButton);
+  container.appendChild(contentElement);
+  return container;
+}
+
+// Creator functions for settingsConfig
+function createTrackedItem(user) {
+  const item = createContainer('tracked', 'flex');
+  const usernameInput = createInput('tracked-username', user.name, 'Username');
+  const pronunciationInput = createInput('tracked-pronunciation', user.pronunciation, 'Pronunciation');
+  const removeButton = createRemoveButton('tracked', item);
+  const initialState = (user.state === 'frozen') ? 'frozen' : 'thawed';
+  const snowflakeButton = createSnowflakeButton(initialState, user.name);
+
+  const genderSelect = document.createElement('select');
+  genderSelect.className = 'tracked-gender-select';
+  const genders = [
+    { value: 'Male', emoji: '👨' },
+    { value: 'Female', emoji: '👩' },
+  ];
+  genders.forEach(({ value, emoji }) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = `${emoji} ${value}`;
+    if (user.gender === value) option.selected = true;
+    genderSelect.appendChild(option);
+  });
+  styleSelect(genderSelect);
+
+  item.appendChild(usernameInput);
+  item.appendChild(genderSelect);
+  item.appendChild(pronunciationInput);
+  item.appendChild(removeButton);
+  item.appendChild(snowflakeButton);
+  return item;
+}
+
+function createMentionItem(keyword) {
+  const item = createContainer('mention');
+  const mentionInput = createInput('mention', keyword, 'Mention Keyword');
+  const removeButton = createRemoveButton('mention', item);
+  item.appendChild(mentionInput);
+  item.appendChild(removeButton);
+  return item;
+}
+
+function createReplacementItem(replacement = { original: '', replacement: '' }) {
+  const item = createContainer('replacement');
+  const originalInput = createInput('replacement-original', replacement.original, 'Original username');
+  const replacementInput = createInput('replacement', replacement.replacement, 'Replacement name');
+  const removeButton = createRemoveButton('replacement', item);
+  item.appendChild(originalInput);
+  item.appendChild(replacementInput);
+  item.appendChild(removeButton);
+  return item;
+}
+
+function createModeratorItem(moderator) {
+  const item = createContainer('moderator');
+  const moderatorInput = createInput('moderator', moderator, 'Moderator Name');
+  const removeButton = createRemoveButton('moderator', item);
+  item.appendChild(moderatorInput);
+  item.appendChild(removeButton);
+  return item;
+}
+
+function createIgnoredItem(user) {
+  const item = createContainer('ignored');
+  const ignoredInput = createInput('ignored', user, 'Ignored User');
+  const removeButton = createRemoveButton('ignored', item);
+  item.appendChild(ignoredInput);
+  item.appendChild(removeButton);
+  return item;
+}
+
+function createToggleItem(toggle, name, optionValue) {
+  const item = createContainer('toggle', 'flex');
+  item.style.alignItems = 'center';
+
+  const select = document.createElement('select');
+  select.className = 'toggle-select';
+  const description = document.createElement('span');
+  description.className = 'toggle-description';
+  description.innerText = toggle.description;
+  description.setAttribute('data-toggle-name', name);
+
+  description.style.cursor = 'pointer';
+  description.style.color = 'burlywood';
+  description.style.transition = 'color 0.15s ease-in-out';
+
+  description.addEventListener('click', () => {
+    if (toggle.image) window.open(toggle.image, '_blank');
+  });
+  description.addEventListener('mouseover', () => { description.style.color = 'lightgoldenrodyellow'; });
+  description.addEventListener('mouseout', () => { description.style.color = 'burlywood'; });
+
+  const options = [
+    { value: 'yes', emoji: '✔️' },
+    { value: 'no', emoji: '❌' }
+  ];
+  options.forEach(({ value, emoji }) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = `${emoji} ${value}`;
+    select.appendChild(option);
+  });
+  select.value = optionValue;
+  styleSelect(select);
+
+  item.appendChild(select);
+  item.appendChild(description);
+  return item;
+}
+
 // 1. Define all settings keys in camelCase format
 const settingsConfig = [
   {
     type: 'tracked',
     emoji: '👀',
     key: 'usersToTrack',
-    selector: '.settings-tracked-container'
+    selector: '.settings-tracked-container',
+    creator: createTrackedItem
   },
   {
     type: 'mention',
     emoji: '📢',
     key: 'mentionKeywords',
-    selector: '.settings-mention-container'
+    selector: '.settings-mention-container',
+    creator: createMentionItem
   },
   {
     type: 'replacement',
     emoji: '♻️',
     key: 'usernameReplacements',
-    selector: '.settings-replacement-container'
+    selector: '.settings-replacement-container',
+    creator: createReplacementItem
   },
   {
     type: 'moderator',
     emoji: '⚔️',
     key: 'moderator',
-    selector: '.settings-moderator-container'
+    selector: '.settings-moderator-container',
+    creator: createModeratorItem
   },
   {
     type: 'ignored',
     emoji: '🛑',
     key: 'ignored',
-    selector: '.settings-ignored-container'
+    selector: '.settings-ignored-container',
+    creator: createIgnoredItem
   },
   {
     type: 'toggle',
     emoji: '🔘',
     key: 'toggle',
-    selector: '.settings-toggle-container'
+    selector: '.settings-toggle-container',
+    creator: createToggleItem
+  }
+];
+
+// Process toggle settings separately
+const toggleSettingsConfig = [
+  {
+    name: 'showChatStaticNotifications',
+    description: '👀 Show chat static notifications',
+    image: 'https://i.imgur.com/oUPSi9I.jpeg'
+  },
+  {
+    name: 'showGlobalDynamicNotifications',
+    description: '👀 Show global dynamic notifications',
+    image: 'https://i.imgur.com/8ffCdUG.jpeg'
+  },
+  {
+    name: 'enabledBeepOnChatJoinLeave',
+    description: '🔊 Play a beep sound and speak feedback when the user enters or leaves the chat',
+    image: 'https://i.imgur.com/6PXFIES.jpeg'
+  },
+  {
+    name: 'switchToGoogleTTSEngine',
+    description: '🔊 Switch to google TTS engine if available',
+    image: 'https://i.imgur.com/0H94LII.jpeg'
   }
 ];
 
@@ -154,49 +402,40 @@ function handleDownloadSettings(settingsData) {
   try {
     const tabSize2 = '  ';
     const tabSize4 = '    ';
+    let jsonData = '{\n';
 
-    // Format usersToTrack
-    const usersToTrackFormatted = settingsData.usersToTrack
-      .map((user) => `${tabSize4}${JSON.stringify(user)}`)
-      .join(',\n');
+    // Iterate over settingsConfig to build each key-value pair dynamically
+    settingsConfig.forEach((config, index) => {
+      const key = config.key;
+      const data = settingsData[key];
+      let formattedValue = '';
 
-    // Format username replacements
-    const replacementsFormatted = settingsData.usernameReplacements
-      ?.map(replacement => `${tabSize4}${JSON.stringify(replacement)}`)
-      .join(',\n') || '';
+      if (Array.isArray(data)) {
+        // Format each array element using JSON.stringify with proper indentation.
+        formattedValue = `[\n${data
+          .map(item => `${tabSize4}${JSON.stringify(item)}`)
+          .join(',\n')}\n${tabSize2}]`;
+      } else {
+        // For non-array values, simply stringify them.
+        formattedValue = JSON.stringify(data);
+      }
 
-    // Format toggle settings
-    const toggleFormatted = settingsData.toggle
-      .map(toggle => `${tabSize4}${JSON.stringify(toggle)}`)
-      .join(',\n');
+      // Append the formatted key-value pair
+      jsonData += `${tabSize2}"${key}": ${formattedValue}`;
+      if (index < settingsConfig.length - 1) {
+        jsonData += ',\n';
+      } else {
+        jsonData += '\n';
+      }
+    });
 
-    // Build JSON structure
-    const jsonData = '{\n' +
-      `${tabSize2}"usersToTrack": [\n` +
-      `${usersToTrackFormatted}\n` +
-      `${tabSize2}],\n` +
-      `${tabSize2}"mentionKeywords": [\n` +
-      `${settingsData.mentionKeywords.map(keyword => `${tabSize4}"${keyword}"`).join(',\n')}\n` +
-      `${tabSize2}],\n` +
-      `${tabSize2}"usernameReplacements": [\n` + // Added replacements section
-      `${replacementsFormatted}\n` +
-      `${tabSize2}],\n` +
-      `${tabSize2}"moderator": [\n` +
-      `${settingsData.moderator.map(moderator => `${tabSize4}"${moderator}"`).join(',\n')}\n` +
-      `${tabSize2}],\n` +
-      `${tabSize2}"ignored": [\n` +
-      `${settingsData.ignored.map(user => `${tabSize4}"${user}"`).join(',\n')}\n` +
-      `${tabSize2}],\n` +
-      `${tabSize2}"toggle": [\n` +
-      `${toggleFormatted}\n` +
-      `${tabSize2}]\n` +
-      '}';
+    jsonData += '}';
 
-    // Generate filename
+    // Generate filename with current date
     const currentDate = new Intl.DateTimeFormat('en-CA').format(new Date());
     const filename = `KG_Chat_Empowerment_Settings_${currentDate}.json`;
 
-    // Create and trigger download
+    // Create blob and trigger download
     const blob = new Blob([jsonData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const tempLink = document.createElement('a');
@@ -211,7 +450,6 @@ function handleDownloadSettings(settingsData) {
     alert('Failed to export settings. Please try again.');
   }
 }
-
 
 export function getSettingsData() {
   return Object.fromEntries(settingsConfig.map(config => [config.key, JSON.parse(localStorage.getItem(config.key)) || []]));
@@ -592,318 +830,28 @@ function showSettingsPanel() {
   const settingsContainer = document.createElement('div');
   settingsContainer.className = 'settings-content-container';
 
-  settingsConfig.forEach(({ type, emoji }) => {
-    const description = document.createElement('div');
-    description.className = `settings-${type}-description settings-description`; // Add specific class and settings-description
-
+  settingsConfig.forEach(({ type }) => {
     // Create the description container directly
     const container = document.createElement('div');
     container.className = `settings-${type}-container`;
-
-    // Set the text content with first letter capitalized and append emoji
-    description.textContent = `${type.charAt(0).toUpperCase()}${type.slice(1).toLowerCase()} ${emoji}`;
-
-    settingsContainer.appendChild(description);
     settingsContainer.appendChild(container);
   });
 
   // Append the settings content container to the settings panel
   settingsPanel.appendChild(settingsContainer);
 
-  // Applies common styles to a select element and its options
-  function styleSelect(select) {
-    select.style.height = '30px';
-    select.style.maxWidth = '120px';
-    select.style.minWidth = '105px';
-    select.style.padding = '0.4em';
-    select.style.font = '1em Montserrat';
-    select.style.fontFamily = 'Montserrat';
-    select.style.setProperty('color', 'bisque', 'important');
-    select.style.setProperty('border-radius', '0.2em', 'important');
-    select.style.boxSizing = 'border-box';
-    select.style.setProperty('background-color', 'rgb(17,17,17)', 'important');
-    select.style.setProperty('border', '1px solid rgb(34,34,34)', 'important');
-
-    // Style each option element
-    Array.from(select.options).forEach(option => {
-      option.style.height = '30px';
-      option.style.setProperty('background-color', 'rgb(17,17,17)', 'important');
-      option.style.setProperty('color', 'bisque', 'important');
-      option.style.fontFamily = 'Montserrat';
-    });
-  }
-
-  // Common function to attach click event for removing an item
-  function attachRemoveListener(removeButton, item) {
-    removeButton.addEventListener('click', () => {
-      item.remove(); // Remove the parent element
-    });
-  }
-
-  // Function to attach click event for toggling between "assigned-thawed-config" and "assigned-frozen-config"
-  function attachSnowflakeListener(snowflakeButton, username) {
-    snowflakeButton.addEventListener('click', () => {
-      const isFrozen = snowflakeButton.classList.toggle('assigned-frozen-config');
-      snowflakeButton.classList.toggle('assigned-thawed-config');
-
-      // Set opacity based on the assigned class
-      snowflakeButton.style.opacity = isFrozen ? '1' : '0.3';
-
-      // Update localStorage using the helper function
-      updateUserState(username, isFrozen ? 'frozen' : 'thawed');
-    });
-  }
-
-  // Helper function to create a container element
-  function createContainer(type, layout = 'inline-flex') {
-    const item = document.createElement('div');
-    item.className = `${type}-item`;
-    item.style.display = layout;
-    item.style.gap = '0.5em';
-    item.style.padding = '0.25em';
-    return item;
-  }
-
-  // Helper function to create an input element
-  function createInput(type, value = '', placeholder = '') {
-    const input = document.createElement('input');
-    input.className = `settings-field ${type}-field`;
-    input.value = value;
-    input.placeholder = placeholder;
-    return input;
-  }
-
-  // Helper function to create a remove button with styles and event listener
-  function createRemoveButton(type, item) {
-    const removeButton = document.createElement('div');
-    removeButton.className = `settings-button remove-settings-button remove-${type}-word`;
-    removeButton.innerHTML = removeSVG;
-    attachRemoveListener(removeButton, item);
-    return removeButton;
-  }
-
-  // Helper function to create a snowflake button with styles and event listener
-  function createSnowflakeButton(state = 'thawed', username) {
-    const snowflakeButton = document.createElement('div');
-    snowflakeButton.className = `settings-button assigned-settings-button assigned-${state}-config`;
-
-    // Set initial opacity based on the state
-    snowflakeButton.style.opacity = state === 'thawed' ? '0.3' : '1';
-    snowflakeButton.innerHTML = snowflakeSVG;
-
-    attachSnowflakeListener(snowflakeButton, username); // Pass username here
-    return snowflakeButton;
-  }
-
-  // Function to update a specific user in localStorage to add the state property
-  function updateUserState(username, state) {
-    const usersData = localStorage.getItem("usersToTrack");
-    if (usersData) {
-      const updatedUsers = JSON.parse(usersData).map(user =>
-        user.name === username ? { ...user, state } : user
-      );
-      localStorage.setItem("usersToTrack", JSON.stringify(updatedUsers));
-    }
-  }
-
-  // Function to create a spoiler container (as provided)
-  function createSpoilerContainer(contentElement, options = {}) {
-    const container = document.createElement('div');
-    container.classList.add("settings-spoiler");
-    const toggleButton = document.createElement('button');
-
-    toggleButton.textContent = options.showText || 'Show Content';
-
-    contentElement.style.display = 'none';
-
-    toggleButton.addEventListener('click', () => {
-      const isHidden = contentElement.style.display === 'none';
-      contentElement.style.display = isHidden ? 'flex' : 'none';
-      toggleButton.textContent = isHidden
-        ? (options.hideText || 'Hide Content')
-        : (options.showText || 'Show Content');
-    });
-
-    container.appendChild(toggleButton);
-    container.appendChild(contentElement);
-
-    return container;
-  }
-
-  // Function to create a tracked item (with gender select)
-  function createTrackedItem(user) {
-    const item = createContainer('tracked', 'flex');
-
-    const usernameInput = createInput('tracked-username', user.name, 'Username');
-    const pronunciationInput = createInput('tracked-pronunciation', user.pronunciation, 'Pronunciation');
-    const removeButton = createRemoveButton('tracked', item);
-
-    // Set the initial state based on the user's state property, defaulting to 'thawed' if it doesn't exist
-    const initialState = (user.state === 'frozen') ? 'frozen' : 'thawed';
-    const snowflakeButton = createSnowflakeButton(initialState, user.name); // Pass username
-
-    const genderSelect = document.createElement('select');
-    genderSelect.className = 'tracked-gender-select';
-    const genders = [
-      { value: 'Male', emoji: '👨' },
-      { value: 'Female', emoji: '👩' },
-    ];
-    genders.forEach(({ value, emoji }) => {
-      const option = document.createElement('option');
-      option.value = value;
-      option.textContent = `${emoji} ${value}`;
-      if (user.gender === value) option.selected = true;
-      genderSelect.appendChild(option);
-    });
-    styleSelect(genderSelect);
-
-    item.appendChild(usernameInput);
-    item.appendChild(genderSelect);
-    item.appendChild(pronunciationInput);
-    item.appendChild(removeButton);
-    item.appendChild(snowflakeButton);
-
-    return item;
-  }
-
-  // Function to create a mention item
-  function createMentionItem(keyword) {
-    const item = createContainer('mention');
-    const mentionInput = createInput('mention', keyword, 'Mention Keyword');
-    const removeButton = createRemoveButton('mention', item);
-
-    item.appendChild(mentionInput);
-    item.appendChild(removeButton);
-
-    return item;
-  }
-
-  // Function to create a username replacement item for text to speech API
-  function createReplacementItem(replacement = { original: '', replacement: '' }) {
-    const item = createContainer('replacement');
-    const originalInput = createInput('replacement-original', replacement.original, 'Original username');
-    const replacementInput = createInput('replacement', replacement.replacement, 'Replacement name');
-    const removeButton = createRemoveButton('replacement', item);
-
-    item.appendChild(originalInput);
-    item.appendChild(replacementInput);
-    item.appendChild(removeButton);
-
-    return item;
-  }
-
-  // Function to create a moderator item
-  function createModeratorItem(moderator) {
-    const item = createContainer('moderator');
-    const moderatorInput = createInput('moderator', moderator, 'Moderator Name');
-    const removeButton = createRemoveButton('moderator', item);
-
-    item.appendChild(moderatorInput);
-    item.appendChild(removeButton);
-
-    return item;
-  }
-
-  // Function to create an ignored item
-  function createIgnoredItem(user) {
-    const item = createContainer('ignored');
-    const ignoredInput = createInput('ignored', user, 'Ignored User');
-    const removeButton = createRemoveButton('ignored', item);
-
-    item.appendChild(ignoredInput);
-    item.appendChild(removeButton);
-
-    return item;
-  }
-
-  // Function to create a toggle item with a description and select for yes/no options
-  function createToggleItem(toggle, name, optionValue) {
-    const item = createContainer('toggle', 'flex');
-    item.style.alignItems = 'center';
-
-    // Create the select element for yes/no
-    const select = document.createElement('select');
-    select.className = 'toggle-select';
-
-    // Create the description element
-    const description = document.createElement('span');
-    description.className = 'toggle-description';
-    description.innerText = toggle.description;
-    // Set the custom data attribute for the setting using the name parameter
-    description.setAttribute('data-toggle-name', name); // Set data-toggle-name to the name parameter
-
-    // Add click event to open the image in a new tab
-    description.style.cursor = 'pointer'; // Add pointer cursor to indicate it's clickable
-    description.style.color = 'burlywood';
-    description.style.transition = 'color 0.15s ease-in-out';
-
-    description.addEventListener('click', () => {
-      if (toggle.image) {
-        window.open(toggle.image, '_blank'); // Open the image in a new tab
-      }
-    });
-
-    // Compact mouseover and mouseout events
-    description.addEventListener('mouseover', function () { description.style.color = 'lightgoldenrodyellow'; })
-    description.addEventListener('mouseout', function () { description.style.color = 'burlywood'; });
-
-    // Define options with emojis for yes and no
-    const options = [
-      { value: 'yes', emoji: '✔️' },
-      { value: 'no', emoji: '❌' }
-    ];
-
-    // Create options for the select element
-    options.forEach(({ value, emoji }) => {
-      const option = document.createElement('option');
-      option.value = value;
-      option.textContent = `${emoji} ${value}`; // Format text as "✔️ yes" or "❌ no"
-      select.appendChild(option);
-    });
-
-    // Set the initial value of the select based on the optionValue parameter
-    select.value = optionValue; // Assign the optionValue to the select element
-
-    // Style the select element
-    styleSelect(select); // Call the styling function
-
-    // Append the description and select to the toggle item
-    item.appendChild(select);
-    item.appendChild(description);
-
-    return item; // Return the created toggle item
-  }
-
   function populateSettings() {
-    // Create mappings of functions to create different item types
-    const creators = {
-      usersToTrack: createTrackedItem,
-      mentionKeywords: createMentionItem,
-      usernameReplacements: createReplacementItem,
-      moderator: createModeratorItem,
-      ignored: createIgnoredItem,
-      toggle: createToggleItem
-    };
+    const data = getSettingsData(); // Retrieves the settings data
+    const settingsContainer = document.querySelector('.settings-content-container'); // Main parent container (adjust if different)
 
-    // Get settings data
-    const data = getSettingsData();
-
-    // Process all settings except toggle
-    settingsConfig.filter(config => config.type !== 'toggle').forEach(config => {
-      const key = config.key;
-      const type = config.type;
-      const container = document.querySelector(config.selector);
-
+    settingsConfig.forEach(config => {
+      const { key, selector, creator, type, emoji } = config;
+      const container = document.querySelector(selector);
       if (!container) return;
 
-      container.classList.add("settings-container");
+      container.classList.add('settings-container');
 
-      // Set flex direction for specific containers
-      if (['mention', 'moderator', 'ignored'].includes(type)) {
-        container.style.flexDirection = 'row';
-      }
-
-      // Clear existing items but keep the add button
+      // Clear existing items, preserving the add button if it exists
       const existingAddButton = container.querySelector('.add-settings-button');
       while (container.firstChild) {
         if (container.firstChild !== existingAddButton) {
@@ -913,70 +861,29 @@ function showSettingsPanel() {
         }
       }
 
-      // Populate items
-      const items = data[key] || [];
-      items.forEach(item => container.appendChild(creators[key](item)));
-
-      // Add the "add" button
-      const addButton = createAddButton(config.selector, creators[key]);
-      container.appendChild(addButton);
-
-      // Wrap in spoiler if not already wrapped
-      const isAlreadyWrapped = container.closest('.settings-spoiler') !== null;
-      if (!isAlreadyWrapped) {
-        const parent = container.parentNode;
-        if (parent) {
-          const index = Array.from(parent.childNodes).indexOf(container);
-          parent.removeChild(container);
-
-          const spoiler = createSpoilerContainer(container, {
-            showText: `Show ${type} settings`,
-            hideText: `Hide ${type} settings`
-          });
-          spoiler.classList.add('settings-spoiler-wrapper');
-
-          if (index >= parent.childNodes.length) {
-            parent.appendChild(spoiler);
-          } else {
-            parent.insertBefore(spoiler, parent.childNodes[index]);
-          }
-        }
+      if (type !== 'toggle') {
+        // For non-toggle settings, populate from stored data
+        const items = data[key] || [];
+        items.forEach(item => container.appendChild(creator(item)));
+        const addButton = createAddButton(selector, creator);
+        container.appendChild(addButton);
+      } else {
+        // For toggle settings, use toggleSettingsConfig and stored toggle data
+        const storedToggleSettings = JSON.parse(localStorage.getItem(key)) || [];
+        toggleSettingsConfig.forEach(toggle => {
+          const storedSetting = storedToggleSettings.find(item => item.name === toggle.name);
+          const optionValue = storedSetting ? storedSetting.option : 'yes';
+          const toggleItem = creator(toggle, toggle.name, optionValue);
+          container.appendChild(toggleItem);
+        });
       }
-    });
 
-    // Process toggle settings separately
-    const toggleSettings = [
-      {
-        name: 'showChatStaticNotifications',
-        description: '👀 Show chat static notifications',
-        image: 'https://i.imgur.com/oUPSi9I.jpeg'
-      },
-      {
-        name: 'showGlobalDynamicNotifications',
-        description: '👀 Show global dynamic notifications',
-        image: 'https://i.imgur.com/8ffCdUG.jpeg'
-      },
-      {
-        name: 'enabledBeepOnChatJoinLeave',
-        description: '🔊 Play a beep sound and speak feedback when the user enters or leaves the chat',
-        image: 'https://i.imgur.com/6PXFIES.jpeg'
-      },
-      {
-        name: 'switchToGoogleTTSEngine',
-        description: '🔊 Switch to google TTS engine if available',
-        image: 'https://i.imgur.com/0H94LII.jpeg'
-      }
-    ];
-
-    const toggleConfig = settingsConfig.find(config => config.type === 'toggle');
-    const storedToggleSettings = JSON.parse(localStorage.getItem(toggleConfig.key)) || [];
-    const toggleContainer = document.querySelector(toggleConfig.selector);
-
-    toggleSettings.forEach(toggle => {
-      const storedSetting = storedToggleSettings.find(item => item.name === toggle.name);
-      const optionValue = storedSetting ? storedSetting.option : 'yes';
-      const toggleItem = creators.toggle(toggle, toggle.name, optionValue);
-      toggleContainer.appendChild(toggleItem);
+      // Wrap the container in a spoiler for all settings types
+      const spoiler = createSpoilerContainer(container, {
+        showText: `${emoji} Show ${type}`,
+        hideText: `${emoji} Hide ${type}`
+      });
+      settingsContainer.appendChild(spoiler);
     });
   }
 
