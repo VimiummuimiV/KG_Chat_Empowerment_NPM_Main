@@ -20,6 +20,15 @@ import {
   applyDynamicBackgroundColor
 } from "./modules/chat/chat-workers.js"; //chat
 
+import { setupFonts } from "./modules/fonts.js"; // fonts
+import { refreshUserList } from "./modules/chat/chat-userlist.js"; // chat userlist
+import ChatMessagesRemover from "./modules/chat/chat-messages-remover.js"; // chat messages remover
+import { pruneDeletedMessages } from "./modules/chat/chat-messages-remover.js";
+import { createChatUserCounter } from "./modules/participant-count.js"; // counter
+import { startChatUserObserver } from "./modules/chat/chat-users-observer.js"; // users observer
+import { startChatMessagesObserver } from "./modules/chat/chat-messages-observer.js" // messages observer
+import { initChatEvents } from "./modules/popup-length-indicator.js"; // popup length indicator
+
 import { convertImageLinksToImage } from "./modules/converters/image-converter.js"; // image converter
 import { convertVideoLinksToPlayer } from "./modules/converters/video-converter.js"; // video converter
 
@@ -30,15 +39,6 @@ import { createCacheButton } from "./modules/panels/cache.js"; // cache panel
 import { createMessagesButton } from "./modules/panels/messages.js"; // messages panel
 import { createChatLogsButton } from "./modules/panels/chatlogs.js"; // chatlogs panel
 import { createSettingsButton } from "./modules/panels/settings.js"; // settings panel
-
-import { setupFonts } from "./modules/fonts.js"; // fonts
-import { refreshUserList } from "./modules/chat/chat-userlist.js"; // chat userlist
-import ChatMessagesRemover from "./modules/chat/chat-messages-remover.js"; // chat messages remover
-import { pruneDeletedMessages } from "./modules/chat/chat-messages-remover.js";
-import { createChatUserCounter } from "./modules/participant-count.js"; // counter
-import { startChatUserObserver } from "./modules/chat/chat-users-observer.js"; // users observer
-import { startChatMessagesObserver } from "./modules/chat/chat-messages-observer.js" // messages observer
-import { initChatEvents } from "./modules/popup-length-indicator.js"; // popup length indicator
 
 // definitions
 import {
