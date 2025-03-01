@@ -739,12 +739,12 @@ export async function showChatLogsPanel(personalMessagesDate) {
   chatLogsPanel.appendChild(panelHeaderContainer);
   chatLogsPanel.appendChild(chatLogsContainer);
 
+  // Append the chat logs panel to the body
+  document.body.appendChild(chatLogsPanel);
+
   // Create and append scroll buttons
   const { scrollButtonsContainer } = createScrollButtons(chatLogsContainer);
   chatLogsPanel.appendChild(scrollButtonsContainer);
-
-  // Append the chat logs panel to the body
-  document.body.appendChild(chatLogsPanel);
 
   // Fade in the chat logs panel and dimming background
   triggerTargetElement(chatLogsPanel, 'show');

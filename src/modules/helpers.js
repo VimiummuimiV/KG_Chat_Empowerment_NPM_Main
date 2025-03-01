@@ -109,39 +109,38 @@ export function updateScrollButtonsVisibility({ container, scrollButtonsContaine
   }
 }
 
-// Function to create scroll buttons for a container
 export function createScrollButtons(container) {
   const scrollButtonsContainer = document.createElement('div');
   scrollButtonsContainer.className = 'scroll-buttons-container';
-
+  
   const fullScrollUpButton = document.createElement('div');
   fullScrollUpButton.innerHTML = chevronsUpSVG;
   fullScrollUpButton.title = 'Scroll Up (Full)';
-
+  
   const partialScrollUpButton = document.createElement('div');
   partialScrollUpButton.innerHTML = chevronUpSVG;
   partialScrollUpButton.title = 'Scroll Up (Partial)';
-
+  
   const partialScrollDownButton = document.createElement('div');
   partialScrollDownButton.innerHTML = chevronDownSVG;
   partialScrollDownButton.title = 'Scroll Down (Partial)';
-
+  
   const fullScrollDownButton = document.createElement('div');
   fullScrollDownButton.innerHTML = chevronsDownSVG;
   fullScrollDownButton.title = 'Scroll Down (Full)';
-
+  
   const buttons = {
     fullScrollUpButton,
     partialScrollUpButton,
     partialScrollDownButton,
     fullScrollDownButton
   };
-
+  
   Object.values(buttons).forEach(button => {
     button.classList.add("large-button", "scroll-button");
     scrollButtonsContainer.appendChild(button);
   });
-
+  
   function scrollContainer(direction, isFullScroll) {
     const scrollAmount = isFullScroll ? container.scrollHeight : container.clientHeight;
     container.scrollBy({
@@ -150,21 +149,49 @@ export function createScrollButtons(container) {
     });
     updateScrollButtonOpacity({ container, buttons });
   }
-
+  
   fullScrollUpButton.addEventListener('click', () => scrollContainer('up', true));
   partialScrollUpButton.addEventListener('click', () => scrollContainer('up', false));
   partialScrollDownButton.addEventListener('click', () => scrollContainer('down', false));
   fullScrollDownButton.addEventListener('click', () => scrollContainer('down', true));
-
+  
+  // Initial setup
   updateScrollButtonOpacity({ container, buttons });
   updateScrollButtonsVisibility({ container, scrollButtonsContainer });
-
-  container.addEventListener('scroll', () => {
-    updateScrollButtonOpacity({ container, buttons });
+  
+  // Monitor for scrollability changes
+  const checkScrollability = () => {
     updateScrollButtonsVisibility({ container, scrollButtonsContainer });
+    updateScrollButtonOpacity({ container, buttons });
+  };
+  
+  // Listen for scroll events
+  container.addEventListener('scroll', checkScrollability);
+  
+  // Create a ResizeObserver to detect container size changes
+  const resizeObserver = new ResizeObserver(checkScrollability);
+  resizeObserver.observe(container);
+  
+  // Create a MutationObserver to detect content changes
+  const mutationObserver = new MutationObserver(checkScrollability);
+  mutationObserver.observe(container, { 
+    childList: true,     // Watch for added/removed children
+    subtree: true,       // Watch the entire subtree
+    characterData: true, // Watch for text changes
+    attributes: true     // Watch for attribute changes that might affect layout
   });
-
-  return { scrollButtonsContainer };
+  
+  // Function to clean up all observers
+  const cleanup = () => {
+    resizeObserver.disconnect();
+    mutationObserver.disconnect();
+    container.removeEventListener('scroll', checkScrollability);
+  };
+  
+  return { 
+    scrollButtonsContainer,
+    cleanup  // Return cleanup function to allow proper disposal
+  };
 }
 
 export const debounce = (func, delay = 300) => {
@@ -236,20 +263,33 @@ export function triggerDimmingElement(action) {
 // Function to gradually fade a target element to show or hide it
 export function triggerTargetElement(element, action) {
   if (!element) return; // Return if the element does not exist
-
+  
   // Adjust the visibility of a specific element, setting opacity to 1 (fully visible)
   adjustVisibility(element, action, 1);
-
-  // Add a double click event listener to hide the element
+  
+  // Add a double-click event listener to hide the element
   element.addEventListener('dblclick', (event) => {
-    // Check if any panel is open
     const isPanelOpen = document.querySelector('.popup-panel');
-    // If any panel is open and the double-clicked target is the scaled image, do not hide the dimming element
+    
+    // Condition to allow hiding when double-clicked on:
+    // 1. The element itself
+    // 2. Direct children (one level down)
+    // 3. Children of direct children (two levels down)
+    const isElementOrDirectChild = 
+      event.target === element || 
+      event.target.parentElement === element ||
+      (event.target.parentElement && event.target.parentElement.parentElement === element);
+    
+    // Only proceed if clicked on the element itself or its direct children (up to 2 levels)
+    if (!isElementOrDirectChild) return;
+    
+    // If no panel is open or the clicked element is not within a scaled thumbnail, hide the dimming element
     if (!isPanelOpen || !event.target.closest('.scaled-thumbnail')) {
-      triggerDimmingElement('hide'); // Hide the dimming element on double click, unless the target is a scaled image and a panel is open
+      triggerDimmingElement('hide');
     }
-
-    triggerTargetElement(element, 'hide'); // Always hide the target element on double click
+    
+    // Hide the target element
+    adjustVisibility(element, 'hide', 1);
   });
 }
 
@@ -645,30 +685,17 @@ export function calculateTimeOnSite(registeredDate) {
   return timeComponents.filter(Boolean).join(' '); // Filter out empty strings and join components
 }
 
-// Function to check if a specific setting should be enabled based on localStorage settings
-export function shouldEnableSetting(settingType, specificType) {
-  const toggleData = JSON.parse(localStorage.getItem('toggle')) || []; // Retrieve toggle settings or default to empty array
-
-  // Define toggle names for different setting types
-  const toggleNames = {
-    notifications: {
-      static: 'showChatStaticNotifications',
-      dynamic: 'showGlobalDynamicNotifications'
-    },
-    sound: {
-      presence: 'enableBeepOnChatJoinLeave',
-      gTTS: 'switchToGoogleTTSEngine'
-    }
-  };
-
-  const settingName = toggleNames[settingType];
-
-  if (!settingName || !settingName[specificType]) return false;
-
-  // Check if the specified setting toggle is set to 'yes'
-  return toggleData.some(toggle =>
-    toggle.name === settingName[specificType] && toggle.option === 'yes'
+export function shouldEnable(targetCategory, targetType) {
+  // Get stored toggle settings or default to empty array
+  const storedSettings = JSON.parse(localStorage.getItem('toggle')) || [];
+  
+  // Find matching setting in localStorage
+  const storedSetting = storedSettings.find(s => 
+    s.category === targetCategory && s.type === targetType
   );
+
+  // Return true if option is explicitly 'yes', false otherwise
+  return storedSetting ? storedSetting.option === 'yes' : true;
 }
 
 // Track if the user has loaded messages for the first time

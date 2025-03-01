@@ -50,28 +50,6 @@ if (!stored) {
   localStorage.setItem('KG_Chat_Empowerment', JSON.stringify(KG_Chat_Empowerment));
 }
 
-// Applies common styles to a select element and its options
-function styleSelect(select) {
-  select.style.height = '30px';
-  select.style.maxWidth = '120px';
-  select.style.minWidth = '105px';
-  select.style.padding = '0.4em';
-  select.style.font = '1em Montserrat';
-  select.style.fontFamily = 'Montserrat';
-  select.style.setProperty('color', 'bisque', 'important');
-  select.style.setProperty('border-radius', '0.2em', 'important');
-  select.style.boxSizing = 'border-box';
-  select.style.setProperty('background-color', 'rgb(17,17,17)', 'important');
-  select.style.setProperty('border', '1px solid rgb(34,34,34)', 'important');
-
-  Array.from(select.options).forEach(option => {
-    option.style.height = '30px';
-    option.style.setProperty('background-color', 'rgb(17,17,17)', 'important');
-    option.style.setProperty('color', 'bisque', 'important');
-    option.style.fontFamily = 'Montserrat';
-  });
-}
-
 // Common function to attach click event for removing an item
 function attachRemoveListener(removeButton, item) {
   removeButton.addEventListener('click', () => {
@@ -90,12 +68,9 @@ function attachSnowflakeListener(snowflakeButton, username) {
 }
 
 // Helper function to create a container element
-function createContainer(type, layout = 'inline-flex') {
+function createContainer(type) {
   const item = document.createElement('div');
   item.className = `${type}-item`;
-  item.style.display = layout;
-  item.style.gap = '0.5em';
-  item.style.padding = '0.25em';
   return item;
 }
 
@@ -181,7 +156,6 @@ function createTrackedItem(user) {
     if (user.gender === value) option.selected = true;
     genderSelect.appendChild(option);
   });
-  styleSelect(genderSelect);
 
   item.appendChild(usernameInput);
   item.appendChild(genderSelect);
@@ -229,26 +203,25 @@ function createIgnoredItem(user) {
   return item;
 }
 
-function createToggleItem(toggle, name, optionValue) {
-  const item = createContainer('toggle', 'flex');
-  item.style.alignItems = 'center';
+function createToggleItem(toggleConfig, optionValue) {
+  const item = createContainer('toggle');
 
   const select = document.createElement('select');
   select.className = 'toggle-select';
+
   const description = document.createElement('span');
   description.className = 'toggle-description';
-  description.innerText = toggle.description;
-  description.setAttribute('data-toggle-name', name);
+  // Store category and type in data attributes
+  description.dataset.category = toggleConfig.category;
+  description.dataset.type = toggleConfig.type;
+  description.textContent = toggleConfig.description;
 
   description.style.cursor = 'pointer';
-  description.style.color = 'burlywood';
   description.style.transition = 'color 0.15s ease-in-out';
 
   description.addEventListener('click', () => {
     if (toggle.image) window.open(toggle.image, '_blank');
   });
-  description.addEventListener('mouseover', () => { description.style.color = 'lightgoldenrodyellow'; });
-  description.addEventListener('mouseout', () => { description.style.color = 'burlywood'; });
 
   const options = [
     { value: 'yes', emoji: '✔️' },
@@ -261,7 +234,6 @@ function createToggleItem(toggle, name, optionValue) {
     select.appendChild(option);
   });
   select.value = optionValue;
-  styleSelect(select);
 
   item.appendChild(select);
   item.appendChild(description);
@@ -314,27 +286,37 @@ const settingsConfig = [
   }
 ];
 
-// Process toggle settings separately
-const toggleSettingsConfig = [
+// Process toggle settings separately with categorization and defaults
+export const toggleSettingsConfig = [
   {
-    name: 'showChatStaticNotifications',
     description: '👀 Show chat static notifications',
-    image: 'https://i.imgur.com/oUPSi9I.jpeg'
+    image: 'https://i.imgur.com/oUPSi9I.jpeg',
+    category: 'notifications',
+    type: 'static'
   },
   {
-    name: 'showGlobalDynamicNotifications',
     description: '👀 Show global dynamic notifications',
-    image: 'https://i.imgur.com/8ffCdUG.jpeg'
+    image: 'https://i.imgur.com/8ffCdUG.jpeg',
+    category: 'notifications',
+    type: 'dynamic'
   },
   {
-    name: 'enabledBeepOnChatJoinLeave',
     description: '🔊 Play a beep sound and speak feedback when the user enters or leaves the chat',
-    image: 'https://i.imgur.com/6PXFIES.jpeg'
+    image: 'https://i.imgur.com/6PXFIES.jpeg',
+    category: 'sound',
+    type: 'presence'
   },
   {
-    name: 'switchToGoogleTTSEngine',
     description: '🔊 Switch to google TTS engine if available',
-    image: 'https://i.imgur.com/0H94LII.jpeg'
+    image: 'https://i.imgur.com/0H94LII.jpeg',
+    category: 'sound',
+    type: 'gTTS'
+  },
+  {
+    description: '📦️ Create participants counter',
+    image: 'https://i.imgur.com/rqIVAgH.jpeg',
+    category: 'elements',
+    type: 'counter'
   }
 ];
 
@@ -683,22 +665,17 @@ function showSettingsPanel() {
         currentValues.ignored.push(ignoredValue);
       });
 
-      // Process toggle (yes/no) settings based on select elements within each toggle-setting item
+      // In your save logic where you process toggle items
       container.querySelectorAll('.settings-toggle-container .toggle-item').forEach(item => {
-        const descriptionElement = item.querySelector('.toggle-description'); // Get the description element
-        const selectElement = item.querySelector('.toggle-select'); // Select the toggle (select) element within the current toggle-item
-        const selectedValue = selectElement ? selectElement.value.trim() : 'no'; // Default to 'no' if not selected
+        const descriptionElement = item.querySelector('.toggle-description');
+        const selectElement = item.querySelector('.toggle-select');
+        const selectedValue = selectElement?.value.trim() || 'no';
 
-        // Get the data-toggle-name attribute value from the descriptionElement
-        const toggleName = descriptionElement.getAttribute('data-toggle-name');
-
-        // Push the current toggle setting as an object into the toggle array
-        if (toggleName) {
-          currentValues.toggle.push({
-            name: toggleName, // Store the toggle name
-            option: selectedValue // Store the selected value directly
-          });
-        }
+        currentValues.toggle.push({
+          category: descriptionElement.dataset.category,
+          type: descriptionElement.dataset.type,
+          option: selectedValue
+        });
       });
 
       // Check if any values have changed compared to previous state
@@ -868,12 +845,15 @@ function showSettingsPanel() {
         const addButton = createAddButton(selector, creator);
         container.appendChild(addButton);
       } else {
-        // For toggle settings, use toggleSettingsConfig and stored toggle data
+        // Inside your initialization logic (where you process toggle settings)
         const storedToggleSettings = JSON.parse(localStorage.getItem(key)) || [];
         toggleSettingsConfig.forEach(toggle => {
-          const storedSetting = storedToggleSettings.find(item => item.name === toggle.name);
+          // Find stored setting by category + type (not name)
+          const storedSetting = storedToggleSettings.find(
+            s => s.category === toggle.category && s.type === toggle.type
+          );
           const optionValue = storedSetting ? storedSetting.option : 'yes';
-          const toggleItem = creator(toggle, toggle.name, optionValue);
+          const toggleItem = createToggleItem(toggle, optionValue);
           container.appendChild(toggleItem);
         });
       }
@@ -898,7 +878,6 @@ function showSettingsPanel() {
     // Set class, content, and style for the button
     addButton.className = `settings-button add-settings-button add-${middleWord}-item`;
     addButton.innerHTML = addSVG; // Add SVG icon to the button
-    addButton.style.margin = '0.4em';
 
     // On click, validate the last item and create a new one if valid
     addButton.addEventListener('click', () => {

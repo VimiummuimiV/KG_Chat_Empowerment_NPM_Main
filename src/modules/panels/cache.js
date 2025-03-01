@@ -548,10 +548,11 @@ function showCachePanel() {
     });
   }
 
+  document.body.appendChild(cachedUsersPanel);
+
   cachedUsersPanel.append(panelHeaderContainer, fetchedUsersContainer);
   const { scrollButtonsContainer } = createScrollButtons(fetchedUsersContainer);
   cachedUsersPanel.appendChild(scrollButtonsContainer);
-  document.body.appendChild(cachedUsersPanel);
 
   triggerTargetElement(cachedUsersPanel, 'show');
   triggerDimmingElement('show');

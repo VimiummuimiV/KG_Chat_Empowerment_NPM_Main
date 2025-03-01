@@ -1,5 +1,8 @@
-import { shouldEnableSetting } from "./helpers"; // helpers
+import { shouldEnable } from "./helpers"; // helpers
 import { voiceSpeed, voicePitch } from "./sound-mode"; // sound mode
+
+import { settingsState } from "./panels/settings.js"; // settings
+const { usersToTrack } = settingsState;
 
 // SOUND NOTIFICATION
 
@@ -156,7 +159,7 @@ async function webTextToSpeech(text, voiceSpeed = voiceSpeed) {
 
 // Main TTS function: plays each language block in order.
 export async function textToSpeech(text, voiceSpeed = voiceSpeed) {
-  const shouldUseGoogleTTS = shouldEnableSetting('sound', 'gTTS');
+  const shouldUseGoogleTTS = shouldEnable('sound', 'gTTS');
   // Clean the text using the new cleanText function asynchronously
   const cleanedText = await cleanText(text);
 
@@ -203,7 +206,7 @@ const verbs = {
 
 // Handles user entering and leaving actions
 export function userAction(user, actionType, userGender) {
-  const shouldPlayAction = shouldEnableSetting('sound', 'presence');
+  const shouldPlayAction = shouldEnable('sound', 'presence');
   // If neither beep and voice is enabled, exit early.
   if (!shouldPlayAction) return;
 

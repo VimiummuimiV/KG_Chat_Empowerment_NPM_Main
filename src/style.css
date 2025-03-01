@@ -246,13 +246,13 @@
 .user-enter {
   color: hsl(100, 50%, 50%) !important;
   background-color: hsl(100, 50%, 10%) !important;
-  outline: 1px solid hsl(100, 50%, 25%) !important;
+  border: 1px solid hsl(100, 50%, 25%) !important;
 }
 
 .user-left {
   color: hsl(0, 50%, 70%) !important;
   background-color: hsl(0, 50%, 15%) !important;
-  outline: 1px solid hsl(0, 50%, 40%) !important;
+  border: 1px solid hsl(0, 50%, 40%) !important;
 }
 
 /* convertImageLinksToImage */
@@ -1332,6 +1332,26 @@
   transition: filter 0.3s;
 }
 
+.settings-panel select {
+  height: 30px;
+  min-width: 105px;
+  max-width: 120px;
+  padding: 0.4em;
+  font: 1em Montserrat, sans-serif;
+  color: bisque !important;
+  border-radius: 0.2em !important;
+  box-sizing: border-box;
+  background-color: rgb(17, 17, 17) !important;
+  border: 1px solid rgb(34, 34, 34) !important;
+}
+
+.settings-panel option {
+  height: 30px;
+  background-color: rgb(17, 17, 17) !important;
+  color: bisque !important;
+  font-family: 'Montserrat', sans-serif;
+}
+
 .settings-panel .remove-settings-button {
   stroke: #ee9090;
   background-color: #6b2f2f;
@@ -1347,12 +1367,38 @@
   background-color: #502f6b;
 }
 
+.settings-panel .toggle-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.settings-panel .toggle-description {
+  cursor: pointer;
+  color: burlywood;
+  transition: color 0.15s ease-in-out;
+}
+
+.settings-panel .toggle-description:hover {
+  color: lightgoldenrodyellow;
+}
+
 .settings-panel .settings-container {
   width: 100%;
-  display: flex;
+  gap: 0.4em;
+  display: inline-flex;
   flex-wrap: wrap;
   align-items: start;
+  margin-bottom: 4em;
+}
+
+.settings-panel .settings-toggle-container {
   flex-direction: column;
+}
+
+.settings-panel [class$="item"] {
+  display: inline-flex;
+  gap: 0.4em;
 }
 
 /* toggleHiddenMessages */

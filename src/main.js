@@ -6,7 +6,8 @@ import {
   scrollMessagesToBottom,
   highlightMentionWords,
   removeIgnoredUserMessages,
-  locationHas
+  locationHas,
+  shouldEnable
 } from "./modules/helpers.js"; // helpers
 
 import {
@@ -17,7 +18,7 @@ import {
   restoreChatState,
   groupChatMessages,
   applyDynamicBackgroundColor
-} from "./modules/chat/chat-workers.js"; // chat
+} from "./modules/chat/chat-workers.js"; //chat
 
 import { convertImageLinksToImage } from "./modules/converters/image-converter.js"; // image converter
 import { convertVideoLinksToPlayer } from "./modules/converters/video-converter.js"; // video converter
@@ -63,7 +64,10 @@ export let isInitializedChat = false;
   // 1 ======================================================================
   // Check if the current location is 'gmid' or 'gamelist'
   if (locationHas('gmid') || locationHas('gamelist')) {
-    createChatUserCounter(empowermentPanel);
+    const shouldCreateCounter = shouldEnable('elements', 'counter');
+    if (shouldCreateCounter) {
+      createChatUserCounter(empowermentPanel);
+    }
     applyDynamicBackgroundColor();
   }
   // ========================================================================

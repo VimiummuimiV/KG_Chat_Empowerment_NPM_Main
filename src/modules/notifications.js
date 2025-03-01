@@ -4,13 +4,12 @@ import {
 } from "./definitions";
 
 import { settingsState } from "./panels/settings.js"; // settings
-
 const { usersToTrack } = settingsState;
 
 // helpers
 import {
   getUserChatDuration,
-  shouldEnableSetting,
+  shouldEnable,
   scrollMessagesToBottom,
   getCurrentTimeString
 } from "./helpers";
@@ -20,7 +19,7 @@ import { createCustomTooltip } from "./tooltip";
 
 // Creates the action icon element
 function createActionIcon(iconType) {
-  const actionIcon = document.createElement('div');
+  const actionIcon = document.createElement('span');
   actionIcon.classList.add('action-icon');
   actionIcon.style.margin = '0 4px';
   actionIcon.style.setProperty('border', 'none', 'important');
@@ -59,7 +58,7 @@ export function createStaticNotification(user, iconType, time, presence, contain
   );
 
   // Create the action icon based on the iconType provided
-  const staticChatNotification = document.createElement('div');
+  const staticChatNotification = document.createElement('span');
   staticChatNotification.classList.add('static-chat-notification');
 
   // Add double-click listener to purge notifications only if using the generalChat container
@@ -124,7 +123,7 @@ function createDynamicNotification(user, iconType, time, presence) {
   }
 
   // Create the notification element
-  const dynamicChatNotification = document.createElement('div');
+  const dynamicChatNotification = document.createElement('span');
   dynamicChatNotification.classList.add('dynamic-chat-notification');
 
   // Create user element
@@ -217,8 +216,8 @@ export function showUserAction(user, iconType, presence) {
     (trackedUser) => trackedUser.name === user && trackedUser.state === 'thawed'
   );
 
-  const shouldShowStatic = isTrackedUser && shouldEnableSetting('notifications', 'static');
-  const shouldShowDynamic = shouldEnableSetting('notifications', 'dynamic');
+  const shouldShowStatic = isTrackedUser && shouldEnable('notifications', 'static');
+  const shouldShowDynamic = shouldEnable('notifications', 'dynamic');
 
   // Exit early if no notification type is enabled
   if (!shouldShowStatic && !shouldShowDynamic) return;

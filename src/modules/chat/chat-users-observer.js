@@ -66,9 +66,11 @@ const chatUsersObserver = new MutationObserver(debounce((mutations) => {
       const userCountElement = document.querySelector('.participant-count');
 
       if (chatHidden) {
-        // If the chat is hidden, update the user count to 0 and exit early
-        userCountElement.style.filter = "grayscale(100%)";
-        userCountElement.textContent = "0";
+        if (userCountElement) {
+          // If the chat is hidden, update the user count to 0 and exit early
+          userCountElement.style.filter = "grayscale(100%)";
+          userCountElement.textContent = "0";
+        }
         return;
       }
 
@@ -111,9 +113,11 @@ const chatUsersObserver = new MutationObserver(debounce((mutations) => {
       // User count management
       const currentCount = userMap.size;
       if (currentCount !== prevUserCount && isAnimated) {
-        updateUserCount(userCountElement, currentCount);
-        userCountElement.style.filter = currentCount > 0 ? 'none' : 'grayscale(100%)';
-        addPulseEffect(userCountElement);
+        if (userCountElement) {  // Ensure userCountElement exists before modifying it
+          updateUserCount(userCountElement, currentCount);
+          userCountElement.style.filter = currentCount > 0 ? 'none' : 'grayscale(100%)';
+          addPulseEffect(userCountElement);
+        }
       }
 
       // Common logic for processing both entered and left users
