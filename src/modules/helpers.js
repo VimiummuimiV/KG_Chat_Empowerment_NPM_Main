@@ -785,22 +785,16 @@ export function logUserAction(userId, actionType) {
   }
 }
 
-/**
- * Checks if a given URL belongs to a trusted domain.
- * @param {string} url - The URL to check.
- * @returns {{isTrusted: boolean, domain: string}} - Whether the domain is trusted and the extracted domain.
- */
-export function isTrustedDomain(url) {
+export const isTrustedDomain = url => {
   try {
-    const parsedURL = new URL(url);
-    const hostnameParts = parsedURL.hostname.toLowerCase().split('.');
-    const domain = hostnameParts.length > 2 ? hostnameParts.slice(-2).join('.') : parsedURL.hostname;
+    const { hostname } = new URL(url);
+    const domain = hostname.toLowerCase().split('.').slice(-2).join('.');
     return { isTrusted: trustedDomains.includes(domain), domain };
-  } catch (error) {
-    console.error("Error in isTrustedDomain:", error.message);
-    return { isTrusted: false, domain: url }; // Return original URL as domain in case of error
+  } catch (err) {
+    console.error("Error in isTrustedDomain:", err.message);
+    return { isTrusted: false, domain: url };
   }
-}
+};
 
 export function highlightMentionWords(containerType = 'generalMessages') {
   const containerSelectors = {

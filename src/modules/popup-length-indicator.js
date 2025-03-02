@@ -1,11 +1,20 @@
-import { getChatElements } from "./helpers"; // helpers
+import { getChatElements, locationHas } from "./helpers"; // helpers
 
 // Select the input element and length popup container using the helper function
 const { chatField, messagesContainer } = getChatElements();
 
-const lengthPopup = document.createElement('div');
-lengthPopup.className = 'length-field-popup';
-messagesContainer.appendChild(lengthPopup);
+let lengthPopup = null;  // Initially set lengthPopup to null
+
+// Function to create and append the length popup
+function createLengthPopup() {
+  // Check if the current location is 'gmid' or 'gamelist'
+  if (!(locationHas('gmid') || locationHas('gamelist'))) return;
+
+  // Create the length popup if the condition is met
+  lengthPopup = document.createElement('div');
+  lengthPopup.className = 'length-field-popup';
+  messagesContainer.appendChild(lengthPopup);
+} createLengthPopup();
 
 // Initialize once at startup
 const textMeasurementCanvas = document.createElement('canvas');
@@ -112,6 +121,10 @@ function handleKeydownEvent(e) {
 
 // Export an initialization function that sets up the events
 export function initChatEvents() {
+  // Only run the event handlers if the popup was created (i.e., condition is met)
+  if (!lengthPopup) return;
+
+  // Attach event listeners
   chatField.addEventListener('input', handleInputEvent);
   chatField.addEventListener('keydown', handleKeydownEvent);
 }
