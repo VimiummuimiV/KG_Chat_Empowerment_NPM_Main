@@ -261,10 +261,8 @@
   opacity: 1;
   transition: opacity 0.15s ease-in-out;
   border: none;
-  width: 6vw;
-  min-width: 100px;
-  max-height: 200px;
-  height: auto;
+  max-width: 150px;
+  max-height: 150px;
   cursor: pointer;
   background-color: transparent;
   padding: 2px;
