@@ -28,6 +28,7 @@
   padding: 2px 4px;
   margin: 2px;
   opacity: 0;
+  border: none !important;
 }
 
 .bounce-in {
@@ -288,7 +289,7 @@
   transform: translate(-50%, -50%) scale(1);
   position: fixed;
   opacity: 0;
-  z-index: 999;
+  z-index: 1000;
   transform-origin: center center;
   max-height: 90vh;
   max-width: 90vw;
@@ -300,16 +301,19 @@
 /* convertVideoLinksToPlayer */
 .video-wrapper {
   display: flex;
-  width: fit-content;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 10px;
+}
+
+.video-wrapper .processed-video {
+  margin-bottom: 0.6em !important;
 }
 
 .video-container {
+  border-radius: 0.4em !important;
   display: flex;
   border: none;
-  height: 165px;
+  height: 200px !important;
+  width: 356px !important
 }
 
 /* Dimming element */
