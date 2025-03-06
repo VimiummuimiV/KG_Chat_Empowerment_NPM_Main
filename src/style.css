@@ -472,8 +472,9 @@
 
 .chat-user-list .avatar img,
 .fetched-users .avatar img {
+  border-radius: 0.2em !important;
   transform-origin: left;
-  transition: transform 0.3s;
+  transition: transform 0.15s;
 }
 
 .chat-user-list .avatar img:hover,
