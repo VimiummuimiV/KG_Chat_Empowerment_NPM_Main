@@ -266,20 +266,15 @@ export default class ChatMessagesRemover {
 
 // Extract unique message ID from a message element
 function getMessageId(el) {
-  if (!el) return ''; // Guard clause
-  
-  return Array.from(el.childNodes)
-    .map((n) => {
-      if (!n) return ''; // Guard clause
-      
-      if (n.nodeType === Node.TEXT_NODE) return n.textContent.trim();
-      if (n.classList?.contains("username")) return `${n.textContent.trim()}`;
-      if (n.tagName === "A") return n.href;
-      if (n.tagName === "IMG") return n.title.trim();
-      if (n.tagName === "IFRAME") return n.src.trim();
-      return "";
-    })
-    .join("");
+  if (!el) return '';
+  const clone = el.cloneNode(true);
+  Array.from(clone.querySelectorAll('.time')).forEach(t => t.remove());
+  const text = clone.textContent;
+  const attributes = [...Array.from(el.querySelectorAll('a')).map(a => a.href),
+                     ...Array.from(el.querySelectorAll('img')).map(img => img.title.trim()),
+                     ...Array.from(el.querySelectorAll('iframe')).map(iframe => iframe.src.trim())]
+                     .filter(Boolean).join(' ');
+  return [text, attributes].filter(Boolean).join(' ');
 }
 
 // Cleanup deleted messages list
