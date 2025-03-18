@@ -222,7 +222,7 @@ function createToggleItem(toggleConfig, optionValue) {
   description.style.transition = 'color 0.15s ease-in-out';
 
   description.addEventListener('click', () => {
-    if (toggle.image) window.open(toggle.image, '_blank');
+    if (toggleConfig.image) window.open(toggleConfig.image, '_blank');
   });
 
   const options = [
