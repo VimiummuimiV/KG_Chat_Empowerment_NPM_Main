@@ -1,3 +1,5 @@
+import "./settings.css" // settings styles
+
 // icons
 import {
   settingsSVG,
@@ -9,9 +11,9 @@ import {
   removeSVG,
   snowflakeSVG,
   addSVG
-} from '../icons.js';
+} from '../../icons.js';
 
-import { addPulseEffect, addShakeEffect } from '../animations.js'; // animations
+import { addPulseEffect, addShakeEffect } from '../../animations.js'; // animations
 
 // helpers && helpers definitions
 import {
@@ -24,14 +26,14 @@ import {
   // helpers definitions
   isAltKeyPressed,
   isCtrlKeyPressed
-} from '../helpers.js';
+} from '../../helpers.js';
 
 // definitions
 import {
   myNickname,
   debounceTimeout,
   state
-} from '../definitions.js';
+} from '../../definitions.js';
 
 // Define dynamic variables
 let {

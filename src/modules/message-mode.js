@@ -1,5 +1,5 @@
 import { modeEverySVG, modeMentionSVG } from './icons.js'; // icons
-import { KG_Chat_Empowerment } from './panels/settings.js'; // settings
+import { KG_Chat_Empowerment } from './panels/settings/settings.js'; // settings
 
 import { isCtrlKeyPressed, isAltKeyPressed } from './helpers.js'; // helpers definitions
 

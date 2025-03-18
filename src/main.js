@@ -35,10 +35,10 @@ import { convertVideoLinksToPlayer } from "./modules/converters/video-converter.
 import { createMessageModeButton } from "./modules/message-mode.js"; // message mode button
 import { createSoundSwitcherButton } from "./modules/sound-mode.js"; // sound switcher button
 
-import { createCacheButton } from "./modules/panels/cache.js"; // cache panel
-import { createMessagesButton } from "./modules/panels/messages.js"; // messages panel
+import { createCacheButton } from "./modules/panels/cache/cache.js"; // cache panel
+import { createMessagesButton } from "./modules/panels/messages/messages.js"; // messages panel
 import { createChatLogsButton } from "./modules/panels/chatlogs/chatlogs.js"; // chatlogs panel
-import { createSettingsButton } from "./modules/panels/settings.js"; // settings panel
+import { createSettingsButton } from "./modules/panels/settings/settings.js"; // settings panel
 
 // definitions
 import {

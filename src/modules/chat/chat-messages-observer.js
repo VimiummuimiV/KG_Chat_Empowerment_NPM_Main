@@ -17,7 +17,7 @@ import { groupChatMessages } from "./chat-workers"; // chat workers
 import { isInitializedChat } from "../../main"; // main
 import { usualMessageFrequencies, mentionMessageFrequencies, playBeep, beepVolume } from "../voice-engine"; // voice engine definitions
 import { myNickname } from "../definitions.js"; // definitions
-import { settingsState } from "../panels/settings.js"; // settings
+import { settingsState } from "../panels/settings/settings.js"; // settings
 
 const { ignored } = settingsState;
 

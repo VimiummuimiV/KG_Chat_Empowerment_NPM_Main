@@ -15,7 +15,7 @@ let {
   fetchedUsers
 } = state;
 
-import { settingsState } from "../panels/settings.js" // settings
+import { settingsState } from "../panels/settings/settings.js" // settings
 const { usersToTrack, ignored, moderator } = settingsState
 
 import {
@@ -27,8 +27,8 @@ import {
   isCtrlKeyPressed
 } from "../helpers.js"; // helpers
 
-import { createCustomTooltip } from "../tooltip"; // tooltip
-import { updateUserCountText } from "../panels/cache"; // cache panel
+import { createCustomTooltip } from "../tooltip.js"; // tooltip
+import { updateUserCountText } from "../panels/cache/cache.js"; // cache panel
 import { isInitializedChat } from "../../main.js";
 import { addShakeEffect } from "../animations.js"; // animations
 import { insertPrivate } from "./chat-workers.js"; // chat workers

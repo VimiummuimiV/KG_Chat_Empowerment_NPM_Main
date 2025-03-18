@@ -1,19 +1,19 @@
-import { enterSVG, leaveSVG } from "../icons"; // icons
+import { enterSVG, leaveSVG } from "../icons.js"; // icons
 
 import {
   debounce,
   getChatElements,
   logUserAction,
   getUserGender
-} from "../helpers"; // helpers
+} from "../helpers.js"; // helpers
 
-import { debounceTimeout } from "../definitions"; // definitions
-import { isInitializedChat } from "../../main"; // main
-import { addJumpEffect, addPulseEffect } from "../animations"; // animations
-import { showUserAction } from "../notifications"; // notifications
-import { refreshUserList } from "./chat-userlist"; // chat userlist
-import { userAction } from "../voice-engine"; // voice engine
-import { settingsState } from "../panels/settings"; // settings
+import { debounceTimeout } from "../definitions.js"; // definitions
+import { isInitializedChat } from "../../main.js"; // main
+import { addJumpEffect, addPulseEffect } from "../animations.js"; // animations
+import { showUserAction } from "../notifications.js"; // notifications
+import { refreshUserList } from "./chat-userlist.js"; // chat userlist
+import { userAction } from "../voice-engine.js"; // voice engine
+import { settingsState } from "../panels/settings/settings.js"; // settings
 const { usersToTrack } = settingsState;
 
 const userList = getChatElements().userList.general;

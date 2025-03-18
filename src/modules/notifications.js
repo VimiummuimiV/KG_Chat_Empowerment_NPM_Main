@@ -3,7 +3,7 @@ import {
   dynamicChatNotificationTimeout
 } from "./definitions";
 
-import { settingsState } from "./panels/settings.js"; // settings
+import { settingsState } from "./panels/settings/settings.js"; // settings
 const { usersToTrack } = settingsState;
 
 // helpers

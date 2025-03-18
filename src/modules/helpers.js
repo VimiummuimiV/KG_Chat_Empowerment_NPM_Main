@@ -13,7 +13,7 @@ import {
   state
 } from "./definitions.js";
 
-import { settingsState } from "./panels/settings.js"; // settings
+import { settingsState } from "./panels/settings/settings.js"; // settings
 const { ignored, mentionKeywords, usernameReplacements, usersToTrack } = settingsState;
 
 import { addPulseEffect, addShakeEffect, addJumpEffect } from "./animations.js"; // animations

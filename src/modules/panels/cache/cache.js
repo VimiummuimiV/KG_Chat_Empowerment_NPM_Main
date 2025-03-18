@@ -1,3 +1,5 @@
+import "./cache.css" // cache styles
+
 // helpers && helpers definitions
 import {
   // helpers
@@ -15,12 +17,12 @@ import {
   loadProfileIntoIframe,
   // helpers definitions
   isCtrlKeyPressed
-} from "../helpers.js";
+} from "../../helpers.js";
 
 // notifications
 import {
   createStaticNotification
-} from "../notifications.js";
+} from "../../notifications.js";
 
 // icons
 import {
@@ -30,7 +32,7 @@ import {
   enterSVG,
   leaveSVG,
   userlistCacheSVG
-} from "../icons.js";
+} from "../../icons.js";
 
 // definitions
 import {
@@ -39,9 +41,9 @@ import {
   profileBaseUrl,
   myUserId,
   state
-} from "../definitions.js";
+} from "../../definitions.js";
 
-import { addPulseEffect } from "../animations.js"; // animations
+import { addPulseEffect } from "../../animations.js"; // animations
 
 // Rank order mapping
 const rankOrder = {

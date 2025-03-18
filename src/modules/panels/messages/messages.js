@@ -1,5 +1,7 @@
-import { convertImageLinksToImage } from "../converters/image-converter.js"; // image converter
-import { convertVideoLinksToPlayer } from "../converters/video-converter.js"; // video converter
+import "./messages.css" // personal messages styles
+
+import { convertImageLinksToImage } from "../../converters/image-converter.js"; // image converter
+import { convertVideoLinksToPlayer } from "../../converters/video-converter.js"; // video converter
 
 // icons
 import {
@@ -10,7 +12,7 @@ import {
   clipboardSVG,
   trashSVG,
   closeSVG
-} from "../icons";
+} from "../../icons.js";
 
 // helpers && helpers definitions
 import {
@@ -24,16 +26,16 @@ import {
   scrollMessagesToMiddle,
   // helpers definitions
   isCtrlKeyPressed
-} from '../helpers.js';
+} from '../../helpers.js';
 
-import { addJumpEffect, addPulseEffect } from "../animations.js"; // animations
-import { showChatLogsPanel } from "./chatlogs/chatlogs.js"; // chatlogs
+import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
+import { showChatLogsPanel } from "../chatlogs/chatlogs.js"; // chatlogs
 
 // definitions
 import {
   today,
   state
-} from '../definitions.js';
+} from '../../definitions.js';
 
 // Define dynamic variables
 let {

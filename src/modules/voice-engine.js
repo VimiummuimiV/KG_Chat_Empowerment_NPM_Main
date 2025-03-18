@@ -1,7 +1,7 @@
-import { shouldEnable } from "./helpers"; // helpers
-import { voiceSpeed, voicePitch } from "./sound-mode"; // sound mode
+import { shouldEnable } from "./helpers.js"; // helpers
+import { voiceSpeed, voicePitch } from "./sound-mode.js"; // sound mode
 
-import { settingsState } from "./panels/settings.js"; // settings
+import { settingsState } from "./panels/settings/settings.js"; // settings
 const { usersToTrack } = settingsState;
 
 // SOUND NOTIFICATION

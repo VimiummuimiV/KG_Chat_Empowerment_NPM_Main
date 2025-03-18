@@ -16,7 +16,7 @@ import {
   chevronLeftSVG,
   chevronRightSVG,
   shuffleSVG
-} from "../../icons";
+} from "../../icons.js";
 
 // helpers
 import {
@@ -36,7 +36,7 @@ import {
 } from '../../definitions.js';
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
-import { settingsState } from "../../panels/settings.js"; // settings
+import { settingsState } from "../../panels/settings/settings.js"; // settings
 
 const { ignored } = settingsState;
 
