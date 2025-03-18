@@ -313,6 +313,11 @@
     margin: 0 0.2em; /* Reduce margins */
     font-size: 0.9em; /* Smaller text */
   }
+
+  .chat-logs-panel .video-container {
+    transform-origin: top left;
+    transform: scale(0.8);
+  }
   
   .toggle-mention-messages-counter,
   .toggle-media-messages-counter {
