@@ -182,3 +182,76 @@
   display: inline-flex;
   gap: 0.4em;
 }
+
+/* Desktops (992px to 1199px) */
+@media (max-width: 1199px) {
+  .settings-panel {
+    width: 90vw;
+    height: 85vh;
+    min-width: unset;
+  }
+
+  .settings-panel .settings-field,
+  .settings-panel select {
+    max-width: 180px;
+  }
+}
+
+/* Tablets (768px to 991px) */
+@media (max-width: 991px) {
+  .settings-panel {
+    width: 95vw;
+    height: 90vh;
+    grid-template-columns: 1fr;
+    grid-template-rows: min-content auto;
+    grid-template-areas:
+      "header"
+      "settings";
+  }
+
+  .settings-panel .panel-header {
+    flex-wrap: wrap;
+  }
+
+  .settings-panel .settings-field,
+  .settings-panel select {
+    max-width: 160px;
+    min-width: 120px;
+  }
+
+  .settings-panel .settings-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Mobile Phones (up to 576px) */
+@media (max-width: 576px) {
+  .settings-panel {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    transform: none;
+    border-radius: 0 !important;
+  }
+
+  .settings-panel .settings-description,
+  .settings-panel .toggle-description {
+    font-size: 0.9em;
+  }
+
+  .settings-panel .settings-container {
+    flex-direction: column;
+    gap: 0.2em;
+    margin-bottom: 2em;
+  }
+
+  .settings-panel .toggle-item {
+    gap: 0.5em;
+  }
+
+  .settings-panel [class$="item"] {
+    gap: 0.2em;
+  }
+}
