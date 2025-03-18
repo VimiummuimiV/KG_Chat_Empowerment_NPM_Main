@@ -22,8 +22,8 @@ import {
 
 import { setupFonts } from "./modules/fonts.js"; // fonts
 import { refreshUserList } from "./modules/chat/chat-userlist.js"; // chat userlist
-import ChatMessagesRemover from "./modules/chat/chat-messages-remover.js"; // chat messages remover
-import { pruneDeletedMessages } from "./modules/chat/chat-messages-remover.js";
+import ChatMessagesRemover from "./modules/chat/chat-messages-remover/chat-messages-remover.js"; // chat messages remover
+import { pruneDeletedMessages } from "./modules/chat/chat-messages-remover/chat-messages-remover.js";
 import { createChatUserCounter } from "./modules/participant-count.js"; // counter
 import { startChatUserObserver } from "./modules/chat/chat-users-observer.js"; // users observer
 import { startChatMessagesObserver } from "./modules/chat/chat-messages-observer.js" // messages observer

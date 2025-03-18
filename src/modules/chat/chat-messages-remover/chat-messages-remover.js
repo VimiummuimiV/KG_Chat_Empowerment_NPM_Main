@@ -1,3 +1,5 @@
+import "./chat-messages-remover.css" // manual messages remover styles
+
 export default class ChatMessagesRemover {
   constructor() {
     this.selected = new Set();
