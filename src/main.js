@@ -1,4 +1,4 @@
-import "./style.css"; // styles
+import "./style.css"; // general styles
 
 import {
   processEncodedLinks,
@@ -37,7 +37,7 @@ import { createSoundSwitcherButton } from "./modules/sound-mode.js"; // sound sw
 
 import { createCacheButton } from "./modules/panels/cache.js"; // cache panel
 import { createMessagesButton } from "./modules/panels/messages.js"; // messages panel
-import { createChatLogsButton } from "./modules/panels/chatlogs.js"; // chatlogs panel
+import { createChatLogsButton } from "./modules/panels/chatlogs/chatlogs.js"; // chatlogs panel
 import { createSettingsButton } from "./modules/panels/settings.js"; // settings panel
 
 // definitions

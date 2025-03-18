@@ -1,0 +1,325 @@
+/* createChatLogsButton */
+.chat-logs-button {
+  position: relative;
+  z-index: 1;
+}
+
+/* showChatLogsPanel */
+.chat-logs-panel {
+  opacity: 0;
+  background-color: #1b1b1b;
+  border-radius: 0.6em !important;
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80vw;
+  height: 80vh;
+  z-index: 1000;
+  min-width: 1000px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content;
+  grid-template-areas:
+    "header header header"
+    "messages scroll users";
+}
+
+.chat-logs-panel .panel-header {
+  display: flex;
+  flex-direction: row;
+  grid-area: header;
+  justify-content: flex-end;
+  padding: 0.6em;
+}
+
+.chat-logs-panel .panel-control-buttons {
+  display: flex;
+}
+
+.chat-logs-panel .search-for-chatlogs-messages {
+  width: 100%;
+  margin: 0 0.5em 0 0;
+  display: flex;
+}
+
+.chat-logs-panel .chatlogs-search-input {
+  outline: none;
+  height: 48px;
+  width: 100%;
+  padding: 10px;
+  font-size: 1em;
+  font-family: Montserrat;
+  color: bisque !important;
+  border-radius: 0.2em !important;
+  box-sizing: border-box;
+  background-color: #111;
+  border: 1px solid #222 !important;
+}
+
+.chat-logs-panel .chatlogs-date-input {
+  background-color: #111;
+  color: bisque;
+  border: 1px solid #222;
+  width: fit-content;
+  height: 48px;
+  padding: 10px;
+  font-size: 1em;
+  font-family: Montserrat;
+  border-radius: 0.2em !important;
+  box-sizing: border-box;
+  margin: 0 0.5em;
+}
+
+.toggle-mention-messages-counter,
+.toggle-media-messages-counter {
+  display: flex;
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+  padding: 2px 4px;
+  border-radius: 2px !important;
+  font-size: 12px;
+  font-family: Roboto;
+  font-weight: bold;
+  bottom: 0px;
+  left: 0px;
+  transform: translate(-50%, 50%);
+  color: #020202;
+  pointer-events: none;
+  user-select: none;
+}
+
+.toggle-mention-messages-counter {
+  background-color: #ffa07a;
+}
+
+.toggle-media-messages-counter {
+  background-color: #71c4c4;
+}
+
+.chat-logs-panel .saved-chatlog-url {
+  color: darkseagreen !important;
+  text-decoration: none;
+  display: inline-flex;
+  padding: 0.5em;
+}
+
+.chat-logs-panel .saved-chatlog-url-title {
+  color: lightsteelblue;
+  padding: 0.5em;
+}
+
+.saved-chatlog-container {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background-color: rgb(30, 40, 45);
+  border: 1px solid rgb(60, 70, 80) !important;
+  border-radius: 0.2em !important;
+  position: absolute;
+  padding: 0.5em;
+  height: fit-content;
+  width: max-content;
+  max-height: 400px;
+  top: calc(50px + 1em);
+  right: 0;
+}
+
+.chat-logs-panel .chat-logs-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: calc(100% - 0.5em);
+  padding: 1em;
+  display: flex;
+  grid-area: messages;
+  flex-direction: column;
+}
+
+.chat-logs-panel .message-item {
+  padding: 0.2em;
+  display: inline-flex;
+  cursor: pointer;
+  align-items: start;
+}
+
+.chat-logs-panel .message-time {
+  color: darkseagreen;
+  margin: 0 0.4em;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  height: fit-content;
+}
+
+.chat-logs-panel .message-time:hover {
+  color: lightgreen;
+}
+
+.chat-logs-panel .message-username {
+  cursor: pointer;
+  margin: 0 0.4em;
+  height: fit-content;
+}
+
+.chat-logs-panel .message-text {
+  color: lightsteelblue;
+  margin: 0 0.4em;
+  overflow-wrap: anywhere;
+  height: fit-content;
+}
+
+.chat-logs-panel .active-users {
+  padding: 1em;
+  height: calc(100% - 1em);
+  width: fit-content;
+  overflow-y: auto;
+  overflow-x: hidden;
+  grid-area: users;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-logs-panel .active-user-item {
+  display: flex;
+  height: fit-content;
+  align-items: center;
+  justify-content: left;
+  margin: 0.2em 0;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.chat-logs-panel .active-user-item:hover {
+  filter: brightness(0.8);
+}
+
+.chat-logs-panel .active-user-name {
+  padding: 0.4em;
+}
+
+.chat-logs-panel .active-user-messages-count {
+  padding: 0.4em;
+  border-radius: 0.2em !important;
+}
+
+/* Adaptivity */
+/* Large desktops (1200px and up) */
+@media (min-width: 1200px) {
+  .chat-logs-panel {
+    width: 80vw;
+    height: 80vh;
+    min-width: 1000px;
+  }
+}
+
+/* Desktops (992px to 1199px) */
+@media (max-width: 1199px) {
+  .chat-logs-panel {
+    width: 90vw;
+    height: 85vh;
+    min-width: unset; /* Remove min-width for flexibility */
+  }
+  
+  .chat-logs-panel .active-users {
+    width: 200px; /* Reduce width of active users panel */
+  }
+}
+
+/* Tablets (768px to 991px) */
+@media (max-width: 991px) {
+  .chat-logs-panel {
+    width: 95vw;
+    height: 90vh;
+    grid-template-columns: 1fr; /* Switch to single column */
+    grid-template-rows: min-content auto auto; /* Stack elements vertically */
+    grid-template-areas:
+      "header"
+      "messages"
+      "users"; /* Place users below messages */
+  }
+  
+  .chat-logs-panel .active-users {
+    width: 100%; /* Full width */
+    height: auto;
+    max-height: 200px; /* Limit height with scrolling */
+    overflow-y: auto;
+  }
+  
+  .chat-logs-panel .panel-header {
+    flex-direction: column; /* Stack header items vertically */
+    align-items: flex-start;
+  }
+  
+  .chat-logs-panel .search-for-chatlogs-messages {
+    width: 100%; /* Full width search bar */
+    margin-bottom: 0.5em;
+  }
+  
+  .chat-logs-panel .panel-control-buttons {
+    width: 100%; /* Full width for buttons */
+    justify-content: center;
+  }
+
+  .chat-logs-panel .scroll-buttons-container {
+    position: absolute !important;
+    right: 0.5em !important;
+    justify-content: end !important;
+  }
+
+  .chat-logs-panel .active-users,
+  .chat-logs-panel .panel-header-toggle-button {
+    display: none !important;
+  }
+}
+
+@media (max-width: 630px) {
+  .chat-logs-panel .scroll-buttons-container {
+    display: none !important;
+  }
+}
+
+/* Mobile phones (576px and below) */
+@media (max-width: 576px) {
+  .chat-logs-panel {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    transform: none; /* Remove centering */
+    border-radius: 0 !important; /* Full-screen, no rounded corners */
+  }
+  
+  .chat-logs-panel .panel-header {
+    padding: 0.5em; /* Reduce padding */
+  }
+  
+  .chat-logs-panel .chatlogs-search-input,
+  .chat-logs-panel .chatlogs-date-input {
+    height: 40px; /* Smaller inputs */
+    font-size: 0.9em;
+  }
+  
+  .chat-logs-panel .active-users {
+    display: none; /* Hide active users */
+  }
+  
+  .chat-logs-panel .message-item {
+    padding: 0.1em; /* Reduce message padding */
+  }
+  
+  .chat-logs-panel .message-time,
+  .chat-logs-panel .message-username,
+  .chat-logs-panel .message-text {
+    margin: 0 0.2em; /* Reduce margins */
+    font-size: 0.9em; /* Smaller text */
+  }
+  
+  .toggle-mention-messages-counter,
+  .toggle-media-messages-counter {
+    font-size: 10px; /* Smaller counters */
+  }
+  
+  .saved-chatlog-container {
+    max-height: 300px; /* Reduce height of saved chat logs */
+  }
+}

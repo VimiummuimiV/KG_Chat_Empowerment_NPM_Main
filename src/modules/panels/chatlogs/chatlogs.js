@@ -1,5 +1,7 @@
-import { convertImageLinksToImage } from "../converters/image-converter.js"; // image converter
-import { convertVideoLinksToPlayer } from "../converters/video-converter.js"; // video converter
+import "./chatlogs.css" // chatlogs styles
+
+import { convertImageLinksToImage } from "../../converters/image-converter.js"; // image converter
+import { convertVideoLinksToPlayer } from "../../converters/video-converter.js"; // video converter
 
 // icons
 import {
@@ -14,7 +16,7 @@ import {
   chevronLeftSVG,
   chevronRightSVG,
   shuffleSVG
-} from "../icons";
+} from "../../icons";
 
 // helpers
 import {
@@ -25,16 +27,16 @@ import {
   processEncodedLinks,
   highlightMentionWords,
   scrollMessagesToMiddle
-} from '../helpers.js';
+} from '../../helpers.js';
 
 // definitions
 import {
   today,
   state
-} from '../definitions.js';
+} from '../../definitions.js';
 
-import { addJumpEffect, addPulseEffect } from "../animations.js"; // animations
-import { settingsState } from "../panels/settings.js"; // settings
+import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
+import { settingsState } from "../../panels/settings.js"; // settings
 
 const { ignored } = settingsState;
 
