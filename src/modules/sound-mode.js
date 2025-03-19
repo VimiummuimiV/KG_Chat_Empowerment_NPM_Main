@@ -5,17 +5,14 @@ import { isCtrlKeyPressed, isAltKeyPressed } from './helpers.js'; // helpers def
 
 import { addPulseEffect } from './animations.js'; // animations
 
-// Define voice speed limits
-const minVoiceSpeed = 0;
-const maxVoiceSpeed = 2.5;
-
-// Define voice pitch limits
-const minVoicePitch = 0;
-const maxVoicePitch = 2.0;
-
-// Define default voice speed and pitch
-const defaultVoiceSpeed = 1.5;
-const defaultVoicePitch = 1.0;
+import {
+  minVoiceSpeed,
+  maxVoiceSpeed,
+  minVoicePitch,
+  maxVoicePitch,
+  defaultVoiceSpeed,
+  defaultVoicePitch
+ } from './definitions.js';
 
 export let voiceSpeed = KG_Chat_Empowerment.voiceSettings.voiceSpeed ?? defaultVoiceSpeed;
 export let voicePitch = KG_Chat_Empowerment.voiceSettings.voicePitch ?? defaultVoicePitch;

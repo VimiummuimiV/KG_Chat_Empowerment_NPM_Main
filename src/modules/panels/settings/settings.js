@@ -30,6 +30,8 @@ import {
 
 // definitions
 import {
+  defaultVoiceSpeed,
+  defaultVoicePitch,
   myNickname,
   debounceTimeout,
   state

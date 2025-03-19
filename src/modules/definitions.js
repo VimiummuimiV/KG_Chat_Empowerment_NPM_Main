@@ -11,6 +11,18 @@ export const myUserId = document.querySelector('a.drop-btn.mail')?.href?.match(/
 // create today's date in the format 'YYYY-MM-DD'
 export const today = new Intl.DateTimeFormat('en-CA').format(new Date());
 
+// Define voice speed limits
+export const minVoiceSpeed = 0;
+export const maxVoiceSpeed = 2.5;
+
+// Define voice pitch limits
+export const minVoicePitch = 0;
+export const maxVoicePitch = 2.0;
+
+// Define default voice speed and pitch
+export const defaultVoiceSpeed = 1.5;
+export const defaultVoicePitch = 1.0;
+
 export const emojiFaces = [
   // People Emojis (Facial expressions)
   '😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆',
