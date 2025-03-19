@@ -332,7 +332,7 @@
   border: none;
   display: flex;
   position: fixed;
-  z-index: 999;
+  z-index: 1001;
   width: 75vw;
   min-width: 1000px;
   height: 80vh;
