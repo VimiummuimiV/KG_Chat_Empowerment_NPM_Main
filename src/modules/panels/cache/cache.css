@@ -276,17 +276,9 @@
     flex-wrap: wrap;
   }
 
-  .cached-users-panel .drop-time {
-    width: 100%;
-  }
-
   .cached-users-panel .search-for-cached-users {
     margin: 0.5em 0;
-  }
-
-  .cached-users-panel .panel-control-buttons {
-    width: 100%;
-    justify-content: center;
+    order: 1;
   }
 
   .cached-users-panel .users-container {
@@ -306,8 +298,6 @@
   }
 
   .cached-users-panel .panel-header {
-    flex-direction: column;
-    align-items: flex-start;
     padding: 0.5em;
   }
 
@@ -329,29 +319,43 @@
 
   .cached-users-panel .avatar {
     font-size: 1.4rem;
-    /* Smaller avatar */
   }
 
   .cached-users-panel .avatar img {
     height: 20px;
-    /* Smaller avatar image */
     width: 20px;
   }
 
   .cached-users-panel .login {
     font-size: 0.9em;
-    /* Smaller login text */
   }
 
   .cached-users-panel .visits {
     font-size: 0.8em;
-    /* Smaller visits text */
     padding: 2px 4px;
-    /* Adjust padding */
   }
 
   .cached-users-panel .registered {
     font-size: 10px;
-    /* Smaller registered text */
+  }
+
+  /* Mobile Phones (up to 520px) */
+  @media (max-width: 520px) {
+    .cached-users-panel .drop-time-threshold-description,
+    .cached-users-panel .drop-time-expiration-description {
+      display: none !important;
+    }
+  }
+
+  /* Mobile Phones (up to 320px) */
+  @media (max-width: 320px) {
+    .cached-users-panel .drop-time {
+      display: none !important;
+    }
+
+    .cached-users-panel .panel-control-buttons {
+      width: 100% !important;
+      justify-content: end !important;
+    }
   }
 }
