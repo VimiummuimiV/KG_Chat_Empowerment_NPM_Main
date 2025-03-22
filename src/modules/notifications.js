@@ -228,7 +228,7 @@ export function showUserAction(user, iconType, presence) {
   // Show static notification if applicable
   if (shouldShowStatic && isTrackedUser) {
     createStaticNotification(user, iconType, time, presence, 'generalChat');
-    scrollToBottom('generalMessages', 200);
+    scrollToBottom('generalMessages', 350);
   }
 
   // Instead of immediately creating a dynamic notification, enqueue it

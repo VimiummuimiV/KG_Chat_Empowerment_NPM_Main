@@ -106,7 +106,7 @@ const newMessagesObserver = new MutationObserver(async mutations => {
             convertVideoLinksToPlayer('generalMessages');
             processEncodedLinks('generalMessages');
             groupChatMessages();
-            scrollToBottom('generalMessages', 200);
+            scrollToBottom('generalMessages', 350);
             showPopupMessage();
             updatePersonalMessageCounts(); // Rethink when to call
           }

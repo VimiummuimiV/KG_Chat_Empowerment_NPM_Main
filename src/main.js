@@ -137,7 +137,7 @@ export let isInitializedChat = false;
         setupInputBackup('#chat-general .text');
         highlightMentionWords();
         groupChatMessages();
-        scrollToBottom('generalMessages', 200);
+        scrollToBottom('generalMessages', 350);
         refreshFetchedUsers(false, cacheRefreshThresholdHours);
         refreshUserList();
         setChatFieldFocus();
