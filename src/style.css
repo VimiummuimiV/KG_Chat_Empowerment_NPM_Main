@@ -315,6 +315,10 @@
   width: 356px !important
 }
 
+.youtube-thumb {
+  cursor: pointer !important;
+}
+
 /* Dimming element */
 .dimming-background {
   background: black;
