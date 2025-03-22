@@ -1,7 +1,7 @@
 import {
   addMessageToQueue,
   processEncodedLinks,
-  scrollMessagesToBottom,
+  scrollToBottom,
   updatePersonalMessageCounts,
   normalizeAndResetUsernames,
   convertRussianUsernameToLatin,
@@ -106,7 +106,7 @@ const newMessagesObserver = new MutationObserver(async mutations => {
             convertVideoLinksToPlayer('generalMessages');
             processEncodedLinks('generalMessages');
             groupChatMessages();
-            scrollMessagesToBottom();
+            scrollToBottom('generalMessages', 200);
             showPopupMessage();
             updatePersonalMessageCounts(); // Rethink when to call
           }

@@ -26,7 +26,7 @@ import {
   triggerTargetElement,
   processEncodedLinks,
   highlightMentionWords,
-  scrollMessagesToMiddle
+  scrollToMiddle
 } from '../../helpers.js';
 
 // definitions
@@ -815,7 +815,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
         if (visibleMessages) await toggleMessagesVisibility();
         chatlogsSearchInput.value.length > 0 && (chatlogsSearchInput.value = '');
         // Use helper function to scroll the chat logs container to the middle of the parent container
-        await scrollMessagesToMiddle(chatLogsContainer, messageContainer);
+        await scrollToMiddle(chatLogsContainer, messageContainer);
       });
 
       // Create time element

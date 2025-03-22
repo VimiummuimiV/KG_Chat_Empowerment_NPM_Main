@@ -2,7 +2,7 @@
 import {
   decodeURL,
   isEncodedURL,
-  scrollMessagesToBottom,
+  scrollToBottom,
   isTrustedDomain,
   addBigImageEventListeners,
   removeBigImageEventListeners,
@@ -248,7 +248,7 @@ export function convertImageLinksToImage(containerType) {
     img.onload = () => {
       thumbnail.appendChild(img);
       link.parentNode.insertBefore(thumbnail, link.nextSibling);
-      scrollMessagesToBottom(containerType);
+      scrollToBottom(containerType, 600);
     };
 
     img.onerror = () => {

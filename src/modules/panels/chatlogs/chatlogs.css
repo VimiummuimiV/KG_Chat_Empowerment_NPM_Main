@@ -287,7 +287,8 @@
     font-size: 0.9em; /* Smaller text */
   }
 
-  .chat-logs-panel .video-container {
+  .chat-logs-panel .video-container,
+  .chat-logs-panel .youtube-thumb {
     transform-origin: top left;
     transform: scale(0.8);
   }

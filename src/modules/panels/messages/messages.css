@@ -199,6 +199,12 @@
     font-size: 0.9em;
   }
 
+  .cached-messages-panel .video-container,
+  .cached-messages-panel .youtube-thumb {
+    transform-origin: top left;
+    transform: scale(0.8);
+  }
+
   .cached-messages-panel .message-count {
     font-size: 10px;
     height: 16px;

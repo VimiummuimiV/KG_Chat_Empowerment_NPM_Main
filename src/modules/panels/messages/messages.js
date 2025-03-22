@@ -23,7 +23,7 @@ import {
   triggerTargetElement,
   processEncodedLinks,
   highlightMentionWords,
-  scrollMessagesToMiddle,
+  scrollToMiddle,
   // helpers definitions
   isCtrlKeyPressed
 } from '../../helpers.js';
@@ -133,7 +133,7 @@ async function findGeneralChatMessage(targetTime, targetUsername, allowScroll) {
   }
 
   if (foundElement && allowScroll) {
-    await scrollMessagesToMiddle(parent, foundElement); // Call the extracted scrolling function
+    await scrollToMiddle(parent, foundElement); // Call the extracted scrolling function
   }
 
   return foundElement || false; // Return found element or false if not found
@@ -181,7 +181,7 @@ async function findChatLogsMessage(targetTime, targetUsername, allowScroll) {
   }
 
   if (foundElement && allowScroll) {
-    await scrollMessagesToMiddle(parent, foundElement); // Call the extracted scrolling function
+    await scrollToMiddle(parent, foundElement); // Call the extracted scrolling function
   }
 
   return foundElement || false; // Return found element or false if not found

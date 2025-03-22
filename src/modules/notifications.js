@@ -10,7 +10,7 @@ const { usersToTrack } = settingsState;
 import {
   getUserChatDuration,
   shouldEnable,
-  scrollMessagesToBottom,
+  scrollToBottom,
   getCurrentTimeString
 } from "./helpers";
 
@@ -228,7 +228,7 @@ export function showUserAction(user, iconType, presence) {
   // Show static notification if applicable
   if (shouldShowStatic && isTrackedUser) {
     createStaticNotification(user, iconType, time, presence, 'generalChat');
-    scrollMessagesToBottom();
+    scrollToBottom('generalMessages', 200);
   }
 
   // Instead of immediately creating a dynamic notification, enqueue it

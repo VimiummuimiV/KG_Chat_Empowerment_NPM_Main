@@ -3,7 +3,7 @@ import "./style.css"; // general styles
 import {
   processEncodedLinks,
   refreshFetchedUsers,
-  scrollMessagesToBottom,
+  scrollToBottom,
   highlightMentionWords,
   removeIgnoredUserMessages,
   locationHas,
@@ -137,7 +137,7 @@ export let isInitializedChat = false;
         setupInputBackup('#chat-general .text');
         highlightMentionWords();
         groupChatMessages();
-        scrollMessagesToBottom();
+        scrollToBottom('generalMessages', 200);
         refreshFetchedUsers(false, cacheRefreshThresholdHours);
         refreshUserList();
         setChatFieldFocus();

@@ -306,7 +306,8 @@
   margin-bottom: 0.6em !important;
 }
 
-.video-container {
+.video-container,
+.youtube-thumb {
   border-radius: 0.4em !important;
   display: flex;
   border: none;
