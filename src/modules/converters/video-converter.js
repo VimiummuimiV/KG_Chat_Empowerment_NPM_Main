@@ -25,7 +25,7 @@ function getSharedYouTubePlayer() {
     sharedYouTubePlayer.classList.add("video-container");
     sharedYouTubePlayer.allowFullscreen = true;
     // Simplified allow attribute to reduce unsupported warnings.
-    sharedYouTubePlayer.setAttribute("allow", "autoplay; fullscreen");
+    sharedYouTubePlayer.setAttribute("allow", "fullscreen");
   }
   return sharedYouTubePlayer;
 }
@@ -48,19 +48,19 @@ export function convertVideoLinksToPlayer(containerType) {
     console.warn("containerType parameter is required");
     return;
   }
-  
+
   const selectors = {
     generalMessages: '.messages-content div',
     chatlogsMessages: '.chat-logs-container',
     personalMessages: '.messages-container-wrapper'
   };
-  
+
   // Make sure containerType exists in our selectors object
   if (!selectors[containerType]) {
     console.warn(`Invalid containerType: ${containerType}`);
     return;
   }
-  
+
   const container = document.querySelector(selectors[containerType]);
   if (!container) return;
 
