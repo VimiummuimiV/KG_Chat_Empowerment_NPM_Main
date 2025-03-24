@@ -29,5 +29,8 @@
     "url": "https://github.com/VimiummuimiV/tampermonkey-script/issues"
   },
   "homepage": "https://github.com/VimiummuimiV/tampermonkey-script#readme",
-  "description": "Enhance the chat abilities"
+  "description": "Enhance the chat abilities",
+  "dependencies": {
+    "terser-webpack-plugin": "^5.3.14"
+  }
 }

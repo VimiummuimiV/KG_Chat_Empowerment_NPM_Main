@@ -1,19 +1,19 @@
-const path = require('path');
-const fs = require('fs');
-const TerserPlugin = require('terser-webpack-plugin');
+import { resolve } from 'path';
+import { readFileSync, writeFileSync } from 'fs';
+import TerserPlugin from 'terser-webpack-plugin';
 
-module.exports = (env, argv) => {
+export default (_env, argv) => {
   const isProduction = argv.mode === 'production';
-
+  
   // Paths
-  const headersPath = path.resolve(__dirname, 'src/header.js');
-  const outputPath = path.resolve(__dirname, 'dist/KG_Chat_Empowerment.js');
-
+  const headersPath = resolve(import.meta.dirname, 'src/header.js');
+  const outputPath = resolve(import.meta.dirname, 'dist/KG_Chat_Empowerment.js');
+  
   return {
     mode: isProduction ? 'production' : 'development',
     entry: './src/main.js', // Main script file
     output: {
-      path: path.resolve(__dirname, 'dist'),
+      path: resolve(import.meta.dirname, 'dist'),
       filename: 'KG_Chat_Empowerment.js', // Output file name
     },
     module: {
@@ -34,9 +34,9 @@ module.exports = (env, argv) => {
         apply: (compiler) => {
           compiler.hooks.afterEmit.tap('AppendTampermonkeyHeader', () => {
             try {
-              const header = fs.readFileSync(headersPath, 'utf8').trim();
-              const script = fs.readFileSync(outputPath, 'utf8');
-              fs.writeFileSync(outputPath, `${header}\n\n${script}`);
+              const header = readFileSync(headersPath, 'utf8').trim();
+              const script = readFileSync(outputPath, 'utf8');
+              writeFileSync(outputPath, `${header}\n\n${script}`);
             } catch (error) {
               console.error('Error appending Tampermonkey headers:', error);
             }
