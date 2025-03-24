@@ -258,16 +258,17 @@
 
 /* convertImageLinksToImage */
 .clickable-thumbnail {
+  display: flex !important;
   opacity: 1;
   transition: opacity 0.15s ease-in-out;
-  border: none;
+  border: none !important;
   max-width: 150px;
   max-height: 150px;
   cursor: pointer;
   background-color: transparent;
   padding: 2px;
   margin: 6px;
-  overflow-y: auto;
+  overflow: hidden !important;
 }
 
 .clickable-thumbnail:hover {
@@ -278,6 +279,7 @@
   max-height: 100%;
   max-width: 100%;
   background-color: transparent;
+  object-fit: contain;
 }
 
 .scaled-thumbnail {
