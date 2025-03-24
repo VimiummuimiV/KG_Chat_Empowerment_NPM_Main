@@ -3,6 +3,7 @@ import { deniedSVG } from "../icons.js"; // icons
 // helpers
 import {
   isEncodedURL,
+  decodeURL,
   debounce,
   getChatElements,
   locationHas
