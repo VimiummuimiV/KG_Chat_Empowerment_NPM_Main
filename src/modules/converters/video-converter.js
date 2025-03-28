@@ -21,9 +21,9 @@ const allowedVideoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi'];
 const isAllowedVideoExtension = url => {
   // Extract file extension using regex, defaulting to empty string if no match
   const ext = url.match(/\.([^?#.]+)(?:[?#]|$)/i)?.[1]?.toLowerCase() || '';
-  return { 
-    allowed: allowedVideoExtensions.includes(ext), 
-    extension: ext 
+  return {
+    allowed: allowedVideoExtensions.includes(ext),
+    extension: ext
   };
 };
 
@@ -48,16 +48,16 @@ function getSharedYouTubePlayer() {
 async function fetchYouTubeMetadata(videoId) {
   // Construct oEmbed URL for fetching video metadata
   const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-  
+
   try {
     // Fetch metadata from YouTube
     const response = await fetch(oembedUrl);
     const data = await response.json();
-    
+
     // Extract title and channel, provide defaults if not found
     const title = data.title || 'Title not found';
     const channel = data.author_name || 'Channel not found';
-    
+
     return { title, channel };
   } catch (error) {
     // Log and handle metadata fetching errors
@@ -70,7 +70,7 @@ async function fetchYouTubeMetadata(videoId) {
 async function renderYouTubePreview(placeholder, videoId, videoType, containerType) {
   // Clear existing placeholder content
   placeholder.innerHTML = "";
-  
+
   // Create container for video information
   const infoContainer = document.createElement('div');
   infoContainer.classList.add("youtube-info");
@@ -99,15 +99,17 @@ async function renderYouTubePreview(placeholder, videoId, videoType, containerTy
   thumb.classList.add("youtube-thumb");
   placeholder.appendChild(thumb);
 
-  // Scroll to bottom of the container
-  scrollToBottom(containerType, 600);
+  // Wait for the thumbnail to load before scrolling
+  thumb.addEventListener('load', () => {
+    scrollToBottom(containerType, 600);
+  });
 }
 
 // Extract video information from a URL
 function getVideoInfo(url) {
   // Check for YouTube URL patterns
   const youtubeMatch = url.match(/(?:shorts\/|live\/|watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
-  
+
   if (youtubeMatch) {
     // Extract video ID and determine video type
     const videoId = youtubeMatch[1];
@@ -115,7 +117,7 @@ function getVideoInfo(url) {
       url.includes('live/') ? 'Live' :
         url.includes('watch?v=') ? 'Watch' :
           url.includes('youtu.be/') ? 'Share' : 'YouTube';
-    
+
     return { youtubeMatch: true, videoId, videoType };
   }
 
@@ -124,7 +126,7 @@ function getVideoInfo(url) {
   if (allowedVideoExtensions.includes(extension)) {
     return { youtubeMatch: false, videoType: `Video (${extension.toUpperCase()})` };
   }
-  
+
   // Return false if no matching video type found
   return false;
 }
@@ -174,7 +176,7 @@ export function convertVideoLinksToPlayer(containerType) {
     if (!isTrusted) {
       link.classList.add("skipped");
       link.textContent = `${emojis.type} ${videoInfo.videoType} ${emojis.domain} Hostname (${domain}) ${emojis.untrusted} Untrusted`;
-      
+
       // Add click event to process untrusted links
       link.addEventListener("click", e => {
         if (!link.classList.contains("processed-video")) {
@@ -194,7 +196,7 @@ export function convertVideoLinksToPlayer(containerType) {
   function processVideoLink(link, url, domain, videoInfo, containerType) {
     const { youtubeMatch, videoType, videoId } = videoInfo;
     const videoCheck = isAllowedVideoExtension(url);
-    
+
     // Skip if not a valid video type
     if (!youtubeMatch && !videoCheck.allowed) return;
 
@@ -213,7 +215,7 @@ export function convertVideoLinksToPlayer(containerType) {
     if (youtubeMatch) {
       const placeholder = document.createElement('div');
       placeholder.classList.add("youtube-placeholder");
-      
+
       // Store video metadata for later use
       placeholder.dataset.videoId = videoId;
       placeholder.dataset.videoType = videoType;
@@ -231,7 +233,7 @@ export function convertVideoLinksToPlayer(containerType) {
           const prevContainerType = activeYouTubePlaceholder.dataset.containerType;
           renderYouTubePreview(activeYouTubePlaceholder, prevVideoId, prevVideoType, prevContainerType);
         }
-        
+
         // Set current placeholder as active
         activeYouTubePlaceholder = placeholder;
 
