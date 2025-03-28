@@ -67,13 +67,10 @@ async function fetchYouTubeMetadata(videoId) {
 }
 
 // Render a preview for a YouTube video
-async function renderYouTubePreview(placeholder, videoId, videoType, containerType) {
-  // Clear existing placeholder content
+async function renderYouTubePreview(infoContainer, placeholder, videoId, videoType, containerType) {
+  // Clear existing content
+  infoContainer.innerHTML = "";
   placeholder.innerHTML = "";
-
-  // Create container for video information
-  const infoContainer = document.createElement('div');
-  infoContainer.classList.add("youtube-info");
 
   // Fetch video metadata
   const metadata = await fetchYouTubeMetadata(videoId);
@@ -90,7 +87,6 @@ async function renderYouTubePreview(placeholder, videoId, videoType, containerTy
 
   // Append channel and title to info container
   infoContainer.append(channel, title);
-  placeholder.appendChild(infoContainer);
 
   // Create and add thumbnail image
   const thumb = document.createElement('img');
@@ -213,6 +209,11 @@ export function convertVideoLinksToPlayer(containerType) {
 
     // Handle YouTube videos
     if (youtubeMatch) {
+      // Create info container first
+      const infoContainer = document.createElement('div');
+      infoContainer.classList.add("youtube-info");
+
+      // Create placeholder
       const placeholder = document.createElement('div');
       placeholder.classList.add("youtube-placeholder");
 
@@ -221,8 +222,12 @@ export function convertVideoLinksToPlayer(containerType) {
       placeholder.dataset.videoType = videoType;
       placeholder.dataset.containerType = containerType;
 
+      // Insert wrapper and elements
+      link.parentNode.insertBefore(wrapper, link);
+      wrapper.append(link, infoContainer, placeholder);
+
       // Render video preview
-      renderYouTubePreview(placeholder, videoId, videoType, containerType);
+      renderYouTubePreview(infoContainer, placeholder, videoId, videoType, containerType);
 
       // Add click event to load video player
       placeholder.addEventListener("click", () => {
@@ -231,7 +236,18 @@ export function convertVideoLinksToPlayer(containerType) {
           const prevVideoId = activeYouTubePlaceholder.dataset.videoId;
           const prevVideoType = activeYouTubePlaceholder.dataset.videoType;
           const prevContainerType = activeYouTubePlaceholder.dataset.containerType;
-          renderYouTubePreview(activeYouTubePlaceholder, prevVideoId, prevVideoType, prevContainerType);
+
+          // Find the info container for the previous placeholder (assumed to be previous sibling)
+          const prevInfoContainer = activeYouTubePlaceholder.previousElementSibling;
+          if (prevInfoContainer && prevInfoContainer.classList.contains("youtube-info")) {
+            renderYouTubePreview(
+              prevInfoContainer,
+              activeYouTubePlaceholder,
+              prevVideoId,
+              prevVideoType,
+              prevContainerType
+            );
+          }
         }
 
         // Set current placeholder as active
@@ -243,10 +259,6 @@ export function convertVideoLinksToPlayer(containerType) {
         placeholder.innerHTML = "";
         placeholder.appendChild(player);
       });
-
-      // Insert wrapper and placeholder
-      link.parentNode.insertBefore(wrapper, link);
-      wrapper.append(link, placeholder);
     } else {
       // Handle non-YouTube video files
       const embed = document.createElement('video');
@@ -259,4 +271,5 @@ export function convertVideoLinksToPlayer(containerType) {
       wrapper.append(link, embed);
     }
   }
+
 }
