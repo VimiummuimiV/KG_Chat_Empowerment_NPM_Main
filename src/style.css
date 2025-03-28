@@ -307,6 +307,17 @@
   margin-bottom: 0.6em !important;
 }
 
+.video-wrapper .youtube-info {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.2em;
+  font-family: "Montserrat", sans-serift;
+  font-size: 0.9em;
+  color: #8ede87;
+  font-weight: 500;
+  white-space: break-spaces;
+}
+
 .video-container,
 .youtube-thumb {
   border-radius: 0.4em !important;
