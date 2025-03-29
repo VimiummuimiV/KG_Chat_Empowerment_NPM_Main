@@ -171,7 +171,7 @@ export function convertVideoLinksToPlayer(containerType) {
     // Handle untrusted domains
     if (!isTrusted) {
       link.classList.add("skipped");
-      link.textContent = `${emojis.type} ${videoInfo.videoType} ${emojis.domain} Hostname (${domain}) ${emojis.untrusted} Untrusted`;
+      link.textContent = `${emojis.type} ${videoInfo.videoType} ${emojis.domain} ${domain} ${emojis.untrusted} Untrusted`;
 
       // Add click event to process untrusted links
       link.addEventListener("click", e => {
@@ -203,7 +203,7 @@ export function convertVideoLinksToPlayer(containerType) {
     wrapper.classList.add("video-wrapper");
 
     // Update link text and styling
-    link.textContent = `${emojis.type} ${videoType} ${emojis.domain} Hostname (${domain})`;
+    link.textContent = `${emojis.type} ${videoType} ${emojis.domain} ${domain}`;
     link.title = isEncodedURL(url) ? decodeURL(url) : url;
     link.style.display = 'inline-flex';
 
