@@ -1299,3 +1299,7 @@ async function processMessages() {
   }
   isReading = false;
 }
+
+export function isTextSelected() {
+  return window.getSelection().toString().length > 0;
+}

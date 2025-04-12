@@ -1,4 +1,5 @@
 import "./chat-messages-remover.css" // manual messages remover styles
+import { isTextSelected } from "../../helpers.js";
 
 export default class ChatMessagesRemover {
   constructor() {
@@ -17,7 +18,7 @@ export default class ChatMessagesRemover {
   attachEvents() {
     document.addEventListener("mousedown", (e) => {
       const msgEl = e.target.closest(".messages-content p");
-      
+
       // Guard clause - if no message element is found, return early
       if (!msgEl) return;
 
@@ -83,7 +84,7 @@ export default class ChatMessagesRemover {
 
     document.addEventListener("mousemove", (e) => {
       if (!this.isDragging) return; // Skip if not dragging
-      
+
       const msgEl = e.target.closest(".messages-content p");
       if (msgEl) {
         this.toggleSelect(msgEl, true, "message-mode");
@@ -93,8 +94,10 @@ export default class ChatMessagesRemover {
     document.addEventListener("contextmenu", (e) => {
       const msg = e.target.closest(".messages-content p");
       if (msg) {
-        e.preventDefault();
-        this.showDeleteButton(e, msg);
+        if (!isTextSelected()) {
+          e.preventDefault();
+          this.showDeleteButton(e, msg);
+        }
       }
     });
   }
@@ -102,6 +105,9 @@ export default class ChatMessagesRemover {
   // Handles selection with appropriate modes
   toggleSelect(el, state, mode = "message-mode") {
     if (!el) return; // Guard clause
+
+    // If text is selected within the message, don't toggle selection
+    if (isTextSelected()) return;
 
     el.classList.toggle("selected-message", state);
 
@@ -116,6 +122,9 @@ export default class ChatMessagesRemover {
   }
 
   showDeleteButton(e, msg) {
+    // Prevent showing the delete button if text is already selected in the message
+    if (isTextSelected()) return;
+
     const existingBtn = document.querySelector(".delete-btn");
     if (existingBtn) existingBtn.remove();
 
@@ -136,7 +145,7 @@ export default class ChatMessagesRemover {
     btn.onclick = () => {
       document.querySelectorAll(".selected-message").forEach((msg) => {
         if (!msg) return; // Guard clause
-        
+
         msg.classList.remove("selected-message", "username-mode", "time-mode", "message-mode");
         if (msg.classList.length === 0) msg.removeAttribute("class");
       });
@@ -165,7 +174,7 @@ export default class ChatMessagesRemover {
   clearSelection() {
     document.querySelectorAll(".selected-message").forEach((msg) => {
       if (!msg) return; // Guard clause
-      
+
       msg.classList.remove("selected-message", "username-mode", "time-mode", "message-mode");
       if (msg.classList.length === 0) {
         msg.removeAttribute("class");
@@ -186,25 +195,25 @@ export default class ChatMessagesRemover {
     const stored = new Set(
       JSON.parse(localStorage.getItem("deletedChatMessagesContent") || "[]")
     );
-    
+
     const messages = document.querySelectorAll(".messages-content p");
     if (messages.length === 0) return; // Skip if no messages found
-    
+
     messages.forEach((msg) => {
       if (!msg) return; // Guard clause
-      
+
       const id = getMessageId(msg);
       msg.classList.remove("shown-message");
       msg.classList.toggle("hidden-message", stored.has(id));
     });
-    
+
     localStorage.setItem("deletedChatMessagesContent", JSON.stringify([...stored]));
   }
 
   renderToggle() {
     const storedItems = JSON.parse(localStorage.getItem("deletedChatMessagesContent") || "[]");
     const hasDeleted = storedItems.length > 0;
-    
+
     if (!hasDeleted) {
       if (this.toggleBtn) {
         this.toggleBtn.remove();
@@ -212,10 +221,10 @@ export default class ChatMessagesRemover {
       }
       return;
     }
-    
+
     const messagesContent = document.querySelector(".messages-content");
     if (!messagesContent) return; // Guard clause
-    
+
     if (!this.toggleBtn) {
       this.toggleBtn = document.createElement("button");
       this.toggleBtn.className = "toggle-button toggle-hidden";
@@ -225,7 +234,7 @@ export default class ChatMessagesRemover {
         if (e.ctrlKey) {
           document.querySelectorAll(".messages-content p").forEach((msg) => {
             if (!msg) return; // Guard clause
-            
+
             msg.classList.remove("hidden-message", "shown-message");
           });
           localStorage.setItem("deletedChatMessagesContent", JSON.stringify([]));
@@ -234,22 +243,22 @@ export default class ChatMessagesRemover {
           this.renderToggle();
           return;
         }
-        
+
         const shouldShow = this.toggleBtn.textContent === "Show";
         const storedIds = JSON.parse(
           localStorage.getItem("deletedChatMessagesContent") || "[]"
         );
-        
+
         document.querySelectorAll(".messages-content p").forEach((msg) => {
           if (!msg) return; // Guard clause
-          
+
           const id = getMessageId(msg);
           if (storedIds.includes(id)) {
             msg.classList.toggle("hidden-message", !shouldShow);
             msg.classList.toggle("shown-message", shouldShow);
           }
         });
-        
+
         if (shouldShow) {
           this.toggleBtn.textContent = "Hide";
           this.toggleBtn.classList.remove("toggle-hidden");
@@ -273,9 +282,9 @@ function getMessageId(el) {
   Array.from(clone.querySelectorAll('.time')).forEach(t => t.remove());
   const text = clone.textContent;
   const attributes = [...Array.from(el.querySelectorAll('a')).map(a => a.href),
-                     ...Array.from(el.querySelectorAll('img')).map(img => img.title.trim()),
-                     ...Array.from(el.querySelectorAll('iframe')).map(iframe => iframe.src.trim())]
-                     .filter(Boolean).join(' ');
+  ...Array.from(el.querySelectorAll('img')).map(img => img.title.trim()),
+  ...Array.from(el.querySelectorAll('iframe')).map(iframe => iframe.src.trim())]
+    .filter(Boolean).join(' ');
   return [text, attributes].filter(Boolean).join(' ');
 }
 
@@ -283,17 +292,17 @@ function getMessageId(el) {
 export function pruneDeletedMessages() {
   const messages = document.querySelectorAll(".messages-content p");
   if (messages.length === 0) return; // Skip if no messages found
-  
+
   const currentIds = new Set(
     Array.from(messages).map((msg) => getMessageId(msg))
   );
-  
+
   const stored = new Set(
     JSON.parse(localStorage.getItem("deletedChatMessagesContent") || "[]")
   );
-  
+
   localStorage.setItem(
-    "deletedChatMessagesContent", 
+    "deletedChatMessagesContent",
     JSON.stringify([...stored].filter((id) => currentIds.has(id)))
   );
 }
