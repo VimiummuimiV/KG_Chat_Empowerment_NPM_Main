@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         KG_Chat_Empowerment
 // @namespace    klavogonki
-// @version      1.0.0
+// @version      1.0.1
 // @description  Enhance the chat abilities
 // @author       Patcher
 // @match        *://klavogonki.ru/g*
