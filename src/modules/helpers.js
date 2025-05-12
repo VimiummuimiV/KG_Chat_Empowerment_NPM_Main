@@ -408,6 +408,7 @@ export const loadProfileIntoIframe = (url) => {
     }
   };
 };
+
 // Variable to store the last selected emoji
 let lastEmojiAvatar = null;
 

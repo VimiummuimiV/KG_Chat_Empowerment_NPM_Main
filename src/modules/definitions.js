@@ -71,5 +71,6 @@ export const trustedDomains = [
   'userapi.com', // vk.com
   'ibb.co', // imgbb.com
   'yaplakal.com',
-  'freepik.com'
+  'freepik.com',
+  'fastpic.org'
 ];
