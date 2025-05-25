@@ -12,6 +12,7 @@ import {
 
 // definitions
 import { state } from "../definitions";
+import { createCustomTooltip } from "../tooltip.js";
 
 // Image constants
 const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -57,7 +58,7 @@ const createExpandedView = (src, clickedThumbnailIndex) => {
   imageElement.src = src;
   imageElement.classList.add('scaled-thumbnail');
   document.body.appendChild(imageElement);
-  
+
   // Update current index based on clicked thumbnail
   currentIndex = clickedThumbnailIndex;
 
@@ -98,10 +99,10 @@ const createExpandedView = (src, clickedThumbnailIndex) => {
   bigImageEvents.wheel = (event) => {
     const direction = event.deltaY < 0 ? 1 : -1;
     zoomScale += direction * zoomLimits.factor * zoomScale;
-    
+
     // Apply zoom limits
     zoomScale = Math.max(zoomLimits.min, Math.min(zoomScale, zoomLimits.max));
-    
+
     imageElement.style.transform = `translate(${translateX}%, ${translateY}%) scale(${zoomScale})`;
   };
 
@@ -110,27 +111,27 @@ const createExpandedView = (src, clickedThumbnailIndex) => {
       if (event.ctrlKey) {
         // Ctrl is held - perform zoom operation
         const deltaY = event.clientY - lastMouseY;
-        
+
         // Adjust zoom based on vertical movement: up = zoom in, down = zoom out
         const zoomDirection = deltaY < 0 ? 1 : -1;
         const zoomAmount = Math.abs(deltaY) * zoomLimits.factor * 0.05; // Adjust sensitivity
-        
+
         zoomScale += zoomDirection * zoomAmount * zoomScale;
-        
+
         // Apply zoom limits
         zoomScale = Math.max(zoomLimits.min, Math.min(zoomScale, zoomLimits.max));
       } else {
         // Ctrl is not held - perform pan operation
         const deltaX = (event.clientX - lastMouseX) / zoomScale * movementSpeed;
         const deltaY = (event.clientY - lastMouseY) / zoomScale * movementSpeed;
-        
+
         translateX += (deltaX / imageElement.clientWidth) * 100;
         translateY += (deltaY / imageElement.clientHeight) * 100;
       }
-      
+
       // Update image transform with current zoom and pan values
       imageElement.style.transform = `translate(${translateX}%, ${translateY}%) scale(${zoomScale})`;
-      
+
       // Update last mouse position for next move
       lastMouseX = event.clientX;
       lastMouseY = event.clientY;
@@ -140,7 +141,7 @@ const createExpandedView = (src, clickedThumbnailIndex) => {
   bigImageEvents.mousedown = (event) => {
     const { button, clientX, clientY, target, ctrlKey } = event;
     if ((button === 0 || button === 2) && target !== imageElement) return;
-    
+
     const src = target.src;
 
     if (button === 0) {
@@ -168,9 +169,9 @@ const createExpandedView = (src, clickedThumbnailIndex) => {
       isMMBPressed = false;
     }
   };
-  
+
   // We don't need the keyup handler anymore since we're checking ctrlKey in real time
-  
+
   bigImageEvents.contextmenu = (event) => event.preventDefault();
 
   addBigImageEventListeners();
@@ -182,12 +183,12 @@ const createExpandedView = (src, clickedThumbnailIndex) => {
  */
 const navigateImages = (direction) => {
   const newIndex = currentIndex + direction;
-  
+
   if (newIndex >= 0 && newIndex < thumbnailLinks.length && !isChangingImage) {
     isChangingImage = true;
-    
+
     if (expandedImage) expandedImage.src = thumbnailLinks[newIndex].imgSrc;
-    
+
     setTimeout(() => isChangingImage = false, navigationDelay);
     currentIndex = newIndex;
   }
@@ -228,8 +229,8 @@ export function convertImageLinksToImage(containerType) {
 
     link.classList.add("media");
     const { isTrusted, domain } = isTrustedDomain(link.href);
-    link.title = isEncodedURL(link.href) ? decodeURL(link.href) : link.href;
-    
+    createCustomTooltip(link, isEncodedURL(link.href) ? decodeURL(link.href) : link.href);
+
     isTrusted ? handleTrustedLink(link, extension, domain) : handleUntrustedLink(link, extension, domain);
   });
 
@@ -275,10 +276,10 @@ export function convertImageLinksToImage(containerType) {
       // Refresh thumbnail links in the current container
       refreshThumbnailLinks();
       // Find the index of the clicked thumbnail by comparing the saved source link or the img src
-      const clickedIndex = thumbnailLinks.findIndex(item => 
+      const clickedIndex = thumbnailLinks.findIndex(item =>
         item.link === link.href || item.imgSrc === img.src
       );
-      
+
       expandedImage = createExpandedView(img.src, clickedIndex >= 0 ? clickedIndex : 0);
       triggerTargetElement(expandedImage, "show");
       triggerDimmingElement("show");

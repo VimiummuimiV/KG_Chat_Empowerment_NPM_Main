@@ -14,6 +14,7 @@ import {
 } from "./definitions.js";
 
 import { settingsState } from "./panels/settings/settings.js"; // settings
+import { createCustomTooltip } from "./tooltip.js";
 const { ignored, mentionKeywords, usernameReplacements, usersToTrack } = settingsState;
 
 import { addPulseEffect, addShakeEffect, addJumpEffect } from "./animations.js"; // animations
@@ -112,35 +113,35 @@ export function updateScrollButtonsVisibility({ container, scrollButtonsContaine
 export function createScrollButtons(container) {
   const scrollButtonsContainer = document.createElement('div');
   scrollButtonsContainer.className = 'scroll-buttons-container';
-  
+
   const fullScrollUpButton = document.createElement('div');
   fullScrollUpButton.innerHTML = chevronsUpSVG;
-  fullScrollUpButton.title = 'Scroll Up (Full)';
-  
+  createCustomTooltip(fullScrollUpButton, 'Scroll Up (Full)');
+
   const partialScrollUpButton = document.createElement('div');
   partialScrollUpButton.innerHTML = chevronUpSVG;
-  partialScrollUpButton.title = 'Scroll Up (Partial)';
-  
+  createCustomTooltip(partialScrollUpButton, 'Scroll Up (Partial)');
+
   const partialScrollDownButton = document.createElement('div');
   partialScrollDownButton.innerHTML = chevronDownSVG;
-  partialScrollDownButton.title = 'Scroll Down (Partial)';
-  
+  createCustomTooltip(partialScrollDownButton, 'Scroll Down (Partial)');
+
   const fullScrollDownButton = document.createElement('div');
   fullScrollDownButton.innerHTML = chevronsDownSVG;
-  fullScrollDownButton.title = 'Scroll Down (Full)';
-  
+  createCustomTooltip(fullScrollDownButton, 'Scroll Down (Full)');
+
   const buttons = {
     fullScrollUpButton,
     partialScrollUpButton,
     partialScrollDownButton,
     fullScrollDownButton
   };
-  
+
   Object.values(buttons).forEach(button => {
     button.classList.add("large-button", "scroll-button");
     scrollButtonsContainer.appendChild(button);
   });
-  
+
   function scrollContainer(direction, isFullScroll) {
     const scrollAmount = isFullScroll ? container.scrollHeight : container.clientHeight;
     container.scrollBy({
@@ -149,46 +150,46 @@ export function createScrollButtons(container) {
     });
     updateScrollButtonOpacity({ container, buttons });
   }
-  
+
   fullScrollUpButton.addEventListener('click', () => scrollContainer('up', true));
   partialScrollUpButton.addEventListener('click', () => scrollContainer('up', false));
   partialScrollDownButton.addEventListener('click', () => scrollContainer('down', false));
   fullScrollDownButton.addEventListener('click', () => scrollContainer('down', true));
-  
+
   // Initial setup
   updateScrollButtonOpacity({ container, buttons });
   updateScrollButtonsVisibility({ container, scrollButtonsContainer });
-  
+
   // Monitor for scrollability changes
   const checkScrollability = () => {
     updateScrollButtonsVisibility({ container, scrollButtonsContainer });
     updateScrollButtonOpacity({ container, buttons });
   };
-  
+
   // Listen for scroll events
   container.addEventListener('scroll', checkScrollability);
-  
+
   // Create a ResizeObserver to detect container size changes
   const resizeObserver = new ResizeObserver(checkScrollability);
   resizeObserver.observe(container);
-  
+
   // Create a MutationObserver to detect content changes
   const mutationObserver = new MutationObserver(checkScrollability);
-  mutationObserver.observe(container, { 
+  mutationObserver.observe(container, {
     childList: true,     // Watch for added/removed children
     subtree: true,       // Watch the entire subtree
     characterData: true, // Watch for text changes
     attributes: true     // Watch for attribute changes that might affect layout
   });
-  
+
   // Function to clean up all observers
   const cleanup = () => {
     resizeObserver.disconnect();
     mutationObserver.disconnect();
     container.removeEventListener('scroll', checkScrollability);
   };
-  
-  return { 
+
+  return {
     scrollButtonsContainer,
     cleanup  // Return cleanup function to allow proper disposal
   };
@@ -263,31 +264,31 @@ export function triggerDimmingElement(action) {
 // Function to gradually fade a target element to show or hide it
 export function triggerTargetElement(element, action) {
   if (!element) return; // Return if the element does not exist
-  
+
   // Adjust the visibility of a specific element, setting opacity to 1 (fully visible)
   adjustVisibility(element, action, 1);
-  
+
   // Add a double-click event listener to hide the element
   element.addEventListener('dblclick', (event) => {
     const isPanelOpen = document.querySelector('.popup-panel');
-    
+
     // Condition to allow hiding when double-clicked on:
     // 1. The element itself
     // 2. Direct children (one level down)
     // 3. Children of direct children (two levels down)
-    const isElementOrDirectChild = 
-      event.target === element || 
+    const isElementOrDirectChild =
+      event.target === element ||
       event.target.parentElement === element ||
       (event.target.parentElement && event.target.parentElement.parentElement === element);
-    
+
     // Only proceed if clicked on the element itself or its direct children (up to 2 levels)
     if (!isElementOrDirectChild) return;
-    
+
     // If no panel is open or the clicked element is not within a scaled thumbnail, hide the dimming element
     if (!isPanelOpen || !event.target.closest('.scaled-thumbnail')) {
       triggerDimmingElement('hide');
     }
-    
+
     // Hide the target element
     adjustVisibility(element, 'hide', 1);
   });
@@ -689,9 +690,9 @@ export function calculateTimeOnSite(registeredDate) {
 export function shouldEnable(targetCategory, targetType) {
   // Get stored toggle settings or default to empty array
   const storedSettings = JSON.parse(localStorage.getItem('toggle')) || [];
-  
+
   // Find matching setting in localStorage
-  const storedSetting = storedSettings.find(s => 
+  const storedSetting = storedSettings.find(s =>
     s.category === targetCategory && s.type === targetType
   );
 
@@ -710,17 +711,17 @@ export function scrollToBottom(containerType = 'generalMessages', customScrollTh
     chatlogsMessages: '.chat-logs-container', // For chat logs
     personalMessages: '.messages-container-wrapper' // For personal messages panel
   };
-  
+
   // Get the container based on the passed containerType
   const containerSelector = containerSelectors[containerType];
-  
+
   // If the container selector is not defined, return
   if (!containerSelector) return;
-  
+
   // Get the container element
   const container = document.querySelector(containerSelector);
   if (!container) return; // Return if the container doesn't exist
-  
+
   // If it's the user's first time loading messages, auto-scroll to the bottom
   if (firstTime) {
     container.scrollTop = container.scrollHeight;
@@ -728,7 +729,7 @@ export function scrollToBottom(containerType = 'generalMessages', customScrollTh
   } else {
     // Calculate how far the user is from the bottom
     const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-    
+
     // If the user is close enough to the bottom, auto-scroll to the bottom
     if (distanceFromBottom <= customScrollThreshold) {
       container.scrollTop = container.scrollHeight;

@@ -4,6 +4,7 @@ import {
   isTrustedDomain,
   scrollToBottom
 } from "../helpers";
+import { createCustomTooltip } from "../tooltip.js";
 
 // Emoji icons for visual representation of video metadata
 const emojis = {
@@ -204,7 +205,7 @@ export function convertVideoLinksToPlayer(containerType) {
 
     // Update link text and styling
     link.textContent = `${emojis.type} ${videoType} ${emojis.domain} ${domain}`;
-    link.title = isEncodedURL(url) ? decodeURL(url) : url;
+    createCustomTooltip(link, isEncodedURL(url) ? decodeURL(url) : url);
     link.style.display = 'inline-flex';
 
     // Handle YouTube videos

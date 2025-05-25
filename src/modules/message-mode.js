@@ -4,6 +4,7 @@ import { KG_Chat_Empowerment } from './panels/settings/settings.js'; // settings
 import { isCtrlKeyPressed, isAltKeyPressed } from './helpers.js'; // helpers definitions
 
 import { addPulseEffect } from './animations.js'; // animations
+import { createCustomTooltip } from './tooltip.js';
 
 let messageMode, messageModeIcon;
 
@@ -12,7 +13,7 @@ export function createMessageModeButton(panel) {
   const state = KG_Chat_Empowerment.messageSettings.messageModeState || 'every-message';
   messageMode.classList.add("empowerment-button", "message-mode-button");
   messageMode.id = state;
-  messageMode.title = KG_Chat_Empowerment.messageSettings.messageModeTitle || 'Notify about every message';
+  createCustomTooltip(messageMode, KG_Chat_Empowerment.messageSettings.messageModeTitle || 'Notify about every message');
 
   messageModeIcon = document.createElement('span');
   messageModeIcon.classList.add('message-mode-icon');
@@ -24,12 +25,12 @@ export function createMessageModeButton(panel) {
       addPulseEffect(this);
       if (this.id === 'every-message') {
         this.id = 'mention-message';
-        this.title = 'Notify about mention message';
+        createCustomTooltip(this, 'Notify about mention message');
         KG_Chat_Empowerment.messageSettings.messageModeState = 'mention-message';
         KG_Chat_Empowerment.messageSettings.messageModeTitle = 'Notify about mention message';
       } else {
         this.id = 'every-message';
-        this.title = 'Notify about every message';
+        createCustomTooltip(this, 'Notify about every message');
         KG_Chat_Empowerment.messageSettings.messageModeState = 'every-message';
         KG_Chat_Empowerment.messageSettings.messageModeTitle = 'Notify about every message';
       }

@@ -14,6 +14,7 @@ import {
 } from '../../icons.js';
 
 import { addPulseEffect, addShakeEffect } from '../../animations.js'; // animations
+import { createCustomTooltip } from "../../tooltip.js"; // tooltip
 
 // helpers && helpers definitions
 import {
@@ -447,7 +448,7 @@ export function createSettingsButton(panel) {
   const showSettingsButton = document.createElement('div');
   showSettingsButton.classList.add("empowerment-button", "settings-button");
 
-  showSettingsButton.title = 'Show Settings Panel';
+  createCustomTooltip(showSettingsButton, 'Show Settings Panel');
   showSettingsButton.style.position = 'relative';
 
   // Use the settings SVG from icons.js
@@ -536,7 +537,7 @@ function showSettingsPanel() {
   const closePanelButton = document.createElement('div');
   closePanelButton.className = 'large-button panel-header-close-button';
   closePanelButton.innerHTML = closeSVG;
-  closePanelButton.title = 'Close panel';
+  createCustomTooltip(closePanelButton, 'Close panel');
 
   // Add a click event listener to the close panel button
   closePanelButton.addEventListener('click', () => {
@@ -549,7 +550,7 @@ function showSettingsPanel() {
   const clearCacheButton = document.createElement('div');
   clearCacheButton.className = "large-button panel-header-clear-button";
   clearCacheButton.innerHTML = trashSVG;
-  clearCacheButton.title = 'Clear settings';
+  createCustomTooltip(clearCacheButton, 'Clear settings');
 
   // Add a click event listener to the clear cache button
   clearCacheButton.addEventListener('click', () => {
@@ -560,13 +561,13 @@ function showSettingsPanel() {
   const importSettingsButton = document.createElement('div');
   importSettingsButton.className = "large-button panel-header-import-button";
   importSettingsButton.innerHTML = importSVG;
-  importSettingsButton.title = 'Import settings';
+  createCustomTooltip(importSettingsButton, 'Import settings');
 
   // Create a save button with the provided SVG icon
   const saveSettingsButton = document.createElement('div');
   saveSettingsButton.className = "large-button panel-header-save-button";
   saveSettingsButton.innerHTML = saveSVG;
-  saveSettingsButton.title = 'Save settings';
+  createCustomTooltip(saveSettingsButton, 'Save settings');
 
   function initializeSaveButtonLogic(saveButton) {
     const container = document.querySelector('.settings-content-container');
@@ -788,7 +789,7 @@ function showSettingsPanel() {
   const exportSettingsButton = document.createElement('div');
   exportSettingsButton.className = "large-button panel-header-export-button";
   exportSettingsButton.innerHTML = exportSVG;
-  exportSettingsButton.title = 'Export settings';
+  createCustomTooltip(exportSettingsButton, 'Export settings');
 
   // Example of how to use the getSettingsData function in the export event
   exportSettingsButton.addEventListener('click', function () {

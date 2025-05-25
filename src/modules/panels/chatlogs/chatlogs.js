@@ -26,7 +26,8 @@ import {
   triggerTargetElement,
   processEncodedLinks,
   highlightMentionWords,
-  scrollToMiddle
+  scrollToMiddle,
+  getExactUserIdByName
 } from '../../helpers.js';
 
 // definitions
@@ -35,15 +36,15 @@ import {
   state
 } from '../../definitions.js';
 
-import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
+import { addJumpEffect, addPulseEffect, addShakeEffect } from "../../animations.js"; // animations
 import { settingsState } from "../../panels/settings/settings.js"; // settings
+import { createCustomTooltip } from "../../tooltip.js";
 
 const { ignored } = settingsState;
 
 // Define dynamic variables
 let {
-  panelsEvents,
-  isCtrlKeyPressed
+  panelsEvents
 } = state;
 
 // Function to create the button for opening chat logs
@@ -54,8 +55,7 @@ export function createChatLogsButton(panel) {
   showChatLogsButton.style.position = 'relative';
   showChatLogsButton.style.zIndex = '1';
   showChatLogsButton.innerHTML = chatLogsSVG; // Add icon
-
-  showChatLogsButton.title = 'Show Chat Logs';
+  createCustomTooltip(showChatLogsButton, 'Show Chat Logs');
 
   showChatLogsButton.addEventListener('click', async function () {
     addPulseEffect(showChatLogsButton); // Add pulse effect
@@ -320,6 +320,11 @@ export async function showChatLogsPanel(personalMessagesDate) {
   const chatlogsSearchInput = document.createElement('input');
   chatlogsSearchInput.className = 'chatlogs-search-input';
   chatlogsSearchInput.type = 'text';
+  createCustomTooltip(chatlogsSearchInput, `
+    [Ctrl + Click] clear input and reset filtered items
+    [Valid date + Enter] load chat logs for the date in input field (e.g. 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)
+    `
+  );
 
   // Append search input to the search container
   chatlogsSearchContainer.appendChild(chatlogsSearchInput);
@@ -416,7 +421,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
   toggleMentionMessages.className = "large-button toggle-mention-messages-button";
   // Set the inner HTML of the toggle component with a suitable SVG or text
   toggleMentionMessages.innerHTML = personalMessagesSVG;
-  toggleMentionMessages.title = 'Toggle Mention Messages';
+  createCustomTooltip(toggleMentionMessages, 'Toggle Mention Messages');
 
   // Add a click event listener to toggle the visibility of messages without mentions
   toggleMentionMessages.addEventListener('click', async () => {
@@ -439,7 +444,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
   toggleMediaMessages.className = "large-button panel-header-toggle-media-messages";
   // Set the inner HTML of the toggle component with a suitable SVG or text
   toggleMediaMessages.innerHTML = mediaMessagesSVG;
-  toggleMediaMessages.title = 'Toggle Media Messages';
+  createCustomTooltip(toggleMediaMessages, 'Toggle Media Messages');
   // Apply common styles to the component
   // applyHeaderButtonStyles(toggleMediaMessages, 'darkslategray');
 
@@ -473,9 +478,11 @@ export async function showChatLogsPanel(personalMessagesDate) {
   copyChatLogsUrl.className = "large-button panel-header-copy-button";
   // Set the inner HTML of the copy chat logs element with the clipboard SVG
   copyChatLogsUrl.innerHTML = clipboardSVG;
-  copyChatLogsUrl.title = 'Copy Chat Logs Url';
-  // Apply common styles to the button element
-  // applyHeaderButtonStyles(copyChatLogsUrl, 'steelblue');
+  createCustomTooltip(copyChatLogsUrl, `
+    [Click] to copy Chat Logs Url
+    [Ctrl + Click] to save Chat Logs Url with title
+    [Shift + Click] to show/hide saved Chat Logs Urls
+  `);
 
   // Helper function to extract date from the URL
   const extractDateFromUrl = (url) => {
@@ -617,13 +624,10 @@ export async function showChatLogsPanel(personalMessagesDate) {
   toggleActiveUsers.className = "large-button panel-header-toggle-button";
   updateActiveUsersToggle(shouldShowActiveUsers); // Set initial SVG based on stored state
 
-  // Set initial title based on stored state
-  toggleActiveUsers.title = shouldShowActiveUsers === 'shown' ? 'Hide User List' : 'Show User List';
-
   // Function to update the toggle button's SVG and title based on current state
   function updateActiveUsersToggle(state) {
     toggleActiveUsers.innerHTML = state === 'shown' ? toggleLeftSVG : toggleRightSVG; // Toggle between SVGs
-    toggleActiveUsers.title = state === 'shown' ? 'Hide User List' : 'Show User List'; // Update title based on state
+    createCustomTooltip(toggleActiveUsers, state === 'shown' ? 'Hide User List' : 'Show User List');
   }
 
   // Function to toggle active users and update localStorage, SVG, and title
@@ -653,23 +657,20 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Create and style the chevron left button
   const oneDayBackward = document.createElement('div');
   oneDayBackward.className = "large-button panel-header-one-day-back-button";
-  oneDayBackward.title = 'Previous Day';
   oneDayBackward.innerHTML = chevronLeftSVG; // Assuming you have chevronLeftSVG defined
-  // applyHeaderButtonStyles(oneDayBackward, 'darkcyan');
+  createCustomTooltip(oneDayBackward, 'Previous Day');
 
   // Create and style the chevron right button
   const oneDayForward = document.createElement('div');
   oneDayForward.className = "large-button panel-header-one-day-forward-button";
-  oneDayForward.title = 'Next Day';
   oneDayForward.innerHTML = chevronRightSVG; // Assuming you have chevronRightSVG defined
-  // applyHeaderButtonStyles(oneDayForward, 'darkcyan');
+  createCustomTooltip(oneDayForward, 'Next Day');
 
   // Create and style the shuffle button
   const randomDay = document.createElement('div');
   randomDay.className = "large-button panel-header-shuffle-button";
-  randomDay.title = 'Random Date';
   randomDay.innerHTML = shuffleSVG; // Assuming you have shuffleSVG defined
-  // applyHeaderButtonStyles(randomDay, 'darkslateblue');
+  createCustomTooltip(randomDay, 'Random Date');
 
   // Function to get current date or fallback to today's date
   function getEffectiveDate() {
@@ -679,7 +680,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Function to update the date input and title
   const updateDateInputAndTitle = (newDate) => {
     dateInput.value = newDate; // Update the date input
-    dateInputToggle.title = `Current date: ${newDate}`; // Update title
+    createCustomTooltip(dateInputToggle, `Current date: ${newDate}`);
   };
 
   // Event listener for the chevron left button
@@ -719,8 +720,8 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Create a close button with the provided SVG icon
   const closePanelButton = document.createElement('div');
   closePanelButton.className = "large-button panel-header-close-button";
-  closePanelButton.title = 'Close panel';
   closePanelButton.innerHTML = closeSVG;
+  createCustomTooltip(closePanelButton, 'Close panel');
 
   // Add a click event listener to the close panel button
   closePanelButton.addEventListener('click', () => {
@@ -941,14 +942,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
         userElement.className = 'active-user-item';
 
         // Add click event to populate the search input with the clicked username
-        userElement.addEventListener('click', () => {
+        userElement.addEventListener('click', (event) => {
           const currentValue = chatlogsSearchInput.value.trim();
-          const usernameEntry = isCtrlKeyPressed ? `, ${username}` : username;
+          const usernameEntry = event.ctrlKey ? `, ${username}` : username;
 
           // Toggle input value: clear if same username clicked, otherwise add or replace
           chatlogsSearchInput.value = (currentValue === username)
             ? ''
-            : (isCtrlKeyPressed && !currentValue.includes(username))
+            : (event.ctrlKey && !currentValue.includes(username))
               ? currentValue + usernameEntry
               : username;
 
@@ -960,6 +961,11 @@ export async function showChatLogsPanel(personalMessagesDate) {
         const nicknameElement = document.createElement('span');
         nicknameElement.className = 'active-user-name';
         nicknameElement.textContent = username;
+        createCustomTooltip(nicknameElement, `
+          [Click] to filter messages by ${username}
+          [Repeat Click] to clear ${username} from the search input
+          [Ctrl + Click] to add additional username to the search input
+        `);
 
         // Fetch the color for the username from the hue map
         const userHue = usernameHueMap[username] || 0; // Fallback to 0 if hue not found
@@ -993,13 +999,13 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Set the min attribute to '2012-02-12'
   dateInput.min = minDate; // Assign the minimum date
   dateInput.value = dateToLoad; // Set the value to the date to load
-  dateInputToggle.title = `Current date: ${dateToLoad}`; // Update the title with the selected date
+  createCustomTooltip(dateInputToggle, `Current date: ${dateToLoad}`); // Create a tooltip for the date input toggle
 
   // Add an event listener for the date input change
   dateInput.addEventListener('change', async (event) => {
     const selectedDate = event.target.value; // Get the selected date
     await loadChatLogs(selectedDate); // Load chat logs for the selected date
-    dateInputToggle.title = `Current date: ${selectedDate}`; // Update the title with the selected date
+    createCustomTooltip(dateInputToggle, `Current date: ${selectedDate}`); // Update the tooltip with the selected date
   });
 
   // Retrieves details from message items including usernames and message text.

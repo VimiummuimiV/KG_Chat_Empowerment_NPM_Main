@@ -198,7 +198,7 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
 
   const newNameElement = document.createElement('a');
   newNameElement.classList.add('name');
-  newNameElement.title = 'Send private message';
+  createCustomTooltip(newNameElement, 'Send private message');
   newNameElement.dataset.user = userId;
   newNameElement.textContent = userName;
 
@@ -264,7 +264,7 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
 
   if (userToTrack) {
     const trackedIcon = document.createElement('div');
-    trackedIcon.title = 'Tracked user';
+    createCustomTooltip(trackedIcon, 'Tracked user');
     trackedIcon.classList.add('tracked');
     trackedIcon.innerHTML = trackedSVG;
     newUserElement.appendChild(trackedIcon);
@@ -276,7 +276,7 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
   // Create and hide a message element if the user is in ignored
   if (isIgnoredUser) {
     const ignoredIcon = document.createElement('div');
-    ignoredIcon.title = 'Ignored user';
+    createCustomTooltip(ignoredIcon, 'Ignored user');
     ignoredIcon.classList.add('ignored');
     ignoredIcon.innerHTML = ignoredSVG;
     newUserElement.appendChild(ignoredIcon);

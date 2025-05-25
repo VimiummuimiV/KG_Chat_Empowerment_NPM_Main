@@ -23,13 +23,12 @@ import {
   triggerTargetElement,
   processEncodedLinks,
   highlightMentionWords,
-  scrollToMiddle,
-  // helpers definitions
-  isCtrlKeyPressed
+  scrollToMiddle
 } from '../../helpers.js';
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
 import { showChatLogsPanel } from "../chatlogs/chatlogs.js"; // chatlogs
+import { createCustomTooltip } from "../../tooltip.js"; // tooltip
 
 // definitions
 import {
@@ -70,8 +69,7 @@ export function createMessagesButton(panel) {
 
   showPersonalMessagesButton.appendChild(newMessageIndicator);
 
-  // Assign a title to the button
-  showPersonalMessagesButton.title = 'Show Personal Messages';
+  createCustomTooltip(showPersonalMessagesButton, 'Show Personal Messages');
 
   // Add a click event listener to the button
   showPersonalMessagesButton.addEventListener('click', function () {
@@ -373,6 +371,7 @@ async function showMessagesPanel() {
   const messagesSearchInput = document.createElement('input');
   messagesSearchInput.className = 'personal-messages-search-input';
   messagesSearchInput.type = 'search';
+  createCustomTooltip(messagesSearchInput, '[Ctrl + Click] to clear search input and display all personal messages');
 
   // Append the search input to the search container
   messagesSearchContainer.appendChild(messagesSearchInput);
@@ -385,7 +384,7 @@ async function showMessagesPanel() {
   const saveMessagesButton = document.createElement('div');
   saveMessagesButton.className = 'large-button panel-header-save-button';
   saveMessagesButton.innerHTML = saveSVG;
-  saveMessagesButton.title = 'Save messages';
+  createCustomTooltip(saveMessagesButton, 'Save messages');
   saveMessagesButton.style.opacity = "0";
 
   // Handle the save button click to restore the backup
@@ -424,7 +423,7 @@ async function showMessagesPanel() {
   const importMessagesButton = document.createElement('div');
   importMessagesButton.className = "large-button panel-header-import-button";
   importMessagesButton.innerHTML = importSVG;
-  importMessagesButton.title = 'Import messages';
+  createCustomTooltip(importMessagesButton, 'Import messages');
 
   importMessagesButton.addEventListener('click', () => {
     isMessagesImport = true;
@@ -487,7 +486,7 @@ async function showMessagesPanel() {
   const exportMessagesButton = document.createElement('div');
   exportMessagesButton.className = "large-button panel-header-export-button";
   exportMessagesButton.innerHTML = exportSVG;
-  exportMessagesButton.title = 'Export messages';
+  createCustomTooltip(exportMessagesButton, 'Export messages');
 
   // Add event listener for exporting messages
   exportMessagesButton.addEventListener('click', () => {
@@ -516,7 +515,7 @@ async function showMessagesPanel() {
   copyPersonalMessagesButton.className = "large-button panel-header-copy-button";
   // Set the inner HTML of the copy personal messages button element with the clipboard SVG
   copyPersonalMessagesButton.innerHTML = clipboardSVG;
-  copyPersonalMessagesButton.title = 'Copy Personal Messages';
+  createCustomTooltip(copyPersonalMessagesButton, 'Copy Personal Messages');
 
   // Event listener to copy the text content of the messages container
   copyPersonalMessagesButton.addEventListener('click', () => {
@@ -545,7 +544,7 @@ async function showMessagesPanel() {
   // Create a clear cache button with the provided SVG icon
   const clearCacheButton = document.createElement('div');
   clearCacheButton.className = "large-button panel-header-clear-button";
-  clearCacheButton.title = 'Clear personal messages';
+  createCustomTooltip(clearCacheButton, 'Clear personal messages');
   clearCacheButton.innerHTML = trashSVG;
 
   // Add a click event listener to the clear cache button
@@ -576,7 +575,7 @@ async function showMessagesPanel() {
   // Create a close button with the provided SVG icon
   const closePanelButton = document.createElement('div');
   closePanelButton.className = "large-button panel-header-close-button";
-  closePanelButton.title = 'Close panel';
+  createCustomTooltip(closePanelButton, 'Close panel');
   closePanelButton.innerHTML = closeSVG;
 
   // Add a click event listener to the close panel button
@@ -691,7 +690,7 @@ async function showMessagesPanel() {
       const timeElement = document.createElement('span');
       timeElement.className = 'message-time';
       timeElement.textContent = formattedTime;
-      timeElement.title = `Moscow Time: ${calibrateToMoscowTime(formattedTime)}`;
+      createCustomTooltip(timeElement, `Moscow Time: ${calibrateToMoscowTime(formattedTime)}`);
       timeElement.style.color = timeColors[type] || 'slategray';
 
       // Add click event listener for "mention" and "private" types
@@ -851,7 +850,12 @@ async function showMessagesPanel() {
   triggerDimmingElement('show');
 
   // Add click event listener to clear the search input by LMB click with Ctrl key pressed
-  messagesSearchInput.addEventListener('click', () => isCtrlKeyPressed && (messagesSearchInput.value = ''));
+  messagesSearchInput.addEventListener('click', (event) => {
+    if (event.ctrlKey) {
+      messagesSearchInput.value = '';
+      messagesSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
 
   // Event listener to handle input search for matching personal messages
   // It searches through messages grouped by date and displays the corresponding date
