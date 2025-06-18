@@ -137,52 +137,37 @@ async function findGeneralChatMessage(targetTime, targetUsername, allowScroll) {
   return foundElement || false; // Return found element or false if not found
 }
 
-// Find chat logs message by time in range and matching username
-async function findChatLogsMessage(targetTime, targetUsername, allowScroll) {
+// Find chat logs message by message text and matching username
+async function findChatLogsMessage(targetMessageText, targetUsername, allowScroll) {
   const parent = document.querySelector('.chat-logs-container'); // Logs container
   if (!parent) return null; // Return null if the container isn't found
 
-  // Convert time string "[HH:MM:SS]" to total seconds
-  const timeStringToSeconds = (str) =>
-    str.replace(/[\[\]]/g, '').split(':').reduce((acc, time, i) =>
-      acc + Number(time) * (60 ** (2 - i)), 0
-    );
+  // Normalize function for comparison
+  const normalize = str => (str || '').replace(/\s+/g, ' ').replace(/[_-]/g, ' ').trim().toLowerCase();
+  const normalizedTargetText = normalize(targetMessageText);
+  const normalizedTargetUsername = normalize(targetUsername);
 
-  const initialTimeValue = timeStringToSeconds(targetTime); // Target time in seconds
-
-  // Helper to find .message-item elements by matching time and username
-  const findMatchingElement = (condition) =>
+  // Helper to find .message-item elements by matching message text and username
+  const findMatchingElement = () =>
     Array.from(parent.querySelectorAll('.message-item')).find((messageItem) => {
-      const timeElement = messageItem.querySelector('.message-time'); // Get the child element with class 'message-time'
-      const usernameElement = messageItem.querySelector('.message-username'); // Get the username element
-
-      if (timeElement && usernameElement) {
-        const currentTimeValue = timeStringToSeconds(timeElement.textContent.trim());
-        const usernameText = usernameElement.textContent.trim(); // Extract the text content of the username
-
-        // Check if the time and username match the conditions
-        return condition(currentTimeValue) && usernameText === targetUsername;
+      const usernameElement = messageItem.querySelector('.message-username');
+      const messageTextElement = messageItem.querySelector('.message-text');
+      if (usernameElement && messageTextElement) {
+        const usernameText = normalize(usernameElement.textContent);
+        const messageText = normalize(messageTextElement.textContent);
+        // Match both username and message text (substring match for message)
+        return usernameText === normalizedTargetUsername && messageText.includes(normalizedTargetText);
       }
       return false;
     });
 
-  // 1. Try to find an exact match first
-  let foundElement = findMatchingElement(
-    (currentTimeValue) => currentTimeValue === initialTimeValue
-  );
-
-  // 2. If no exact match, search within ±10 seconds
-  if (!foundElement) {
-    foundElement = findMatchingElement(
-      (currentTimeValue) => Math.abs(currentTimeValue - initialTimeValue) <= 2
-    );
-  }
+  const foundElement = findMatchingElement();
 
   if (foundElement && allowScroll) {
-    await scrollToMiddle(parent, foundElement); // Call the extracted scrolling function
+    await scrollToMiddle(parent, foundElement);
   }
 
-  return foundElement || false; // Return found element or false if not found
+  return foundElement || false;
 }
 
 /**
@@ -764,12 +749,12 @@ async function showMessagesPanel() {
           }
           if (previousElement) {
             await showChatLogsPanel(previousElement.dataset.date);
-            const calibratedMoscowTime = calibrateToMoscowTime(formattedTime);
-            // Call the findChatLogsMessage function to search for the chat logs message by time in range and username
+            // Use username and message text for searching in chat logs
+            const messageTextForSearch = messageTextElement.textContent;
             requestAnimationFrame(async () => {
               setTimeout(async () => {
-                // find chat messge if not found close the panel
-                const foundChatLogsMessage = await findChatLogsMessage(calibratedMoscowTime, username, true);
+                // find chat message by username and message text
+                const foundChatLogsMessage = await findChatLogsMessage(messageTextForSearch, username, true);
                 if (!foundChatLogsMessage) {
                   const chatLogsPanel = document.querySelector('.chat-logs-panel'); // Get the chat logs panel
                   triggerTargetElement(chatLogsPanel, 'hide'); // Hide the chat logs panel
