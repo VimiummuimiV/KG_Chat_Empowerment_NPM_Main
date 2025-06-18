@@ -89,36 +89,16 @@ export function createMessagesButton(panel) {
   panel.appendChild(showPersonalMessagesButton);
 }
 
-// Utility to extract message text from a <p> element in general chat (backup)
-// function extractMessageText(pElem) {
-//   let text = '';
-//   for (let node of pElem.childNodes) {
-//     if (node.nodeType === Node.TEXT_NODE) {
-//       text += node.textContent;
-//     }
-//   }
-//   return text.trim();
-// }
-
 function extractMessageText(pElem) {
+  // Only include text nodes and elements that are not .time or .username
   let text = '';
-  const walker = document.createTreeWalker(pElem, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
-    acceptNode: function (node) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        return NodeFilter.FILTER_ACCEPT;
-      } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') {
-        return NodeFilter.FILTER_ACCEPT;
-      }
-      return NodeFilter.FILTER_SKIP;
-    }
-  });
-
-  while (walker.nextNode()) {
-    const node = walker.currentNode;
+  for (let node of pElem.childNodes) {
     if (node.nodeType === Node.TEXT_NODE) {
       text += node.textContent;
-    } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') {
-      text += node.getAttribute('alt') || '';
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      if (!node.classList.contains('time') && !node.classList.contains('username')) {
+        text += node.textContent;
+      }
     }
   }
   return text.trim();
@@ -130,19 +110,29 @@ async function findGeneralChatMessage(targetMessageText, targetUsername, allowSc
   if (!parent) return null;
 
   // Normalize function for comparison
-  const normalize = str => (str || '').replace(/\s+/g, ' ').replace(/[_-]/g, ' ').trim().toLowerCase();
-  const normalizedTargetText = normalize(targetMessageText);
+  const normalize = str => String(str || '').replace(/\s+/g, '').trim().toLowerCase();
   const normalizedTargetUsername = normalize(targetUsername);
+  const normalizedTargetText = normalize(targetMessageText);
 
-  // Helper to find <p> elements by matching username and message text
+  // Helper to find <p> elements by matching username and exact message text
   const findMatchingElement = () =>
     Array.from(parent.querySelectorAll('p')).find((p) => {
       const usernameElement = p.querySelector('.username span[data-user]');
       if (usernameElement) {
         const usernameText = normalize(usernameElement.textContent);
         const messageText = normalize(extractMessageText(p));
-        // Match both username and message text (substring match for message)
-        return usernameText === normalizedTargetUsername && messageText.includes(normalizedTargetText);
+        // Debug log for comparison
+        console.log('COMPARE:', {
+          normalizedTargetUsername,
+          normalizedTargetText,
+          usernameText,
+          messageText,
+          rawMessage: extractMessageText(p)
+        });
+        // Match by normalized username and message
+        if (usernameText === normalizedTargetUsername && messageText === normalizedTargetText) {
+          return true;
+        }
       }
       return false;
     });
@@ -162,11 +152,11 @@ async function findChatLogsMessage(targetMessageText, targetUsername, allowScrol
   if (!parent) return null; // Return null if the container isn't found
 
   // Normalize function for comparison
-  const normalize = str => (str || '').replace(/\s+/g, ' ').replace(/[_-]/g, ' ').trim().toLowerCase();
-  const normalizedTargetText = normalize(targetMessageText);
+  const normalize = str => String(str || '').replace(/\s+/g, '').trim().toLowerCase();
   const normalizedTargetUsername = normalize(targetUsername);
+  const normalizedTargetText = normalize(targetMessageText);
 
-  // Helper to find .message-item elements by matching message text and username
+  // Helper to find .message-item elements by matching username and exact message text
   const findMatchingElement = () =>
     Array.from(parent.querySelectorAll('.message-item')).find((messageItem) => {
       const usernameElement = messageItem.querySelector('.message-username');
@@ -174,8 +164,10 @@ async function findChatLogsMessage(targetMessageText, targetUsername, allowScrol
       if (usernameElement && messageTextElement) {
         const usernameText = normalize(usernameElement.textContent);
         const messageText = normalize(messageTextElement.textContent);
-        // Match both username and message text (substring match for message)
-        return usernameText === normalizedTargetUsername && messageText.includes(normalizedTargetText);
+
+        if (usernameText === normalizedTargetUsername && messageText === normalizedTargetText) {
+          return true;
+        }
       }
       return false;
     });
@@ -770,16 +762,21 @@ async function showMessagesPanel() {
             await showChatLogsPanel(previousElement.dataset.date);
             // Use username and message text for searching in chat logs
             const messageTextForSearch = messageTextElement.textContent;
-            requestAnimationFrame(async () => {
-              setTimeout(async () => {
-                // find chat message by username and message text
+            requestAnimationFrame(() => {
+              let tries = 0;
+              const maxTries = 10; // e.g., try up to 10 times (3 seconds total)
+              const interval = setInterval(async () => {
                 const foundChatLogsMessage = await findChatLogsMessage(messageTextForSearch, username, true);
-                if (!foundChatLogsMessage) {
-                  const chatLogsPanel = document.querySelector('.chat-logs-panel'); // Get the chat logs panel
-                  triggerTargetElement(chatLogsPanel, 'hide'); // Hide the chat logs panel
-                  showMessagesPanel(); // Show the personal messages panel again
+                if (foundChatLogsMessage) {
+                  clearInterval(interval);
+                  // Optionally handle found case (e.g., highlight)
+                } else if (++tries >= maxTries) {
+                  clearInterval(interval);
+                  const chatLogsPanel = document.querySelector('.chat-logs-panel');
+                  triggerTargetElement(chatLogsPanel, 'hide');
+                  showMessagesPanel();
                 }
-              }, 500); // Adjust the delay as needed
+              }, 200);
             });
           }
         }
