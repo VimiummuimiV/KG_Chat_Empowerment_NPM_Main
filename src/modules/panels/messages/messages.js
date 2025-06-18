@@ -627,7 +627,6 @@ async function showMessagesPanel() {
   let lastUsername = null; // Store the last username processed
   let pingCheckCounter = 0; // Initialize a counter
   let maxPingChecks = 100; // Set the limit to 100
-  let pingMessages = false; // Initialize pingMessages as false
   let lastDate = null; // Store the last processed date
 
   // Create an array to store message elements for later appending
@@ -837,22 +836,35 @@ async function showMessagesPanel() {
     });
 
     // Process the colorization logic in reverse order
-    messageElements.reverse().forEach(async ({ messageTextElement, message, username, type }) => {
-      if (pingCheckCounter < maxPingChecks) {
-        pingMessages = await findGeneralChatMessage(message, username, false);
-        pingCheckCounter++; // Increment the counter
+    messageElements.reverse().forEach(async ({ messageTextElement, username, type }) => {
+      let isPingableMessage = false;
 
-        if (pingCheckCounter >= maxPingChecks) {
-          pingMessages = false;
-          console.log("Reached maximum ping checks, resetting pingMessages.");
+      // Only check for pingable messages if we haven't exceeded the limit
+      if (pingCheckCounter < maxPingChecks) {
+        // Use the actual message text content for searching
+        const messageText = messageTextElement.textContent;
+
+        try {
+          // Check if this message exists in general chat
+          const foundMessage = await findGeneralChatMessage(messageText, username, false);
+          isPingableMessage = Boolean(foundMessage); // Convert to boolean
+
+          pingCheckCounter++; // Increment the counter
+
+          if (pingCheckCounter >= maxPingChecks) {
+            console.log("Reached maximum ping checks limit.");
+          }
+        } catch (error) {
+          console.error("Error checking for pingable message:", error);
+          isPingableMessage = false;
         }
       }
 
       // Colorize the messageTextElement accordingly (Pingable messages)
       messageTextElement.style.color =
-        pingMessages && type === 'mention' ? 'lightgreen' :
-          pingMessages && type === 'private' ? 'lemonchiffon' :
-            messageColors[type] || 'slategray';
+        isPingableMessage && type === 'mention' ? 'lightgreen' :
+          isPingableMessage && type === 'private' ? 'lemonchiffon' :
+            messageColors[type] || messageColors.default;
     });
   }
 
