@@ -121,14 +121,6 @@ async function findGeneralChatMessage(targetMessageText, targetUsername, allowSc
       if (usernameElement) {
         const usernameText = normalize(usernameElement.textContent);
         const messageText = normalize(extractMessageText(p));
-        // Debug log for comparison
-        console.log('COMPARE:', {
-          normalizedTargetUsername,
-          normalizedTargetText,
-          usernameText,
-          messageText,
-          rawMessage: extractMessageText(p)
-        });
         // Match by normalized username and message
         if (usernameText === normalizedTargetUsername && messageText === normalizedTargetText) {
           return true;
