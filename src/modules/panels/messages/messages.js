@@ -89,52 +89,47 @@ export function createMessagesButton(panel) {
   panel.appendChild(showPersonalMessagesButton);
 }
 
-// Find chat message by time in range and matching username
-async function findGeneralChatMessage(targetTime, targetUsername, allowScroll) {
+// Utility to extract message text from a <p> element in general chat
+function extractMessageText(pElem) {
+  let text = '';
+  for (let node of pElem.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      text += node.textContent;
+    }
+  }
+  return text.trim();
+}
+
+// Find chat message by username and message text
+async function findGeneralChatMessage(targetMessageText, targetUsername, allowScroll) {
   const parent = document.querySelector('.messages-content'); // Chat container
-  if (!parent) return null; // Return null if the container isn't found
+  if (!parent) return null;
 
-  // Convert time string "[HH:MM:SS]" to total seconds
-  const timeStringToSeconds = (str) =>
-    str.replace(/[\[\]]/g, '').split(':').reduce((acc, time, i) =>
-      acc + Number(time) * (60 ** (2 - i)), 0
-    );
+  // Normalize function for comparison
+  const normalize = str => (str || '').replace(/\s+/g, ' ').replace(/[_-]/g, ' ').trim().toLowerCase();
+  const normalizedTargetText = normalize(targetMessageText);
+  const normalizedTargetUsername = normalize(targetUsername);
 
-  const initialTimeValue = timeStringToSeconds(targetTime); // Target time in seconds
-
-  // Helper to find <p> elements by matching time and username
-  const findMatchingElement = (condition) =>
+  // Helper to find <p> elements by matching username and message text
+  const findMatchingElement = () =>
     Array.from(parent.querySelectorAll('p')).find((p) => {
-      const timeElement = p.querySelector('.time'); // Get the child element with class 'time'
-      const usernameElement = p.querySelector('.username span[data-user]'); // Get the username element
-
-      if (timeElement && usernameElement) {
-        const currentTimeValue = timeStringToSeconds(timeElement.textContent.trim());
-        const usernameText = usernameElement.textContent.trim(); // Extract the text content of the username
-
-        // Check if the time and username match the conditions
-        return condition(currentTimeValue) && usernameText === targetUsername;
+      const usernameElement = p.querySelector('.username span[data-user]');
+      if (usernameElement) {
+        const usernameText = normalize(usernameElement.textContent);
+        const messageText = normalize(extractMessageText(p));
+        // Match both username and message text (substring match for message)
+        return usernameText === normalizedTargetUsername && messageText.includes(normalizedTargetText);
       }
       return false;
     });
 
-  // 1. Try to find an exact match first
-  let foundElement = findMatchingElement(
-    (currentTimeValue) => currentTimeValue === initialTimeValue
-  );
-
-  // 2. If no exact match, search within ±10 seconds
-  if (!foundElement) {
-    foundElement = findMatchingElement(
-      (currentTimeValue) => Math.abs(currentTimeValue - initialTimeValue) <= 2
-    );
-  }
+  const foundElement = findMatchingElement();
 
   if (foundElement && allowScroll) {
-    await scrollToMiddle(parent, foundElement); // Call the extracted scrolling function
+    await scrollToMiddle(parent, foundElement);
   }
 
-  return foundElement || false; // Return found element or false if not found
+  return foundElement || false;
 }
 
 // Find chat logs message by message text and matching username
