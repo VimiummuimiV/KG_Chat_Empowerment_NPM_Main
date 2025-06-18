@@ -89,15 +89,39 @@ export function createMessagesButton(panel) {
   panel.appendChild(showPersonalMessagesButton);
 }
 
-// Utility to extract message text from a <p> element in general chat
+// Utility to extract message text from a <p> element in general chat (backup)
+// function extractMessageText(pElem) {
+//   let text = '';
+//   for (let node of pElem.childNodes) {
+//     if (node.nodeType === Node.TEXT_NODE) {
+//       text += node.textContent;
+//     }
+//   }
+//   return text.trim();
+// }
+
 function extractMessageText(pElem) {
-  let text = '';
-  for (let node of pElem.childNodes) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      text += node.textContent;
+    let text = '';
+    const walker = document.createTreeWalker(pElem, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+        acceptNode: function(node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return NodeFilter.FILTER_ACCEPT;
+            } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') {
+                return NodeFilter.FILTER_ACCEPT;
+            }
+            return NodeFilter.FILTER_SKIP;
+        }
+    });
+
+    while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (node.nodeType === Node.TEXT_NODE) {
+            text += node.textContent;
+        } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') {
+            text += node.getAttribute('alt') || '';
+        }
     }
-  }
-  return text.trim();
+    return text.trim();
 }
 
 // Find chat message by username and message text
