@@ -711,7 +711,7 @@ async function showMessagesPanel() {
       usernameElement.textContent = username;
       usernameElement.style.color = usernameColor;
 
-      // Add click event only if userId is defined
+      // Add click event listener for username element
       usernameElement.addEventListener('click', (event) => {
         // Remove all messages on Ctrl + LMB click for the same username
         if (event.ctrlKey) {
@@ -745,6 +745,13 @@ async function showMessagesPanel() {
         // Remove single message on Ctrl + LMB click for the same username
         if (event.ctrlKey) {
           removeMessage(messageElement, 'single');
+          return;
+        }
+        // For private messages, only search in general chat
+        if (type === 'private') {
+          requestAnimationFrame(() => {
+            findGeneralChatMessage(time, username, message, true);
+          });
           return;
         }
 
@@ -781,6 +788,31 @@ async function showMessagesPanel() {
           }
         }
       });
+
+      // Add custom tooltip for message text element
+      if (type === 'private') {
+        createCustomTooltip(messageTextElement, `
+          [Click] Search for this message only in general chat
+          [Ctrl + Click] Remove only this message
+        `);
+      } else {
+        createCustomTooltip(messageTextElement, `
+          [Click] Search for this message in general chat or chatlogs
+          [Ctrl + Click] Remove only this message
+        `);
+      }
+
+      // Add custom tooltip for username element
+      createCustomTooltip(usernameElement, `
+        [Click] Open user profile
+        [Ctrl + Click] Remove all messages from this user
+      `);
+
+      // Add custom tooltip for time element
+      createCustomTooltip(timeElement, `
+        [Click] Open chatlog at this time
+        [Ctrl + Click] Remove all messages starting from this time
+      `);
 
       // Store elements for (pingable messages) colorization after all processing
       const messageData = {
