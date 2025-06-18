@@ -732,8 +732,8 @@ async function showMessagesPanel() {
           return;
         }
 
-        // Call the findGeneralChatMessage function to search for the general chat message by time in range and username
-        const foundGeneralChatMessage = await findGeneralChatMessage(time, username, true);
+        // Use message text and username for search in general chat
+        const foundGeneralChatMessage = await findGeneralChatMessage(messageTextElement.textContent, username, true);
         if (foundGeneralChatMessage) {
           triggerTargetElement(cachedMessagesPanel, 'hide');
           triggerDimmingElement('hide');
@@ -792,9 +792,9 @@ async function showMessagesPanel() {
     });
 
     // Process the colorization logic in reverse order
-    messageElements.reverse().forEach(async ({ messageTextElement, time, username, type }) => {
+    messageElements.reverse().forEach(async ({ messageTextElement, message, username, type }) => {
       if (pingCheckCounter < maxPingChecks) {
-        pingMessages = await findGeneralChatMessage(time, username, false);
+        pingMessages = await findGeneralChatMessage(message, username, false);
         pingCheckCounter++; // Increment the counter
 
         if (pingCheckCounter >= maxPingChecks) {
