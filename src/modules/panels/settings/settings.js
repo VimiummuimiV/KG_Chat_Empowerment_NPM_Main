@@ -1,4 +1,4 @@
-import "./settings.css" // settings styles
+import "./settings.scss" // settings styles
 
 // icons
 import {

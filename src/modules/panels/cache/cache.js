@@ -1,4 +1,4 @@
-import "./cache.css" // cache styles
+import "./cache.scss" // cache styles
 
 // helpers && helpers definitions
 import {

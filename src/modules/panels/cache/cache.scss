@@ -1,0 +1,348 @@
+/* showCachePanel */
+.cached-users-panel {
+  opacity: 0;
+  background-color: #1b1b1b;
+  border-radius: 0.6em !important;
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80vw;
+  height: 80vh;
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content;
+  grid-template-areas:
+    "header header"
+    "cache scroll";
+
+  .panel-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.6em;
+    grid-area: header;
+  }
+
+  .drop-time {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: fit-content;
+  }
+
+  .drop-time-threshold-description {
+    padding: 0.6em;
+    color: #c6b209;
+  }
+
+  .drop-time-threshold {
+    padding: 0.6em;
+    color: lightcoral;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: 0.2em !important;
+    border: 1px solid rgba(240, 128, 128, 0.20);
+    background-color: rgba(240, 128, 128, 0.05);
+    transition: filter 0.3s;
+    filter: sepia(0);
+    cursor: pointer;
+
+    &:hover {
+      filter: sepia(1);
+    }
+  }
+
+  .drop-time-expiration-description {
+    padding: 0.6em;
+    color: #d0562c;
+  }
+
+  .drop-time-expiration {
+    padding: 0.6em;
+    color: antiquewhite;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.1em;
+  }
+
+  .search-for-cached-users {
+    width: 100%;
+    margin: 0 0.5em;
+    display: flex;
+  }
+
+  .cached-users-search-input {
+    outline: none;
+    height: 48px;
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    font-family: 'Montserrat';
+    color: bisque !important;
+    border-radius: 0.2em !important;
+    box-sizing: border-box;
+    background-color: #111;
+    border: 1px solid #222;
+  }
+
+  .error-message {
+    width: fit-content;
+    white-space: nowrap;
+    font-family: 'Montserrat';
+    color: lightcoral;
+  }
+
+  .fetched-users {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    height: calc(100% - 0.5em);
+    overflow-y: auto;
+    grid-area: cache;
+  }
+
+  .users-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    padding: 1em;
+    height: fit-content;
+  }
+
+  /* Common styles for all descriptions */
+  .description {
+    color: bisque;
+    font-family: Montserrat;
+    font-size: 1em;
+    margin: 0;
+    padding: 0.4em 0.2em;
+    grid-column: 1 / -1;
+    height: fit-content;
+  }
+
+  /* Common styles for user container elements in cached users panel */
+  .user-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    height: fit-content;
+    gap: 0.6em;
+    margin-bottom: 1em;
+  }
+
+  /* Common styles for the visits element */
+  .visits {
+    margin-left: 8px;
+    padding: 4px 6px;
+    border-radius: 2px !important;
+    cursor: pointer;
+    white-space: pre;
+
+    &.tracked {
+      color: greenyellow;
+      background-color: darkgreen;
+      font-weight: bold;
+    }
+
+    &.untracked {
+      color: orange;
+      background-color: #111111;
+      font-weight: normal;
+    }
+  }
+
+  /* Common styles for the action log container */
+  .action-log {
+    position: fixed;
+    opacity: 0;
+    padding: 8px;
+    gap: 4px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-height: 85vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    overflow-x: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #111111;
+    justify-content: center;
+    border: 3px dashed #212121;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+    border-radius: 0.2em !important;
+  }
+
+  .rank {
+    padding: 2px 0;
+  }
+
+  .registered {
+    color: cadetblue;
+    font-size: 12px;
+  }
+
+  .user-metrics {
+    display: inline-flex;
+    grid-column: span 2;
+    white-space: nowrap;
+
+    span {
+      margin-right: 0.2em !important;
+    }
+  }
+
+  .avatar {
+    font-size: 1.8rem;
+
+    img {
+      height: 24px;
+      width: 24px;
+    }
+  }
+
+  .login {
+    color: skyblue !important;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: cornsilk !important;
+    }
+  }
+
+  @media (max-width: 1199px) {
+    width: 90vw;
+    height: 85vh;
+    min-width: unset;
+  }
+
+  @media (max-width: 991px) {
+    width: 95vw;
+    height: 90vh;
+    grid-template-columns: 1fr;
+    grid-template-rows: min-content auto;
+    grid-template-areas:
+      "header"
+      "cache";
+
+    .panel-header {
+      flex-wrap: wrap;
+    }
+
+    .search-for-cached-users {
+      margin: 0.5em 0;
+      order: 1;
+    }
+
+    .users-container {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+  }
+
+  @media (max-width: 576px) {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    transform: none;
+    border-radius: 0 !important;
+
+    .panel-header {
+      padding: 0.5em;
+    }
+
+    .drop-time-threshold,
+    .drop-time-expiration {
+      padding: 0.4em;
+    }
+
+    .users-container {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+      padding: 0.5em;
+    }
+
+    .user-item {
+      gap: 0.4em;
+      margin-bottom: 1em;
+    }
+
+    .avatar {
+      font-size: 1.4rem;
+
+      img {
+        height: 20px;
+        width: 20px;
+      }
+    }
+
+    .login {
+      font-size: 0.9em;
+    }
+
+    .visits {
+      font-size: 0.8em;
+      padding: 2px 4px;
+    }
+
+    .registered {
+      font-size: 10px;
+    }
+
+    @media (max-width: 520px) {
+      .drop-time-threshold-description,
+      .drop-time-expiration-description {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 320px) {
+      .drop-time {
+        display: none !important;
+      }
+
+      .panel-control-buttons {
+        width: 100% !important;
+        justify-content: end !important;
+      }
+    }
+  }
+}
+
+.fetch-mode-button {
+  background-color: #b2a4f9;
+
+  svg {
+    stroke: darkslateblue;
+  }
+}
+
+.cache-mode-button {
+  background-color: darkslateblue;
+
+  svg {
+    stroke: #b2a4f9;
+  }
+}
+
+.cache-user-count {
+  display: flex;
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+  left: 0;
+  bottom: 0;
+  transform: translate(-50%, 50%);
+  z-index: 1;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 2px !important;
+  background-color: #9db380;
+  color: rgb(2, 2, 2);
+  font-size: 12px;
+  font-family: Roboto, sans-serif;
+  font-weight: bold;
+}
