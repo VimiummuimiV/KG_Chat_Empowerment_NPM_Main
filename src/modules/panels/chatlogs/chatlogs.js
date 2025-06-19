@@ -512,48 +512,10 @@ export async function showChatLogsPanel(personalMessagesDate) {
       logLink.textContent = date; // Display the date
       logLink.href = url; // Store the URL in the href attribute
 
-      logLink.addEventListener('click', async (event) => {
-        event.preventDefault(); // Prevent the default link behavior
-
-        if (event.ctrlKey) {
-          const urlToRemove = event.target.href;
-          // Find the exact match in the savedChatlogs array and remove it
-          const updatedChatlogs = savedChatlogs.filter(log => log.url !== urlToRemove);
-
-          // If there was a change, update localStorage and remove the link
-          if (updatedChatlogs.length !== savedChatlogs.length) {
-            savedChatlogs = updatedChatlogs;
-            localStorage.setItem('savedChatlogs', JSON.stringify(savedChatlogs));
-            const targetLink = event.target;
-            targetLink.closest('.saved-chatlog-url-wrapper').remove(); // Remove the wrapper
-          }
-        } else {
-          // Handle when Ctrl is not pressed
-          await loadChatLogs(date);
-        }
-      });
-
       // Create the title element
       const logTitle = document.createElement('span');
       logTitle.classList.add('saved-chatlog-url-title');
       logTitle.textContent = title || '➕'; // Display the title (or an empty string if none provided)
-
-      // Add click event listener to the title
-      logTitle.addEventListener('click', () => {
-        const newTitle = prompt('Enter a new title for this chat log:', logTitle.textContent);
-
-        if (newTitle !== null && newTitle !== logTitle.textContent) {
-          // Update the title displayed on the page
-          logTitle.textContent = newTitle;
-
-          // Find the log by URL in the savedChatlogs array and update its title
-          const logIndex = savedChatlogs.findIndex(log => log.url === url);
-          if (logIndex !== -1) {
-            savedChatlogs[logIndex].title = newTitle; // Update the title in the saved object
-            localStorage.setItem('savedChatlogs', JSON.stringify(savedChatlogs)); // Save the updated list to localStorage
-          }
-        }
-      });
 
       // Append the elements to the wrapper
       logWrapper.appendChild(logLink);
@@ -1135,4 +1097,53 @@ export async function showChatLogsPanel(personalMessagesDate) {
   createCustomTooltip('.saved-chatlog-url-title', chatLogsPanel, (el) => `
     [Click] Edit title for this chat log
   `, true);
+
+  // Delegation-based click event for saved chatlog links and titles
+  chatLogsPanel.addEventListener('click', async (event) => {
+    // Saved chatlog link (date)
+    const savedLink = event.target.closest('.saved-chatlog-url');
+    if (savedLink) {
+      event.preventDefault();
+      let savedChatlogs = JSON.parse(localStorage.getItem('savedChatlogs')) || [];
+      if (event.ctrlKey) {
+        const urlToRemove = savedLink.href;
+        // Remove from savedChatlogs
+        const updatedChatlogs = savedChatlogs.filter(log => log.url !== urlToRemove);
+        if (updatedChatlogs.length !== savedChatlogs.length) {
+          savedChatlogs = updatedChatlogs;
+          localStorage.setItem('savedChatlogs', JSON.stringify(savedChatlogs));
+          const wrapper = savedLink.closest('.saved-chatlog-url-wrapper');
+          if (wrapper) wrapper.remove();
+        }
+      } else if (event.button === 1) {
+        // Middle click: open in new tab
+        window.open(savedLink.href, '_blank', 'noopener,noreferrer');
+      } else {
+        // Normal click: load chat logs for this date
+        const date = savedLink.textContent;
+        await loadChatLogs(date);
+      }
+      return;
+    }
+
+    // Saved chatlog title
+    const savedTitle = event.target.closest('.saved-chatlog-url-title');
+    if (savedTitle) {
+      let savedChatlogs = JSON.parse(localStorage.getItem('savedChatlogs')) || [];
+      const wrapper = savedTitle.closest('.saved-chatlog-url-wrapper');
+      const link = wrapper && wrapper.querySelector('.saved-chatlog-url');
+      if (!link) return;
+      const url = link.href;
+      const newTitle = prompt('Enter a new title for this chat log:', savedTitle.textContent);
+      if (newTitle !== null && newTitle !== savedTitle.textContent) {
+        savedTitle.textContent = newTitle;
+        const logIndex = savedChatlogs.findIndex(log => log.url === url);
+        if (logIndex !== -1) {
+          savedChatlogs[logIndex].title = newTitle;
+          localStorage.setItem('savedChatlogs', JSON.stringify(savedChatlogs));
+        }
+      }
+      return;
+    }
+  });
 }
