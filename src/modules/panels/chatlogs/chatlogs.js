@@ -67,7 +67,7 @@ export function createChatLogsButton(panel) {
 }
 
 // Function to fetch chat logs from the specified URL for a given date
-export const fetchChatLogs = async (date, messagesContainer) => {
+const fetchChatLogs = async (date, messagesContainer) => {
   // Clear the messagesContainer if it exists
   messagesContainer && (messagesContainer.innerHTML = '');
 
@@ -809,53 +809,16 @@ export async function showChatLogsPanel(personalMessagesDate) {
       const messageContainer = document.createElement('div');
       messageContainer.classList.add('message-item');
 
-      // Attach click event to scroll the chat logs container to the middle of the parent container on LMB click
-      messageContainer.addEventListener('click', async (event) => {
-        // If the clicked element or one of its parents is an anchor, exit early.
-        if (event.target.closest('a')) return;
-        // Call toggleMessagesVisibility to show all messages and scroll when a message is clicked on visibleMentionMessages is true
-        if (visibleMessages) await toggleMessagesVisibility();
-        chatlogsSearchInput.value.length > 0 && (chatlogsSearchInput.value = '');
-        // Use helper function to scroll the chat logs container to the middle of the parent container
-        await scrollToMiddle(chatLogsContainer, messageContainer);
-      });
-
       // Create time element
       const timeElement = document.createElement('span');
       timeElement.className = 'message-time';
       // Update the timeElement's text content with the adjusted time
       timeElement.textContent = time;
 
-      // Open the chat log URL on click
-      timeElement.addEventListener('click', function (event) {
-        if (event.shiftKey) {
-          event.preventDefault(); // Prevent default action if Shift is pressed
-          event.stopPropagation(); // Stop the event from bubbling up
-          // Copy chatlogs URL to clipboard
-          copyChatlogsUrlToClipboard(date, time, timeElement);
-          return;
-        }
-        const url = `https://klavogonki.ru/chatlogs/${date}.html#${time}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
-      });
-
       // Create username element
       const usernameElement = document.createElement('span');
       usernameElement.className = 'message-username';
       usernameElement.textContent = username; // Use the original username for display
-
-      // Add click event to navigate to the user's profile or shake the username if userId is not found
-      usernameElement.addEventListener('click', async () => {
-        const userId = await getUserId(username); // Fetch the user ID on click
-
-        if (userId) {
-          const url = `https://klavogonki.ru/u/#/${userId}/`;
-          window.open(url, '_blank', 'noopener,noreferrer');
-        } else {
-          // Add shake effect if userId doesn't exist
-          addShakeEffect(usernameElement); // Define this function for the shake effect
-        }
-      });
 
       // Check if the hue for this username is already stored
       let hueForUsername = usernameHueMap[username]; // Use the original username as the key
@@ -964,22 +927,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
         // Create a user element
         const userElement = document.createElement('div');
         userElement.className = 'active-user-item';
-
-        // Add click event to populate the search input with the clicked username
-        userElement.addEventListener('click', (event) => {
-          const currentValue = chatlogsSearchInput.value.trim();
-          const usernameEntry = event.ctrlKey ? `, ${username}` : username;
-
-          // Toggle input value: clear if same username clicked, otherwise add or replace
-          chatlogsSearchInput.value = (currentValue === username)
-            ? ''
-            : (event.ctrlKey && !currentValue.includes(username))
-              ? currentValue + usernameEntry
-              : username;
-
-          // Call the filter function with the updated input value
-          filterItems(chatlogsSearchInput.value);
-        });
 
         // Create nickname element
         const nicknameElement = document.createElement('span');
@@ -1115,4 +1062,75 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
   // Attach the event listener
   document.addEventListener('keydown', panelsEvents.handleChatLogsKeydown);
+
+  // Delegated event listeners for all message actions and tooltips in chatLogsContainer
+  chatLogsPanel.addEventListener('click', async (event) => {
+    if (event.target.closest('a')) return;
+    const messageItem = event.target.closest('.message-item');
+    const timeElement = event.target.closest('.message-time');
+    const usernameElement = event.target.closest('.message-username');
+    const messageTextElement = event.target.closest('.message-text');
+    if (messageItem) {
+      if (timeElement) {
+        const date = dateInput.value;
+        const time = timeElement.textContent;
+        if (event.shiftKey) {
+          event.preventDefault();
+          event.stopPropagation();
+          copyChatlogsUrlToClipboard(date, time, timeElement);
+          return;
+        }
+        const url = `https://klavogonki.ru/chatlogs/${date}.html#${time}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      if (usernameElement) {
+        const username = usernameElement.textContent;
+        const userId = await getUserId(username);
+        if (userId) {
+          const url = `https://klavogonki.ru/u/#/${userId}/`;
+          window.open(url, '_blank', 'noopener,noreferrer');
+        } else {
+          addShakeEffect(usernameElement);
+        }
+        return;
+      }
+      if (messageTextElement) {
+        await scrollToMiddle(chatLogsContainer, messageItem);
+        return;
+      }
+      // Default: scroll to middle on message item click
+      await scrollToMiddle(chatLogsContainer, messageItem);
+    }
+  });
+  chatLogsPanel.addEventListener('mouseover', (event) => {
+    const tooltipTarget = event.target.closest('[data-tooltip]');
+    if (tooltipTarget) {
+      showCustomTooltip(tooltipTarget);
+    }
+  });
+  chatLogsPanel.addEventListener('mouseout', (event) => {
+    const tooltipTarget = event.target.closest('[data-tooltip]');
+    if (tooltipTarget) {
+      hideCustomTooltip(tooltipTarget);
+    }
+  });
+
+  // Delegated event listeners for active users
+  chatLogsPanel.addEventListener('click', (event) => {
+    const userElement = event.target.closest('.active-user-item');
+    if (userElement) {
+      const nicknameElement = userElement.querySelector('.active-user-name');
+      const username = nicknameElement?.textContent;
+      if (!username) return;
+      const currentValue = chatlogsSearchInput.value.trim();
+      const usernameEntry = event.ctrlKey ? `, ${username}` : username;
+      chatlogsSearchInput.value = (currentValue === username)
+        ? ''
+        : (event.ctrlKey && !currentValue.includes(username))
+          ? currentValue + usernameEntry
+          : username;
+      filterItems(chatlogsSearchInput.value);
+    }
+  });
 }
