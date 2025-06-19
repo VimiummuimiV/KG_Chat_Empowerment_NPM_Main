@@ -948,5 +948,3 @@ async function showMessagesPanel() {
   // Attach the event listener
   document.addEventListener('keydown', panelsEvents.handlePersonalMessagesKeydown);
 }
-
-
