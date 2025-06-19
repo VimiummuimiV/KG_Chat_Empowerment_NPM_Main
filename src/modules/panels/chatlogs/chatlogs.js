@@ -1091,7 +1091,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
   // Create custom tooltips for username elements
   createCustomTooltip('.message-username', chatLogsPanel, (el) => `
-    [Click] Open user profile
+    [Click] Open ${el.textContent} profile
   `, true);
 
   // Create custom tooltips for message text elements
