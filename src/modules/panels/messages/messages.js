@@ -678,7 +678,6 @@ async function showMessagesPanel() {
       const timeElement = document.createElement('span');
       timeElement.className = 'message-time';
       timeElement.textContent = formattedTime;
-      createCustomTooltip(timeElement, `Moscow Time: ${calibrateToMoscowTime(formattedTime)}`);
       timeElement.style.color = timeColors[type] || 'slategray';
 
       // Add click event listener for "mention" and "private" types
@@ -787,32 +786,6 @@ async function showMessagesPanel() {
           }
         }
       });
-
-      // Add custom tooltip for message text element
-      if (type === 'private') {
-        createCustomTooltip(messageTextElement, `
-          [Click] Search for this message only in general chat
-          [Ctrl + Click] Remove only this message
-        `);
-      } else {
-        createCustomTooltip(messageTextElement, `
-          [Click] Search for this message in general chat or chatlogs
-          [Ctrl + Click] Remove only this message
-        `);
-      }
-
-      // Add custom tooltip for username element
-      createCustomTooltip(usernameElement, `
-        [Click] Open user profile
-        [Ctrl + Click] Remove all messages from this user
-      `);
-
-      // Add custom tooltip for time element
-      createCustomTooltip(timeElement, `
-        [Click] Open chatlog at this time
-        [Shift + Click] Copy chatlogs URL to clipboard
-        [Ctrl + Click] Remove all messages starting from this time
-      `);
 
       // Store elements for (pingable messages) colorization after all processing
       const messageData = {
@@ -947,4 +920,24 @@ async function showMessagesPanel() {
 
   // Attach the event listener
   document.addEventListener('keydown', panelsEvents.handlePersonalMessagesKeydown);
+
+  // Create custom tooltips for various message elements (time, username, text)
+  createCustomTooltip('.message-time', cachedMessagesPanel, (el) => {
+    const moscowTime = calibrateToMoscowTime(el.textContent);
+    return `
+      [Click] Open chatlog at ${moscowTime}
+      [Shift + Click] Copy chatlogs URL to clipboard
+      [Ctrl + Click] Remove all messages starting from ${moscowTime}
+    `;
+  }, true);
+
+  createCustomTooltip('.message-username', cachedMessagesPanel, (el) => `
+    [Click] Open ${el.textContent} profile
+    [Ctrl + Click] Remove all messages from ${el.textContent} user
+  `, true);
+
+  createCustomTooltip('.message-text', cachedMessagesPanel, (el) => `
+    [Click] Search for this message
+    [Ctrl + Click] Remove only this message
+  `, true);
 }
