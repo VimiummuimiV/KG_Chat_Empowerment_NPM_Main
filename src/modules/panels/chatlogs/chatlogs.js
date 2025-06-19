@@ -1103,18 +1103,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
       await scrollToMiddle(chatLogsContainer, messageItem);
     }
   });
-  chatLogsPanel.addEventListener('mouseover', (event) => {
-    const tooltipTarget = event.target.closest('[data-tooltip]');
-    if (tooltipTarget) {
-      showCustomTooltip(tooltipTarget);
-    }
-  });
-  chatLogsPanel.addEventListener('mouseout', (event) => {
-    const tooltipTarget = event.target.closest('[data-tooltip]');
-    if (tooltipTarget) {
-      hideCustomTooltip(tooltipTarget);
-    }
-  });
 
   // Delegated event listeners for active users
   chatLogsPanel.addEventListener('click', (event) => {
