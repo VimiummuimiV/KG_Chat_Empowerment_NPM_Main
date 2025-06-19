@@ -1085,7 +1085,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
   // Create custom tooltips for message elements
   createCustomTooltip('.message-time', chatLogsPanel, (el) => `
-    [Click] Open chatlog at this time
+    [Click] Open chatlog at ${el.textContent}
     [Shift + Click] Copy chatlogs URL to clipboard
   `, true);
 
