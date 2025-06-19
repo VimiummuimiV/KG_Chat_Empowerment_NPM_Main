@@ -1,4 +1,4 @@
-import "./style.css"; // general styles
+import "./style.scss"; // general styles
 
 import {
   processEncodedLinks,
