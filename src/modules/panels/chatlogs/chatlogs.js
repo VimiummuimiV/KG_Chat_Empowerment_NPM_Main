@@ -481,8 +481,8 @@ export async function showChatLogsPanel(personalMessagesDate) {
   copyChatLogsUrl.innerHTML = clipboardSVG;
   createCustomTooltip(copyChatLogsUrl, `
     [Click] to copy Chat Logs Url
-    [Ctrl + Click] to save Chat Logs Url with title
-    [Shift + Click] to show/hide saved Chat Logs Urls
+    [Ctrl + Click] to save Chat Logs with title
+    [Shift + Click] to show/hide saved Chat Logs
   `);
 
   // Helper function to extract date from the URL
@@ -1122,5 +1122,17 @@ export async function showChatLogsPanel(personalMessagesDate) {
     [Click] to filter messages by ${el.textContent}
     [Repeat Click] to clear ${el.textContent} from the search input
     [Ctrl + Click] to add additional username to the search input
+  `, true);
+
+  // Delegation-based custom tooltip for saved chatlog links
+  createCustomTooltip('.saved-chatlog-url', chatLogsPanel, (el) => `
+    [Click] Load chat logs for ${el.textContent}
+    [Ctrl + Click] Remove this saved chat log
+    [Middle Click] Open in new tab
+  `, true);
+
+  // Delegation-based custom tooltip for saved chatlog titles
+  createCustomTooltip('.saved-chatlog-url-title', chatLogsPanel, (el) => `
+    [Click] Edit title for this chat log
   `, true);
 }
