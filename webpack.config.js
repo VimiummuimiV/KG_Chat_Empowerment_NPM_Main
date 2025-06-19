@@ -1,31 +1,49 @@
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { readFileSync, writeFileSync } from 'fs';
 import TerserPlugin from 'terser-webpack-plugin';
 
-export default (_env, argv) => {
+// Create __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+export default (env = {}, argv) => {
   const isProduction = argv.mode === 'production';
-  
+  // Allow override via env.minimize; default to true in production
+  const shouldMinimize =
+    isProduction && env.minimize !== 'false' && env.minimize !== false;
+
   // Paths
-  const headersPath = resolve(import.meta.dirname, 'src/header.js');
-  const outputPath = resolve(import.meta.dirname, 'dist/KG_Chat_Empowerment.js');
-  
+  const headersPath = resolve(__dirname, 'src/header.js');
+  const outputPath = resolve(__dirname, 'dist/KG_Chat_Empowerment.js');
+
   return {
     mode: isProduction ? 'production' : 'development',
     entry: './src/main.js', // Main script file
     output: {
-      path: resolve(import.meta.dirname, 'dist'),
+      path: resolve(__dirname, 'dist'),
       filename: 'KG_Chat_Empowerment.js', // Output file name
     },
     module: {
       rules: [
+        // Rule for CSS files
         {
           test: /\.css$/i,
           use: ['style-loader', 'css-loader'],
         },
+        // Rule for SCSS/Sass files
+        {
+          test: /\.s[ac]ss$/i,
+          use: [
+            'style-loader', // Injects styles into DOM
+            'css-loader',   // Turns CSS into CommonJS modules
+            'sass-loader',  // Compiles Sass to CSS
+          ],
+        },
       ],
     },
     optimization: {
-      minimize: isProduction, // Only minify in production
+      minimize: shouldMinimize, // Conditionally minimize
       minimizer: [new TerserPlugin()],
     },
     stats: 'minimal',

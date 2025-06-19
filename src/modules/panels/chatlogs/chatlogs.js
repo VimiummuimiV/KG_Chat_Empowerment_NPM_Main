@@ -1,4 +1,4 @@
-import "./chatlogs.css" // chatlogs styles
+import "./chatlogs.scss" // chatlogs styles
 
 import { convertImageLinksToImage } from "../../converters/image-converter.js"; // image converter
 import { convertVideoLinksToPlayer } from "../../converters/video-converter.js"; // video converter
