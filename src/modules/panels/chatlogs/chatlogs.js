@@ -848,22 +848,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
           (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
         );
 
-      // Add custom tooltip for message text element
-      createCustomTooltip(messageTextElement, `
-        [Click] Scroll mesasge to the middle of the chat logs
-      `);
-
-      // Add custom tooltip for username element
-      createCustomTooltip(usernameElement, `
-        [Click] Open user profile
-      `);
-
-      // Add custom tooltip for time element
-      createCustomTooltip(timeElement, `
-        [Click] Open chatlog at this time
-        [Shift + Click] Copy chatlogs URL to clipboard
-      `);
-
       // Apply margin for the first message of a new user
       messageContainer.style.marginTop = lastDisplayedUsername !== username ? '0.6em' : '';
 
@@ -932,11 +916,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
         const nicknameElement = document.createElement('span');
         nicknameElement.className = 'active-user-name';
         nicknameElement.textContent = username;
-        createCustomTooltip(nicknameElement, `
-          [Click] to filter messages by ${username}
-          [Repeat Click] to clear ${username} from the search input
-          [Ctrl + Click] to add additional username to the search input
-        `);
 
         // Fetch the color for the username from the hue map
         const userHue = usernameHueMap[username] || 0; // Fallback to 0 if hue not found
@@ -1063,7 +1042,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Attach the event listener
   document.addEventListener('keydown', panelsEvents.handleChatLogsKeydown);
 
-  // Delegated event listeners for all message actions and tooltips in chatLogsContainer
+  // Delegated event listeners for all message actions in chatLogsContainer
   chatLogsPanel.addEventListener('click', async (event) => {
     if (event.target.closest('a')) return;
     const messageItem = event.target.closest('.message-item');
@@ -1104,6 +1083,22 @@ export async function showChatLogsPanel(personalMessagesDate) {
     }
   });
 
+  // Create custom tooltips for message elements
+  createCustomTooltip('.message-time', chatLogsPanel, (el) => `
+    [Click] Open chatlog at this time
+    [Shift + Click] Copy chatlogs URL to clipboard
+  `, true);
+
+  // Create custom tooltips for username elements
+  createCustomTooltip('.message-username', chatLogsPanel, (el) => `
+    [Click] Open user profile
+  `, true);
+
+  // Create custom tooltips for message text elements
+  createCustomTooltip('.message-text', chatLogsPanel, (el) => `
+    [Click] Scroll message to the middle of the chat logs
+  `, true);
+
   // Delegated event listeners for active users
   chatLogsPanel.addEventListener('click', (event) => {
     const userElement = event.target.closest('.active-user-item');
@@ -1121,4 +1116,11 @@ export async function showChatLogsPanel(personalMessagesDate) {
       filterItems(chatlogsSearchInput.value);
     }
   });
+
+  // Create custom tooltips for active user names in the active users list
+  createCustomTooltip('.active-user-name', chatLogsPanel, (el) => `
+    [Click] to filter messages by ${el.textContent}
+    [Repeat Click] to clear ${el.textContent} from the search input
+    [Ctrl + Click] to add additional username to the search input
+  `, true);
 }

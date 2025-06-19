@@ -41,49 +41,140 @@ new MutationObserver(() => {
   if (tooltipCurrentTarget && !document.contains(tooltipCurrentTarget)) hideTooltipElement();
 }).observe(document, { childList: true, subtree: true });
 
-export function createCustomTooltip(element, tooltipContent) {
+// Store delegation handlers to avoid duplicates (use WeakMap for auto-cleanup)
+const delegationHandlers = new WeakMap();
+
+function interpolateTooltip(content, target) {
+  return content.replace(/\$\{([^}]+)\}/g, (match, key) => { // Match ${key} placeholders
+    if (target.hasAttribute && target.hasAttribute(key)) {
+      return target.getAttribute(key);
+    }
+    if (key in target) {
+      return target[key];
+    }
+    if (key === 'text' || key === 'textContent') {
+      return target.textContent || '';
+    }
+    return match;
+  });
+}
+
+export function createCustomTooltip(element, tooltipContent, delegation = false) {
   if (tooltipContent == null) return; // Skip if content is null/undefined
 
-  // Always update the tooltip content stored on the element.
-  element._tooltipContent = tooltipContent;
+  // Create tooltip element if it doesn't exist
+  tooltipEl ||= (() => {
+    const tooltipDiv = document.createElement('div');
+    tooltipDiv.classList.add("custom-tooltip-popup");
+    tooltipDiv.style.display = 'none';
+    tooltipDiv.style.opacity = '0';
+    document.body.appendChild(tooltipDiv);
+    return tooltipDiv;
+  })();
 
-  if (!element._tooltipInitialized) {
-    element._tooltipInitialized = true;
+  if (delegation) {
+    // Delegation mode: attach event listeners to the parent element
+    const selector = element; // In delegation mode, element is actually a selector string
+    const parentElement = tooltipContent; // In delegation mode, tooltipContent is actually the parent element
+    const actualTooltipContent = arguments[2]; // The actual tooltip content is the third argument
 
-    tooltipEl ||= (() => {
-      const tooltipDiv = document.createElement('div');
-      tooltipDiv.classList.add("custom-tooltip-popup");
-      tooltipDiv.style.display = 'none';
-      tooltipDiv.style.opacity = '0';
-      document.body.appendChild(tooltipDiv);
-      return tooltipDiv;
-    })();
+    // Use WeakMap for parentElement -> Set of selectors
+    if (!delegationHandlers.has(parentElement)) {
+      delegationHandlers.set(parentElement, new Set());
+    }
+    const selectors = delegationHandlers.get(parentElement);
+    if (!selectors.has(selector)) {
+      selectors.add(selector);
 
-    element.addEventListener('mouseenter', e => {
-      tooltipIsVisible = true;
-      tooltipCurrentTarget = element;
-      clearTimeout(tooltipHideTimer);
-      clearTimeout(tooltipShowTimer);
+      const handleMouseEnter = (e) => {
+        const target = e.target.closest(selector);
+        if (!target) return;
 
-      // Highlight [Action]Message pairs in the tooltip content
-      tooltipEl.innerHTML = highlightTooltipActions(element._tooltipContent);
-      tooltipEl.style.display = 'flex';
-      tooltipEl.style.opacity = '0';
-      tooltipEl.offsetHeight;
-      positionTooltip(e.clientX, e.clientY);
-      document.addEventListener('mousemove', tooltipTrackMouse);
+        tooltipIsVisible = true;
+        tooltipCurrentTarget = target;
+        clearTimeout(tooltipHideTimer);
+        clearTimeout(tooltipShowTimer);
 
-      tooltipShowTimer = setTimeout(() => {
-        tooltipEl.style.opacity = '1';
-        tooltipIsShown = true;
-      }, 600);
-    });
+        // Get tooltip content - could be static or dynamic based on target
+        let content = actualTooltipContent;
 
-    element.addEventListener('mouseleave', () => {
-      hideTooltipElement();
-      document.removeEventListener('mousemove', tooltipTrackMouse);
-    });
-    element.addEventListener('click', hideTooltipElement);
+        // If content is a function, call it with the target element
+        if (typeof content === 'function') {
+          content = content(target);
+        }
+
+        // Always interpolate ${...} placeholders
+        if (typeof content === 'string') {
+          content = interpolateTooltip(content, target);
+        }
+
+        // Highlight [Action]Message pairs in the tooltip content
+        tooltipEl.innerHTML = highlightTooltipActions(content);
+        tooltipEl.style.display = 'flex';
+        tooltipEl.style.opacity = '0';
+        tooltipEl.offsetHeight;
+        positionTooltip(e.clientX, e.clientY);
+        document.addEventListener('mousemove', tooltipTrackMouse);
+
+        tooltipShowTimer = setTimeout(() => {
+          tooltipEl.style.opacity = '1';
+          tooltipIsShown = true;
+        }, 600);
+      };
+
+      const handleMouseLeave = (e) => {
+        const target = e.target.closest(selector);
+        if (!target) return;
+
+        hideTooltipElement();
+        document.removeEventListener('mousemove', tooltipTrackMouse);
+      };
+
+      const handleClick = (e) => {
+        const target = e.target.closest(selector);
+        if (!target) return;
+
+        hideTooltipElement();
+      };
+
+      parentElement.addEventListener('mouseenter', handleMouseEnter, true);
+      parentElement.addEventListener('mouseleave', handleMouseLeave, true);
+      parentElement.addEventListener('click', handleClick, true);
+    }
+  } else {
+    // Standard mode: attach event listeners directly to the element
+    // Always update the tooltip content stored on the element.
+    element._tooltipContent = tooltipContent;
+
+    if (!element._tooltipInitialized) {
+      element._tooltipInitialized = true;
+
+      element.addEventListener('mouseenter', e => {
+        tooltipIsVisible = true;
+        tooltipCurrentTarget = element;
+        clearTimeout(tooltipHideTimer);
+        clearTimeout(tooltipShowTimer);
+
+        // Highlight [Action]Message pairs in the tooltip content
+        tooltipEl.innerHTML = highlightTooltipActions(element._tooltipContent);
+        tooltipEl.style.display = 'flex';
+        tooltipEl.style.opacity = '0';
+        tooltipEl.offsetHeight;
+        positionTooltip(e.clientX, e.clientY);
+        document.addEventListener('mousemove', tooltipTrackMouse);
+
+        tooltipShowTimer = setTimeout(() => {
+          tooltipEl.style.opacity = '1';
+          tooltipIsShown = true;
+        }, 600);
+      });
+
+      element.addEventListener('mouseleave', () => {
+        hideTooltipElement();
+        document.removeEventListener('mousemove', tooltipTrackMouse);
+      });
+      element.addEventListener('click', hideTooltipElement);
+    }
   }
 }
 
