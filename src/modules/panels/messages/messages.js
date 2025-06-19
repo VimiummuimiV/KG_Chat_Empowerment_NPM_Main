@@ -23,7 +23,8 @@ import {
   triggerTargetElement,
   processEncodedLinks,
   highlightMentionWords,
-  scrollToMiddle
+  scrollToMiddle,
+  copyChatlogsUrlToClipboard
 } from '../../helpers.js';
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
@@ -686,6 +687,13 @@ async function showMessagesPanel() {
         timeElement.addEventListener('mouseover', () => { timeElement.style.color = hoverColor; });
         timeElement.addEventListener('mouseout', () => { timeElement.style.color = timeColors[type]; });
         timeElement.addEventListener('click', (event) => {
+          if (event.shiftKey) {
+            event.preventDefault(); // Prevent default action if Shift is pressed
+            event.stopPropagation(); // Stop the event from bubbling up
+            // Copy chatlogs URL to clipboard
+            copyChatlogsUrlToClipboard(date, calibrateToMoscowTime(formattedTime), timeElement);
+            return;
+          }
           if (event.ctrlKey) {
             removeMessage(messageElement, 'from');
             return; // Exit the function to prevent opening the chatlog
@@ -802,6 +810,7 @@ async function showMessagesPanel() {
       // Add custom tooltip for time element
       createCustomTooltip(timeElement, `
         [Click] Open chatlog at this time
+        [Shift + Click] Copy chatlogs URL to clipboard
         [Ctrl + Click] Remove all messages starting from this time
       `);
 

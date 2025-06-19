@@ -27,7 +27,8 @@ import {
   processEncodedLinks,
   highlightMentionWords,
   scrollToMiddle,
-  getExactUserIdByName
+  getExactUserIdByName,
+  copyChatlogsUrlToClipboard
 } from '../../helpers.js';
 
 // definitions
@@ -826,7 +827,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
       timeElement.textContent = time;
 
       // Open the chat log URL on click
-      timeElement.addEventListener('click', function () {
+      timeElement.addEventListener('click', function (event) {
+        if (event.shiftKey) {
+          event.preventDefault(); // Prevent default action if Shift is pressed
+          event.stopPropagation(); // Stop the event from bubbling up
+          // Copy chatlogs URL to clipboard
+          copyChatlogsUrlToClipboard(date, time, timeElement);
+          return;
+        }
         const url = `https://klavogonki.ru/chatlogs/${date}.html#${time}`;
         window.open(url, '_blank', 'noopener,noreferrer');
       });
@@ -876,6 +884,22 @@ export async function showChatLogsPanel(personalMessagesDate) {
         .replace(/(https?:\/\/[^\s]+)/gi,
           (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
         );
+
+      // Add custom tooltip for message text element
+      createCustomTooltip(messageTextElement, `
+        [Click] Scroll mesasge to the middle of the chat logs
+      `);
+
+      // Add custom tooltip for username element
+      createCustomTooltip(usernameElement, `
+        [Click] Open user profile
+      `);
+
+      // Add custom tooltip for time element
+      createCustomTooltip(timeElement, `
+        [Click] Open chatlog at this time
+        [Shift + Click] Copy chatlogs URL to clipboard
+      `);
 
       // Apply margin for the first message of a new user
       messageContainer.style.marginTop = lastDisplayedUsername !== username ? '0.6em' : '';

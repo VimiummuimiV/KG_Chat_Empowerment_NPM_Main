@@ -107,6 +107,7 @@
 }
 
 .cached-messages-panel .message-time {
+  display: inline-flex;
   margin: 0px 0.4em;
   height: fit-content;
   cursor: pointer;

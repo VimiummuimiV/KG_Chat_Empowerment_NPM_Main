@@ -1305,3 +1305,31 @@ async function processMessages() {
 export function isTextSelected() {
   return window.getSelection().toString().length > 0;
 }
+
+/**
+ * Copy a chatlogs URL to the clipboard and shake the time element.
+ * @param {string} date - The date string (YYYY-MM-DD).
+ * @param {string} time - The time string (HH:MM:SS or similar).
+ * @param {HTMLElement} timeElement - The time element to shake.
+ */
+export function copyChatlogsUrlToClipboard(date, time, timeElement) {
+  const url = `https://klavogonki.ru/chatlogs/${date}.html#${time}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => {
+      addShakeEffect(timeElement); // Add shake effect to the time element
+      clearSelection(); // Clear any text selection
+    });
+  }
+}
+
+/**
+ * Clears any text selection in the document (cross-browser).
+ */
+export function clearSelection() {
+  if (window.getSelection) {
+    const selection = window.getSelection();
+    if (selection && selection.removeAllRanges) {
+      selection.removeAllRanges();
+    }
+  }
+}
