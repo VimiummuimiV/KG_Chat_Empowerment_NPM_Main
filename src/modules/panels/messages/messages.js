@@ -24,7 +24,8 @@ import {
   processEncodedLinks,
   highlightMentionWords,
   scrollToMiddle,
-  copyChatlogsUrlToClipboard
+  copyChatlogsUrlToClipboard,
+  getMessageTextWithImgTitles
 } from '../../helpers.js';
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
@@ -506,23 +507,6 @@ async function showMessagesPanel() {
   copyPersonalMessagesButton.innerHTML = clipboardSVG;
   createCustomTooltip(copyPersonalMessagesButton, 'Copy Personal Messages');
 
-  // Helper to extract text and img titles from message-text
-  function getMessageTextWithImgTitles(element) {
-    let result = '';
-    for (const node of element.childNodes) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        result += node.textContent;
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        if (node.tagName === 'IMG') {
-          result += node.title || node.alt || '';
-        } else {
-          result += getMessageTextWithImgTitles(node);
-        }
-      }
-    }
-    return result.trim();
-  }
-
   // Event listener to copy the text content of the messages container
   copyPersonalMessagesButton.addEventListener('click', () => {
     let firstDateFound = false;
@@ -925,9 +909,11 @@ async function showMessagesPanel() {
 
       // Iterate through messages in the current group (until the next date item)
       while (nextEl && !nextEl.classList.contains('date-item')) {
-        const match = (nextEl.querySelector('.message-time')?.textContent.toLowerCase().replace(/_/g, ' ') + ' ' +
-          nextEl.querySelector('.message-username')?.textContent.toLowerCase().replace(/_/g, ' ') + ' ' +
-          nextEl.querySelector('.message-text')?.textContent.toLowerCase().replace(/_/g, ' ')).includes(query);
+        const time = nextEl.querySelector('.message-time')?.textContent.toLowerCase().replace(/_/g, ' ') || '';
+        const username = nextEl.querySelector('.message-username')?.textContent.toLowerCase().replace(/_/g, ' ') || '';
+        const messageTextElement = nextEl.querySelector('.message-text');
+        const message = messageTextElement ? getMessageTextWithImgTitles(messageTextElement).toLowerCase().replace(/_/g, ' ') : '';
+        const match = (time + ' ' + username + ' ' + message).includes(query);
 
         // Toggle visibility based on match using content visibility and font size
         nextEl.style.contentVisibility = match ? 'visible' : 'hidden';

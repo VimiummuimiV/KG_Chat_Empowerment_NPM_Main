@@ -1333,3 +1333,20 @@ export function clearSelection() {
     }
   }
 }
+
+// Function to get message text with image titles
+export function getMessageTextWithImgTitles(element) {
+  let result = '';
+  for (const node of element.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      result += node.textContent;
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.tagName === 'IMG') {
+        result += node.title || node.alt || '';
+      } else {
+        result += getMessageTextWithImgTitles(node);
+      }
+    }
+  }
+  return result.trim();
+}
