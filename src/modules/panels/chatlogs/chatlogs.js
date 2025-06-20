@@ -493,6 +493,8 @@ export async function showChatLogsPanel(personalMessagesDate) {
     [Click] to copy Chat Logs Url
     [Ctrl + Click] to save Chat Logs with title
     [Shift + Click] to show/hide saved Chat Logs
+    [Alt + Click] to copy Chat Logs in BBCode, Markdown, or Plain format
+    [Alt + Shift + Click] to save Chat Logs in BBCode, Markdown, or Plain format
   `);
 
   // Helper function to extract date from the URL
@@ -547,6 +549,127 @@ export async function showChatLogsPanel(personalMessagesDate) {
     }
 
     let savedChatlogs = JSON.parse(localStorage.getItem('savedChatlogs')) || [];
+
+    // Alt+Click: Export chatlogs in BBCode, Markdown, or Plain format
+    if (event.altKey) {
+      // Prompt for format synchronously (now using numbers 1=BBCode, 2=Markdown, 3=Plain)
+      const formatMap = { '1': 'bbcode', '2': 'markdown', '3': 'plain' };
+      let formatNum = prompt('Export format? (1 = BBCode, 2 = Markdown, 3 = Plain)', '1');
+      if (!formatNum) formatNum = '1';
+      let format = formatMap[formatNum.trim()];
+      if (!format) format = 'bbcode';
+
+      // Gather visible messages synchronously
+      const messageItems = Array.from(document.querySelectorAll('.chat-logs-container > .message-item'));
+
+      // Helper to get username color (BBCode/Markdown)
+      const getUsernameColor = (username) => {
+        let hue = usernameHueMap[username];
+        if (!hue) {
+          hue = Math.floor(Math.random() * (210 / hueStep)) * hueStep;
+          usernameHueMap[username] = hue;
+        }
+
+        // Convert HSL to RGB, then RGB to HEX
+        function hslToRgb(h, s, l) {
+          s /= 100;
+          l /= 100;
+          let c = (1 - Math.abs(2 * l - 1)) * s;
+          let x = c * (1 - Math.abs((h / 60) % 2 - 1));
+          let m = l - c / 2;
+          let r = 0, g = 0, b = 0;
+          if (0 <= h && h < 60) { r = c; g = x; b = 0; }
+          else if (60 <= h && h < 120) { r = x; g = c; b = 0; }
+          else if (120 <= h && h < 180) { r = 0; g = c; b = x; }
+          else if (180 <= h && h < 240) { r = 0; g = x; b = c; }
+          else if (240 <= h && h < 300) { r = x; g = 0; b = c; }
+          else if (300 <= h && h < 360) { r = c; g = 0; b = x; }
+          r = Math.round((r + m) * 255);
+          g = Math.round((g + m) * 255);
+          b = Math.round((b + m) * 255);
+          return [r, g, b];
+        }
+
+        function rgbToHex(r, g, b) {
+          return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+        }
+
+        const h = hue, s = 80, l = 50;
+        const [r, g, b] = hslToRgb(h, s, l);
+        const hex = rgbToHex(r, g, b);
+        return { bb: hex, hex };
+      };
+
+      // Helper to extract message text including image alt/title text
+      function getMessageWithAllElementsText(messageElement) {
+        if (!messageElement) return '';
+        let result = '';
+        for (const node of messageElement.childNodes) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            result += node.textContent;
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            if (node.tagName === 'IMG') {
+              // For images, include alt or title if present, else fallback to src
+              result += node.getAttribute('alt') || node.getAttribute('title') || '';
+            } else if (node.tagName === 'A') {
+              // For links, include the text content
+              result += node.textContent;
+            } else {
+              // Recursively extract from children
+              result += getMessageWithAllElementsText(node);
+            }
+          }
+        }
+        return result;
+      }
+
+      // Format messages synchronously
+      let output = '';
+      if (format.toLowerCase() === 'bbcode') output = '[hide]\n';
+      for (const item of messageItems) {
+        if (item.style.contentVisibility === 'hidden' || item.style.fontSize === '0') continue;
+        const time = item.querySelector('.message-time')?.textContent || '';
+        const username = item.querySelector('.message-username')?.textContent || '';
+        const messageElement = item.querySelector('.message-text');
+        const message = getMessageWithAllElementsText(messageElement) || '';
+        const color = getUsernameColor(username);
+
+        // Build chatlog URL for this message's time
+        const date = dateInput.value || today;
+        const url = `https://klavogonki.ru/chatlogs/${date}.html#${time}`;
+
+        if (format.toLowerCase() === 'bbcode') {
+          // BBCode: convert emoticons :smile: to [img]...[/img], but do not replace :: globally to avoid breaking links to chatlogs
+          let bbMessage = message;
+          bbMessage = bbMessage.replace(/(^|\s|\():(\w+):(?=\s|\.|,|!|\?|$)/g, (m, pre, word) => `${pre}[img]https://klavogonki.ru/img/smilies/${word}.gif[/img]`);
+          output += `[url=${url}]${time}[/url] [color=${color.hex}]${username}[/color] ${bbMessage}\n`;
+        } else if (format.toLowerCase() === 'markdown') {
+          output += `[${time}](${url}) **${username}** ${message}\n`;
+        } else {
+          output += `[${time}] (${username}) ${message}\n`;
+        }
+      }
+      if (format.toLowerCase() === 'bbcode') output += '[/hide]\n';
+      if (!output) return;
+
+      // Save as file: Alt+Shift, Copy to clipboard: Alt only
+      if (event.altKey && event.shiftKey) {
+        // Save as file (synchronous)
+        const blob = new Blob([output], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `chatlogs_${dateInput.value || today}_${format}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); }, 100);
+      } else if (event.altKey) {
+        // Copy to clipboard (synchronous, still may fail if browser blocks)
+        navigator.clipboard.writeText(output).catch(() => {
+          alert('Failed to copy chatlogs.');
+        });
+      }
+      return;
+    }
 
     if (event.ctrlKey && !event.target.closest('.saved-chatlog-url')) {
       const currentUrlDate = extractDateFromUrl(chatLogsUrlForCopy);
