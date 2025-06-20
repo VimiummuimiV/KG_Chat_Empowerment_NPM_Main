@@ -64,16 +64,20 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           // Hide message if it is addressed to an ignored user (e.g., "username," or "username ")
           if (currentMessageText) {
             let addressedUsername = null;
-            if (/^[^\s,]+,/.test(currentMessageText)) { // Check for "username," format
+
+            if (/^[^\s,]+,/.test(currentMessageText)) {
               addressedUsername = currentMessageText.split(',')[0].trim();
-            } else if (/^[^\s]+ /.test(currentMessageText)) { // Check for "username " format
+            } else if (/^[^\s]+ /.test(currentMessageText)) {
               addressedUsername = currentMessageText.split(' ')[0].trim();
             }
-            if (addressedUsername && ignored.includes(addressedUsername)) {
-              const latinAddressedUsername = `to-${convertRussianUsernameToLatin(addressedUsername)}`;
-              node.classList.add('ignored-user', latinAddressedUsername);
-              node.style.display = 'none';
-              continue;
+
+            if (addressedUsername) {
+              if (ignored.includes(addressedUsername)) {
+                const latinAddressedUsername = `to-${convertRussianUsernameToLatin(addressedUsername)}`;
+                node.classList.add('ignored-user', latinAddressedUsername);
+                node.style.display = 'none';
+                continue;
+              }
             }
           }
 
