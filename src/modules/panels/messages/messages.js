@@ -506,18 +506,55 @@ async function showMessagesPanel() {
   copyPersonalMessagesButton.innerHTML = clipboardSVG;
   createCustomTooltip(copyPersonalMessagesButton, 'Copy Personal Messages');
 
+  // Helper to extract text and img titles from message-text
+  function getMessageTextWithImgTitles(element) {
+    let result = '';
+    for (const node of element.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        result += node.textContent;
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.tagName === 'IMG') {
+          result += node.title || node.alt || '';
+        } else {
+          result += getMessageTextWithImgTitles(node);
+        }
+      }
+    }
+    return result.trim();
+  }
+
   // Event listener to copy the text content of the messages container
   copyPersonalMessagesButton.addEventListener('click', () => {
+    let firstDateFound = false;
     const textContent = Array.from(document.querySelector('.messages-container').children)
       .filter(node => {
         const style = window.getComputedStyle(node);
         // Ignore hidden messages with contentVisibility 'hidden' or display 'none'
         return style.contentVisibility !== 'hidden' && style.display !== 'none';
       })
-      .map(node => node.classList.contains('date-item') ? node.textContent.trim() :
-        [node.querySelector('.message-time'), node.querySelector('.message-username'), node.querySelector('.message-text')]
-          .map(el => el?.textContent.trim()).filter(Boolean).join(' '))
-      .filter(Boolean).join(' \n');
+      .map(node => {
+        if (node.classList.contains('date-item')) {
+          const dateText = node.textContent.trim();
+          if (!firstDateFound) {
+            firstDateFound = true;
+            return dateText;
+          } else {
+            return '\n' + dateText;
+          }
+        } else {
+          const time = node.querySelector('.message-time')?.textContent.trim();
+          const username = node.querySelector('.message-username')?.textContent.trim();
+          const messageTextElement = node.querySelector('.message-text');
+          const message = messageTextElement ? getMessageTextWithImgTitles(messageTextElement) : '';
+          return [
+            time ? `[${time}]` : '',
+            username ? `(${username})` : '',
+            message || ''
+          ].filter(Boolean).join(' ');
+        }
+      })
+      .filter(Boolean)
+      .join('\n');
 
     // Check if there's content to copy
     if (textContent.trim()) {
