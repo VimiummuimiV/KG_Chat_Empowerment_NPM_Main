@@ -29,7 +29,7 @@ import {
 } from '../../helpers.js';
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
-import { showChatLogsPanel } from "../chatlogs/chatlogs.js"; // chatlogs
+import { showChatLogsPanel, fetchChatLogs } from "../chatlogs/chatlogs.js"; // chatlogs
 import { createCustomTooltip } from "../../tooltip.js"; // tooltip
 
 // definitions
@@ -646,10 +646,10 @@ async function showMessagesPanel() {
     });
   }
 
+  let lastDate = null; // Store the last processed date
   let lastUsername = null; // Store the last username processed
   let pingCheckCounter = 0; // Initialize a counter
   let maxPingChecks = 100; // Set the limit to 100
-  let lastDate = null; // Store the last processed date
 
   // Create an array to store message elements for later appending
   const messageElements = [];
@@ -669,6 +669,7 @@ async function showMessagesPanel() {
   // Load messages on initial panel open
   async function loadMessages(messages) {
     messagesContainer.children.length && messagesContainer.replaceChildren();
+
     // Loop through the messages and create elements
     Object.entries(messages).forEach(([, { time, date, username, usernameColor, message, type, userId }]) => {
       // If the current date is different from the last processed one, create a new date-item

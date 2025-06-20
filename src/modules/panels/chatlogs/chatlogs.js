@@ -67,7 +67,7 @@ export function createChatLogsButton(panel) {
 }
 
 // Function to fetch chat logs from the specified URL for a given date
-const fetchChatLogs = async (date, messagesContainer) => {
+export const fetchChatLogs = async (date, messagesContainer) => {
   // Clear the messagesContainer if it exists
   messagesContainer && (messagesContainer.innerHTML = '');
 
