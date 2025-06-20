@@ -441,12 +441,22 @@
   background-color: #144e9d;
 }
 
-.panel-header-toggle-media-messages {
-  background-color: darkslategray;
+.panel-header-toggle-media-messages-button {
+  background-color: darkslategray !important;
+  svg { stroke: #71c4c4 !important; }
+  &.active {
+    background-color: #71c4c4 !important;
+    svg { stroke: darkslategray !important; }
+  }
 }
 
-.toggle-mention-messages-button {
-  background-color: saddlebrown;
+.panel-header-toggle-mention-messages-button {
+  background-color: saddlebrown !important;
+  svg { stroke: #ffa07a !important; }
+  &.active {
+    background-color: #ffa07a !important;
+    svg { stroke: saddlebrown !important; }
+  }
 }
 
 .panel-header-one-day-back-button,

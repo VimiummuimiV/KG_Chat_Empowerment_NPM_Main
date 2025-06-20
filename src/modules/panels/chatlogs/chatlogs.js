@@ -276,6 +276,12 @@ function toggleMessagesVisibility(selector, toggle = true) {
       item.style.fontSize = '';
     }
   });
+
+  // Update toggle button active states
+  const mentionBtn = document.querySelector('.panel-header-toggle-mention-messages-button');
+  const mediaBtn = document.querySelector('.panel-header-toggle-media-messages-button');
+  if (mentionBtn) mentionBtn.classList.toggle('active', visibleMessages.mention);
+  if (mediaBtn) mediaBtn.classList.toggle('active', visibleMessages.media);
 }
 
 //   Function to display the chat logs panel
@@ -410,7 +416,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
   // Create a toggle mention messages component
   const toggleMentionMessages = document.createElement('div');
-  toggleMentionMessages.className = "large-button toggle-mention-messages-button";
+  toggleMentionMessages.className = "large-button panel-header-toggle-mention-messages-button";
   // Set the inner HTML of the toggle component with a suitable SVG or text
   toggleMentionMessages.innerHTML = personalMessagesSVG;
   createCustomTooltip(toggleMentionMessages, 'Toggle Mention Messages');
@@ -433,7 +439,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
   // Create a toggle media messages component
   const toggleMediaMessages = document.createElement('div');
-  toggleMediaMessages.className = "large-button panel-header-toggle-media-messages";
+  toggleMediaMessages.className = "large-button panel-header-toggle-media-messages-button";
   // Set the inner HTML of the toggle component with a suitable SVG or text
   toggleMediaMessages.innerHTML = mediaMessagesSVG;
   createCustomTooltip(toggleMediaMessages, 'Toggle Media Messages');

@@ -282,14 +282,13 @@ export const chatLogsSVG = `
   </svg>`;
 
 // Icon for media messages
-const mediaMessagesSVGStrokeColor = "rgb(113, 196, 196)";
 export const mediaMessagesSVG = `
   <svg xmlns="${svgUrl}"
       width="${iconSize - 4}"
       height="${iconSize - 4}"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="${mediaMessagesSVGStrokeColor}"
+      stroke="currentColor"
       stroke-width="${iconStrokeWidth}"
       stroke-linecap="round" stroke-linejoin="round" class="feather feather-film">
     <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
