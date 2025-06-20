@@ -248,8 +248,21 @@ async function getUserId(username) {
 // Initialize the visibility state for media and mention messages
 let visibleMessages = { media: false, mention: false };
 
-// Function to reset the visibleMessages object
-const resetVisibleMessages = () => { visibleMessages = { media: false, mention: false }; };
+// Function to reset the visibleMessages object and UI only if any filter is active
+const resetMessagesVisibility = () => {
+  if (!visibleMessages.media && !visibleMessages.mention) return;
+  visibleMessages = { media: false, mention: false };
+  // Remove 'active' class from toggles
+  const mentionBtn = document.querySelector('.panel-header-toggle-mention-messages-button');
+  const mediaBtn = document.querySelector('.panel-header-toggle-media-messages-button');
+  if (mentionBtn) mentionBtn.classList.remove('active');
+  if (mediaBtn) mediaBtn.classList.remove('active');
+  // Show all messages
+  document.querySelectorAll('.message-item').forEach(item => {
+    item.style.contentVisibility = 'visible';
+    item.style.fontSize = '';
+  });
+};
 
 // Function to toggle or apply visibility of messages
 function toggleMessagesVisibility(selector, toggle = true) {
@@ -1009,6 +1022,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
     const usernameElement = event.target.closest('.message-username');
     const messageTextElement = event.target.closest('.message-text');
     if (messageItem) {
+      resetMessagesVisibility();
       if (timeElement) {
         const date = dateInput.value;
         const time = timeElement.textContent;
@@ -1033,12 +1047,11 @@ export async function showChatLogsPanel(personalMessagesDate) {
         }
         return;
       }
-      if (messageTextElement) {
-        await scrollToMiddle(chatLogsContainer, messageItem);
-        return;
-      }
+
       // Default: scroll to middle on message item click
-      await scrollToMiddle(chatLogsContainer, messageItem);
+      requestAnimationFrame(async () => {
+        await scrollToMiddle(chatLogsContainer, messageItem);
+      });
     }
   });
 
