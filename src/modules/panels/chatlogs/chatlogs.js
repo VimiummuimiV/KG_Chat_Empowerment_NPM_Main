@@ -251,38 +251,29 @@ let visibleMessages = { media: false, mention: false };
 // Function to reset the visibleMessages object
 const resetVisibleMessages = () => { visibleMessages = { media: false, mention: false }; };
 
-// Function to toggle the visibility of message items based on the given selector
-async function toggleMessagesVisibility(selector) {
-  // Determine if the selector is 'media' or 'mention' and update visibility states
-  const isMedia = selector === 'media';
-  const isMention = selector === 'mention';
-
-  // Update the visibility state: toggle the selected type and reset the other
-  visibleMessages = {
-    media: isMedia ? !visibleMessages.media : false, // Toggle media visibility
-    mention: isMention ? !visibleMessages.mention : false // Toggle mention visibility
-  };
-
-  // Iterate over all message items and apply the corresponding visibility rules
+// Function to toggle or apply visibility of messages
+function toggleMessagesVisibility(selector, toggle = true) {
+  if (toggle && selector) {
+    const isMedia = selector === 'media';
+    const isMention = selector === 'mention';
+    visibleMessages = {
+      media: isMedia ? !visibleMessages.media : false,
+      mention: isMention ? !visibleMessages.mention : false
+    };
+  }
+  // Apply visibility based on current visibleMessages state
   document.querySelectorAll('.message-item').forEach(item => {
-    // Check if the message item contains media or mention content
     const hasMediaClass = item.querySelector('.media');
     const hasMentionClass = item.querySelector('.mention');
-
-    // Case: Showing only media elements (when 'media' is toggled)
     if (visibleMessages.media) {
-      item.style.contentVisibility = hasMediaClass ? 'visible' : 'hidden'; // Show/hide based on media class
-      item.style.fontSize = hasMediaClass ? '' : '0'; // Adjust font size based on visibility
-    }
-    // Case: Showing only mention elements (when 'mention' is toggled)
-    else if (visibleMessages.mention) {
-      item.style.contentVisibility = hasMentionClass ? 'visible' : 'hidden'; // Show/hide based on mention class
-      item.style.fontSize = hasMentionClass ? '' : '0'; // Adjust font size based on visibility
-    }
-    // Case: Show all messages when neither 'media' nor 'mention' is toggled
-    else {
-      item.style.contentVisibility = 'visible'; // Ensure the message is visible
-      item.style.fontSize = ''; // Reset font size to default
+      item.style.contentVisibility = hasMediaClass ? 'visible' : 'hidden';
+      item.style.fontSize = hasMediaClass ? '' : '0';
+    } else if (visibleMessages.mention) {
+      item.style.contentVisibility = hasMentionClass ? 'visible' : 'hidden';
+      item.style.fontSize = hasMentionClass ? '' : '0';
+    } else {
+      item.style.contentVisibility = 'visible';
+      item.style.fontSize = '';
     }
   });
 }
@@ -426,7 +417,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
   // Add a click event listener to toggle the visibility of messages without mentions
   toggleMentionMessages.addEventListener('click', async () => {
-    await toggleMessagesVisibility('mention');
+    toggleMessagesVisibility('mention');
   });
 
   // Create a new div element for the toggle mention messages counter
@@ -451,7 +442,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
   // Add a click event listener to toggle the visibility of media messages
   toggleMediaMessages.addEventListener('click', async () => {
-    await toggleMessagesVisibility('media');
+    toggleMessagesVisibility('media');
   });
 
   // Create a new div element for the toggle media messages counter
@@ -653,7 +644,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
     await loadChatLogs(currentDate); // Load chat logs for the updated date
     showDateInput(dateInput);
     focusOnSearchField();
-    resetVisibleMessages();
   });
 
   // Event listener for the chevron right button
@@ -663,7 +653,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
     await loadChatLogs(currentDate); // Load chat logs for the updated date
     showDateInput(dateInput);
     focusOnSearchField();
-    resetVisibleMessages();
   });
 
   // Event listener for the shuffle button
@@ -672,7 +661,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
     await loadChatLogs(randomDate); // Load chat logs for the random date
     showDateInput(dateInput);
     focusOnSearchField();
-    resetVisibleMessages();
   });
 
   // Append buttons to the control buttons container
@@ -841,6 +829,9 @@ export async function showChatLogsPanel(personalMessagesDate) {
       loadTotalMessageCount();
       // Call the filter function with the updated input value
       chatlogsSearchInput.value.length > 0 && filterItems(chatlogsSearchInput.value);
+
+      // Apply current visibility settings without toggling
+      toggleMessagesVisibility(null, false);
     });
 
   };
