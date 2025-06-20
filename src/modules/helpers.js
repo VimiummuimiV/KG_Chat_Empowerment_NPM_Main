@@ -1041,13 +1041,39 @@ export function removeIgnoredUserMessages() {
   allMessages.forEach(message => {
     const usernameElement = message.querySelector('.username'); // Adjust selector if needed
     const username = usernameElement?.textContent?.replace(/[<>]/g, '') || null;
+    const messageText = message.textContent || '';
 
+    // Hide message if the sender is ignored
     if (username && ignored.includes(username)) {
-      // console.log(`Hidden message from ignored user: ${username}`);
-      // Convert Cyrillic username to Latin
-      const latinUsername = convertRussianUsernameToLatin(username);
+      const latinUsername = `from-${convertRussianUsernameToLatin(username)}`;
       message.classList.add('ignored-user', latinUsername);
-      message.style.display = 'none'; // Hide the message
+      message.style.display = 'none';
+      return;
+    }
+
+    // Hide message if it is addressed to an ignored user (e.g., "username," or "username ")
+    let addressedUsername = null;
+    if (/^[^\s,]+,/.test(messageText)) {
+      addressedUsername = messageText.split(',')[0].trim();
+    } else if (/^[^\s]+ /.test(messageText)) {
+      addressedUsername = messageText.split(' ')[0].trim();
+    }
+    if (addressedUsername && ignored.includes(addressedUsername)) {
+      const latinAddressedUsername = `to-${convertRussianUsernameToLatin(addressedUsername)}`;
+      message.classList.add('ignored-user', latinAddressedUsername);
+      message.style.display = 'none';
+      return;
+    }
+
+    // Hide message if it contains any ignored username anywhere in the text
+    if (ignored.some(ignoredUser => messageText.includes(ignoredUser))) {
+      ignored.forEach(ignoredUser => {
+        if (messageText.includes(ignoredUser)) {
+          const latinIgnored = `to-${convertRussianUsernameToLatin(ignoredUser)}`;
+          message.classList.add('ignored-user', latinIgnored);
+        }
+      });
+      message.style.display = 'none';
     }
   });
 }

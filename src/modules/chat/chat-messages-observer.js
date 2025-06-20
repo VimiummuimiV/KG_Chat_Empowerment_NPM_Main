@@ -47,9 +47,6 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           const currentMessageText = latestMessageData?.messageText || null;
           const currentMessageUsername = latestMessageData?.usernameText || null;
 
-          // Convert Cyrillic username to Latin
-          const latinUsername = convertRussianUsernameToLatin(currentMessageUsername);
-
           // Check for a ban message and play sound if detected
           if (isBanMessage(currentMessageText)) {
             console.log('Ban message detected:', currentMessageText);
@@ -58,9 +55,26 @@ const newMessagesObserver = new MutationObserver(async mutations => {
 
           // Hide message if the username is in the ignored list
           if (currentMessageUsername && ignored.includes(currentMessageUsername)) {
+            const latinUsername = `from-${convertRussianUsernameToLatin(currentMessageUsername)}`;
             node.classList.add('ignored-user', latinUsername);
             node.style.display = 'none';
             continue;
+          }
+
+          // Hide message if it is addressed to an ignored user (e.g., "username," or "username ")
+          if (currentMessageText) {
+            let addressedUsername = null;
+            if (/^[^\s,]+,/.test(currentMessageText)) { // Check for "username," format
+              addressedUsername = currentMessageText.split(',')[0].trim();
+            } else if (/^[^\s]+ /.test(currentMessageText)) { // Check for "username " format
+              addressedUsername = currentMessageText.split(' ')[0].trim();
+            }
+            if (addressedUsername && ignored.includes(addressedUsername)) {
+              const latinAddressedUsername = `to-${convertRussianUsernameToLatin(addressedUsername)}`;
+              node.classList.add('ignored-user', latinAddressedUsername);
+              node.style.display = 'none';
+              continue;
+            }
           }
 
           // Get sound switcher and message mode elements
