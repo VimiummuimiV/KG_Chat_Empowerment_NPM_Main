@@ -245,58 +245,6 @@ async function getUserId(username) {
   return null; // Return null if no user found
 }
 
-// Initialize the visibility state for media and mention messages
-let visibleMessages = { media: false, mention: false };
-
-// Function to reset the visibleMessages object and UI only if any filter is active
-const resetMessagesVisibility = () => {
-  if (!visibleMessages.media && !visibleMessages.mention) return;
-  visibleMessages = { media: false, mention: false };
-  // Remove 'active' class from toggles
-  const mentionBtn = document.querySelector('.panel-header-toggle-mention-messages-button');
-  const mediaBtn = document.querySelector('.panel-header-toggle-media-messages-button');
-  if (mentionBtn) mentionBtn.classList.remove('active');
-  if (mediaBtn) mediaBtn.classList.remove('active');
-  // Show all messages
-  document.querySelectorAll('.message-item').forEach(item => {
-    item.style.contentVisibility = 'visible';
-    item.style.fontSize = '';
-  });
-};
-
-// Function to toggle or apply visibility of messages
-function toggleMessagesVisibility(selector, toggle = true) {
-  if (toggle && selector) {
-    const isMedia = selector === 'media';
-    const isMention = selector === 'mention';
-    visibleMessages = {
-      media: isMedia ? !visibleMessages.media : false,
-      mention: isMention ? !visibleMessages.mention : false
-    };
-  }
-  // Apply visibility based on current visibleMessages state
-  document.querySelectorAll('.message-item').forEach(item => {
-    const hasMediaClass = item.querySelector('.media');
-    const hasMentionClass = item.querySelector('.mention');
-    if (visibleMessages.media) {
-      item.style.contentVisibility = hasMediaClass ? 'visible' : 'hidden';
-      item.style.fontSize = hasMediaClass ? '' : '0';
-    } else if (visibleMessages.mention) {
-      item.style.contentVisibility = hasMentionClass ? 'visible' : 'hidden';
-      item.style.fontSize = hasMentionClass ? '' : '0';
-    } else {
-      item.style.contentVisibility = 'visible';
-      item.style.fontSize = '';
-    }
-  });
-
-  // Update toggle button active states
-  const mentionBtn = document.querySelector('.panel-header-toggle-mention-messages-button');
-  const mediaBtn = document.querySelector('.panel-header-toggle-media-messages-button');
-  if (mentionBtn) mentionBtn.classList.toggle('active', visibleMessages.mention);
-  if (mediaBtn) mediaBtn.classList.toggle('active', visibleMessages.media);
-}
-
 //   Function to display the chat logs panel
 // Load initially with default date or date given by personal messages panel with parameter date
 export async function showChatLogsPanel(personalMessagesDate) {
@@ -1144,7 +1092,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
     const timeElement = event.target.closest('.message-time');
     const usernameElement = event.target.closest('.message-username');
     const messageTextElement = event.target.closest('.message-text');
-    if (messageItem) {
+    if (messageItem || messageTextElement) {
       resetMessagesVisibility();
       if (timeElement) {
         const date = dateInput.value;
@@ -1279,4 +1227,46 @@ export async function showChatLogsPanel(personalMessagesDate) {
       return;
     }
   });
+
+  // Panel-local state for message visibility
+  let visibleMessages = { media: false, mention: false };
+
+  // Toggle or apply visibility of messages using direct references
+  function toggleMessagesVisibility(selector, toggle = true) {
+    if (toggle && selector) {
+      const isMedia = selector === 'media';
+      const isMention = selector === 'mention';
+      visibleMessages = {
+        media: isMedia ? !visibleMessages.media : false,
+        mention: isMention ? !visibleMessages.mention : false
+      };
+    }
+    // Apply visibility based on current visibleMessages state
+    chatLogsContainer.querySelectorAll('.message-item').forEach(item => {
+      const hasMediaClass = item.querySelector('.media');
+      const hasMentionClass = item.querySelector('.mention');
+      if (visibleMessages.media) {
+        item.style.contentVisibility = hasMediaClass ? 'visible' : 'hidden';
+        item.style.fontSize = hasMediaClass ? '' : '0';
+      } else if (visibleMessages.mention) {
+        item.style.contentVisibility = hasMentionClass ? 'visible' : 'hidden';
+        item.style.fontSize = hasMentionClass ? '' : '0';
+      } else {
+        item.style.contentVisibility = 'visible';
+        item.style.fontSize = '';
+      }
+    });
+    // Update toggle button active states using direct references
+    toggleMentionMessages.classList.toggle('active', visibleMessages.mention);
+    toggleMediaMessages.classList.toggle('active', visibleMessages.media);
+  }
+
+  // Reset all filters and reveal all messages using direct references
+  function resetMessagesVisibility() {
+    visibleMessages = { media: false, mention: false };
+    toggleMentionMessages.classList.remove('active');
+    toggleMediaMessages.classList.remove('active');
+    chatlogsSearchInput.value = '';
+    filterItems('');
+  }
 }
