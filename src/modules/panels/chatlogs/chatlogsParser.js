@@ -221,6 +221,10 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       }
     }
     resetButton();
+    // Always update userlist after parsing (even if stopped early)
+    if (messagesContainer) {
+      renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'), usernameHueMap);
+    }
   }
 
   function stopParsing() {
@@ -231,7 +235,6 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
 
   function resetButton() {
     parseButton.innerHTML = playSVG;
-    parseButton.title = "Parse Chat Logs";
     isParsing = false;
     stopRequested = false;
   }
