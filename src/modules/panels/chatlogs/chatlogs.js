@@ -947,8 +947,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
     // Normalize query by removing underscores and hyphens, then trimming spaces
     const queryWithoutSymbols = normalizeText(query).trim();
 
-    // Retrieve message items within the filterItems function
-    const messageItems = Array.from(document.querySelectorAll('.chat-logs-container > .message-item'));
+    // Retrieve message and date items within the filterItems function
+    const allElements = Array.from(
+      document.querySelectorAll(
+        '.chat-logs-container > .date-item, ' +
+        '.chat-logs-container > .message-item'
+      )
+    );
+    const messageItems = allElements.filter(el => el.classList.contains('message-item'));
 
     const messageDetails = getMessageDetails(messageItems); // Get the message details
     const isEmptyQuery = !queryWithoutSymbols;
@@ -992,6 +998,27 @@ export async function showChatLogsPanel(personalMessagesDate) {
       // Set font size to 0 for hidden messages to maintain layout or remove the font size property
       messageContainer.style.fontSize = shouldDisplay ? '' : '0';
     });
+
+    // --- Hide date headers with no visible messages ---
+    // Find all date-item elements
+    const dateItems = allElements.filter(el => el.classList.contains('date-item'));
+    for (let i = 0; i < dateItems.length; i++) {
+      const dateItem = dateItems[i];
+      // Find all message-items between this dateItem and the next dateItem
+      let nextDateIndex = allElements.indexOf(dateItem) + 1;
+      let hasVisibleMessage = false;
+      while (nextDateIndex < allElements.length && !allElements[nextDateIndex].classList.contains('date-item')) {
+        const el = allElements[nextDateIndex];
+        if (el.classList.contains('message-item') && el.style.contentVisibility !== 'hidden' && el.style.fontSize !== '0') {
+          hasVisibleMessage = true;
+          break;
+        }
+        nextDateIndex++;
+      }
+      // Show or hide the date header using contentVisibility and fontSize
+      dateItem.style.contentVisibility = hasVisibleMessage ? 'visible' : 'hidden';
+      dateItem.style.fontSize = hasVisibleMessage ? '' : '0';
+    }
   }
 
   // Define the event handler function for chat logs panel
