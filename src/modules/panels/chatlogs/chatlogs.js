@@ -16,8 +16,7 @@ import {
   chevronLeftSVG,
   chevronRightSVG,
   shuffleSVG,
-  playSVG,
-  pauseSVG
+  playSVG
 } from "../../icons.js";
 
 // helpers
@@ -36,12 +35,16 @@ import {
 // definitions
 import {
   today,
+  minimalChatlogsDate,
   state
 } from '../../definitions.js';
 
 import { addJumpEffect, addPulseEffect, addShakeEffect } from "../../animations.js"; // animations
 import { settingsState } from "../../panels/settings/settings.js"; // settings
 import { createCustomTooltip } from "../../tooltip.js";
+import { setupChatLogsParser } from './chatlogsParser.js';
+import { renderChatMessages } from './chatlogsMessages.js';
+import { renderActiveUsers } from './chatlogsUserlist.js';
 
 const { ignored } = settingsState;
 
@@ -204,10 +207,8 @@ export const fetchChatLogs = async (date, messagesContainer) => {
   }
 }
 
-const minDate = '2012-02-12'; // Define the minimum date
-
 function getRandomDateInRange() {
-  const startDate = new Date(minDate); // Start date
+  const startDate = new Date(minimalChatlogsDate); // Start date
   const endDate = new Date(); // Current date
 
   // Calculate the difference in milliseconds
@@ -352,6 +353,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
   parseButton.className = 'large-button panel-header-parse-button';
   parseButton.innerHTML = playSVG;
   createCustomTooltip(parseButton, 'Parse Chat Logs');
+  setupChatLogsParser(parseButton, chatLogsPanel);
 
   panelControlButtons.appendChild(parseButton);
 
@@ -692,7 +694,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
     if (newState === 'shown') {
       // Call renderActiveUsers to update the display of active users based on their message counts
-      renderActiveUsers(usernameMessageCountMap, chatLogsPanel);
+      renderActiveUsers(usernameMessageCountMap, chatLogsPanel, usernameHueMap);
     } else {
       // Remove the active users container if the state is hidden
       const activeUsersContainer = chatLogsPanel.querySelector('.active-users');
@@ -807,7 +809,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Define an object to store the hue for each username
   const usernameHueMap = {};
   const hueStep = 15;
-  let lastDisplayedUsername = null; // Variable to track the last displayed username
   // Initialize a map to track message counts for unique usernames
   const usernameMessageCountMap = new Map();
   // Store the current chat logs URL for clipboard copy.
@@ -827,9 +828,9 @@ export async function showChatLogsPanel(personalMessagesDate) {
     // Normalize and format the date
     const formattedDate = new Intl.DateTimeFormat('en-CA').format(new Date(normalizeDate(date)));
 
-    // Check if the provided date is out of bounds (less than minDate or greater than today)
-    if (formattedDate < minDate || formattedDate > today) {
-      alert(formattedDate < minDate ? `The selected date cannot be earlier than ${minDate}.` : "You cannot load a future date.");
+    // Check if the provided date is out of bounds (less than minimalChatlogsDate or greater than today)
+    if (formattedDate < minimalChatlogsDate || formattedDate > today) {
+      alert(formattedDate < minimalChatlogsDate ? `The selected date cannot be earlier than ${minimalChatlogsDate}.` : "You cannot load a future date.");
       return; // Exit the function if the date is invalid
     }
 
@@ -851,70 +852,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
     // Clear previous counts
     usernameMessageCountMap.clear();
 
-    chatlogs.forEach(async ({ time, username, message }) => {
-      // Update message count for each unique username
-      usernameMessageCountMap.set(username, (usernameMessageCountMap.get(username) || 0) + 1);
-
-      // Create a container for each message
-      const messageContainer = document.createElement('div');
-      messageContainer.classList.add('message-item');
-
-      // Create time element
-      const timeElement = document.createElement('span');
-      timeElement.className = 'message-time';
-      // Update the timeElement's text content with the adjusted time
-      timeElement.textContent = time;
-
-      // Create username element
-      const usernameElement = document.createElement('span');
-      usernameElement.className = 'message-username';
-      usernameElement.textContent = username; // Use the original username for display
-
-      // Check if the hue for this username is already stored
-      let hueForUsername = usernameHueMap[username]; // Use the original username as the key
-
-      // If the hue is not stored, generate a new random hue with the specified step
-      if (!hueForUsername) {
-        hueForUsername = Math.floor(Math.random() * (210 / hueStep)) * hueStep; // Limit hue to a maximum of 210
-        // Store the generated hue for this username
-        usernameHueMap[username] = hueForUsername; // Store hue using the original username as the key
-      }
-
-      // Apply the hue color to the username element
-      usernameElement.style.color = `hsl(${hueForUsername}, 80%, 50%)`;
-
-      // Create message text element
-      const messageTextElement = document.createElement('span');
-      messageTextElement.className = 'message-text';
-
-      // Replace smiley codes with <img> tags, and then wrap links with <a> tags
-      messageTextElement.innerHTML = message
-        // Replace smiley codes like :word: with <img> tags
-        .replace(/:(?=\w*[a-zA-Z])(\w+):/g,
-          (_, word) => `<img src="/img/smilies/${word}.gif" alt=":${word}:" title=":${word}:" class="smile">`
-        )
-        // Wrap http and https links with <a> tags
-        .replace(/(https?:\/\/[^\s]+)/gi,
-          (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
-        );
-
-      // Apply margin for the first message of a new user
-      messageContainer.style.marginTop = lastDisplayedUsername !== username ? '0.6em' : '';
-
-      // Update the last displayed username
-      lastDisplayedUsername = username;
-
-      // Append elements to the message container
-      messageContainer.appendChild(timeElement);
-      messageContainer.appendChild(usernameElement);
-      messageContainer.appendChild(messageTextElement);
-
-      // Append the message container to the chat logs container
-      chatLogsContainer.appendChild(messageContainer);
-    });
+    // Use the renderer to render all messages and get the updated usernameMessageCountMap
+    const updatedMap = renderChatMessages(chatlogs, chatLogsContainer, usernameHueMap);
+    // Copy values to the main map for use elsewhere
+    usernameMessageCountMap.clear();
+    for (const [k, v] of updatedMap.entries()) usernameMessageCountMap.set(k, v);
 
     // Call renderActiveUsers to update the display of active users based on their message counts
-    renderActiveUsers(usernameMessageCountMap, chatLogsPanel, chatlogsSearchInput);
+    renderActiveUsers(usernameMessageCountMap, chatLogsPanel, usernameHueMap);
 
     requestAnimationFrame(() => {
       convertImageLinksToImage('chatlogsMessages');
@@ -936,61 +881,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
   };
 
-  // Renders the active users based on their message counts from the provided map
-  function renderActiveUsers(usernameMessageCountMap, parentContainer, searchField) {
-    // Check if active users should be shown
-    if (localStorage.getItem('shouldShowActiveUsers') === 'shown') {
-      // Check if the activeUsers container already exists
-      let activeUsers = parentContainer.querySelector('.active-users');
-
-      // If it doesn't exist, create it
-      if (!activeUsers) {
-        activeUsers = document.createElement('div');
-        activeUsers.className = 'active-users';
-
-        // Append the newly created activeUsers container to the parent container
-        parentContainer.appendChild(activeUsers);
-      }
-
-      // Sort usernames by message count in descending order
-      const sortedUsernames = Array.from(usernameMessageCountMap.entries())
-        .sort(([, countA], [, countB]) => countB - countA); // Sort in descending order
-
-      // Clear previous user list in the activeUsers container
-      activeUsers.innerHTML = ''; // Clear previous user list
-
-      // Append sorted users to the activeUsers container
-      sortedUsernames.forEach(([username, count]) => {
-        // Create a user element
-        const userElement = document.createElement('div');
-        userElement.className = 'active-user-item';
-
-        // Create nickname element
-        const nicknameElement = document.createElement('span');
-        nicknameElement.className = 'active-user-name';
-        nicknameElement.textContent = username;
-
-        // Fetch the color for the username from the hue map
-        const userHue = usernameHueMap[username] || 0; // Fallback to 0 if hue not found
-        nicknameElement.style.color = `hsl(${userHue}, 80%, 50%)`; // Apply the hue color
-
-        // Create message count element
-        const messageCountElement = document.createElement('span');
-        messageCountElement.className = 'active-user-messages-count';
-        messageCountElement.textContent = count;
-        messageCountElement.style.color = `hsl(${userHue}, 80%, 50%)`; // Apply the hue color
-        messageCountElement.style.backgroundColor = `hsla(${userHue}, 80%, 50%, 0.2)`;
-
-        // Append elements to user element
-        userElement.appendChild(messageCountElement);
-        userElement.appendChild(nicknameElement);
-
-        // Append user element to activeUsers container
-        activeUsers.appendChild(userElement);
-      });
-    }
-  }
-
   // Load chat logs based on the provided date or default to today's date
   const dateToLoad = personalMessagesDate || today; // Use personalMessagesDate if available
   await loadChatLogs(dateToLoad); // Load chat logs for the determined date
@@ -1000,7 +890,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Set the max attribute to today's date
   dateInput.max = today; // Set the maximum value to today's date
   // Set the min attribute to '2012-02-12'
-  dateInput.min = minDate; // Assign the minimum date
+  dateInput.min = minimalChatlogsDate; // Assign the minimum date
   dateInput.value = dateToLoad; // Set the value to the date to load
   createCustomTooltip(dateInputToggle, `Current date: ${dateToLoad}`); // Create a tooltip for the date input toggle
 

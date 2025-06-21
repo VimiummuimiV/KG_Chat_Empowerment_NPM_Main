@@ -87,20 +87,6 @@
     grid-area: messages;
   }
 
-  .date-item {
-    position: relative;
-    font: 1em Montserrat, sans-serif;
-    color: burlywood;
-    background-color: rgba(222, 184, 135, 0.1);
-    width: fit-content;
-    margin: 2em 1em 1em;
-    padding: 0.4em 0.8em;
-    text-align: center;
-    border-radius: 0.4em !important;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
   .message-item {
     padding: 0.2em;
   }

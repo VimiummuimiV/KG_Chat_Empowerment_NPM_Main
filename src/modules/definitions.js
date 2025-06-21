@@ -10,6 +10,7 @@ export const myNickname = document.querySelector('.userpanel .user-block .user-d
 export const myUserId = document.querySelector('a.drop-btn.mail')?.href?.match(/\/u\/#\/(\d+)\/messages\//)?.[1];
 // create today's date in the format 'YYYY-MM-DD'
 export const today = new Intl.DateTimeFormat('en-CA').format(new Date());
+export const minimalChatlogsDate = '2012-02-12'; // Define the minimum date
 
 // Define voice speed limits
 export const minVoiceSpeed = 0;
