@@ -433,20 +433,20 @@ export async function fetchJSON(url) {
 
 // Helper function to get Exact user ID by username via the search API
 export async function getExactUserIdByName(userName) {
-  // Define the search API URL
-  const searchApiUrl = `https://klavogonki.ru/api/profile/search-users?query=${userName}`;
-
-  // Get search results from the API
-  const searchResults = await fetchJSON(searchApiUrl);
-
-  // Ensure search results exist and contain data
-  if (!searchResults.all?.length) throw new Error(`User ${userName} not found.`);
-
-  // Return the ID of the user with the exact matching login
-  const user = searchResults.all.find(user => user.login === userName);
-  if (!user) throw new Error(`Exact match for user ${userName} not found.`);
-
-  return user.id;
+  try {
+    // Define the search API URL
+    const searchApiUrl = `https://klavogonki.ru/api/profile/search-users?query=${userName}`;
+    // Get search results from the API
+    const searchResults = await fetchJSON(searchApiUrl);
+    // Ensure search results exist and contain data
+    if (!searchResults.all?.length) return false;
+    // Return the ID of the user with the exact matching login
+    const user = searchResults.all.find(user => user.login === userName);
+    if (!user) return false;
+    return user.id;
+  } catch (error) {
+    return false;
+  }
 }
 
 // Helper function to get all user IDs by username via the search API

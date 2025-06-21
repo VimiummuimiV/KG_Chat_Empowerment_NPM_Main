@@ -3,6 +3,7 @@ import { minimalChatlogsDate } from "../../definitions.js";
 import { fetchChatLogs } from './chatlogs.js';
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
+import { getExactUserIdByName } from '../../helpers.js';
 
 /**
  * Attach parse logic to the parse button in the chat logs panel header.
@@ -152,11 +153,31 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     }
   }
 
-  // Helper to prompt for usernames
+  // Helper to prompt for usernames and validate them using getExactUserIdByName
   async function promptUsernames() {
-    const usernames = prompt("Enter username(s) to parse (comma-separated):", "");
-    if (!usernames) return null;
-    return usernames.split(',').map(u => u.trim()).filter(Boolean);
+    let usernamesInput = "";
+    while (true) {
+      usernamesInput = prompt("Enter username(s) to parse (comma-separated):", usernamesInput || "");
+      if (!usernamesInput) return null;
+      const usernames = usernamesInput.split(',').map(u => u.trim()).filter(Boolean);
+      if (usernames.length === 0) return null;
+      // Validate each username using getExactUserIdByName
+      const invalidUsernames = [];
+      for (const username of usernames) {
+        const userId = await getExactUserIdByName(username);
+        if (!userId) invalidUsernames.push(username);
+      }
+      if (invalidUsernames.length > 0) {
+        alert(
+          invalidUsernames.length === 1
+            ? `User not found: ${invalidUsernames[0]}`
+            : `The following usernames are invalid or not found:\n${invalidUsernames.join(', ')}`
+        );
+        // Loop again, keeping the previous value
+        continue;
+      }
+      return usernames;
+    }
   }
 
   // Main parse logic
