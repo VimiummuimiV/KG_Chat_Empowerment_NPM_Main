@@ -519,8 +519,13 @@ export async function showChatLogsPanel(personalMessagesDate) {
       let format = formatMap[formatNum.trim()];
       if (!format) format = 'bbcode';
 
-      // Gather visible messages synchronously
-      const messageItems = Array.from(document.querySelectorAll('.chat-logs-container > .message-item'));
+      // Gather visible messages and date headers synchronously
+      const chatLogElements = Array.from(
+        document.querySelectorAll(
+          '.chat-logs-container > .date-item, ' +
+          '.chat-logs-container > .message-item'
+        )
+      );
 
       // Helper to get username color (BBCode/Markdown)
       const getUsernameColor = (username) => {
@@ -583,30 +588,46 @@ export async function showChatLogsPanel(personalMessagesDate) {
         return result;
       }
 
-      // Format messages synchronously
+      // Format messages and date headers synchronously
       let output = '';
+      let isFirstLine = true;
       if (format.toLowerCase() === 'bbcode') output = '[hide]\n';
-      for (const item of messageItems) {
-        if (item.style.contentVisibility === 'hidden' || item.style.fontSize === '0') continue;
-        const time = item.querySelector('.message-time')?.textContent || '';
-        const username = item.querySelector('.message-username')?.textContent || '';
-        const messageElement = item.querySelector('.message-text');
-        const message = getMessageWithAllElementsText(messageElement) || '';
-        const color = getUsernameColor(username);
-
-        // Build chatlog URL for this message's time
-        const date = dateInput.value || today;
-        const url = `https://klavogonki.ru/chatlogs/${date}.html#${time}`;
-
-        if (format.toLowerCase() === 'bbcode') {
-          // BBCode: convert emoticons :smile: to [img]...[/img], but do not replace :: globally to avoid breaking links to chatlogs
-          let bbMessage = message;
-          bbMessage = bbMessage.replace(/(^|\s|\():(\w+):(?=\s|\.|,|!|\?|$)/g, (m, pre, word) => `${pre}[img]https://klavogonki.ru/img/smilies/${word}.gif[/img]`);
-          output += `[url=${url}]${time}[/url] [color=${color.hex}]${username}[/color] ${bbMessage}\n`;
-        } else if (format.toLowerCase() === 'markdown') {
-          output += `[${time}](${url}) **${username}** ${message}\n`;
-        } else {
-          output += `[${time}] (${username}) ${message}\n`;
+      for (const el of chatLogElements) {
+        if (el.classList.contains('date-item')) {
+          // Date header
+          const dateText = el.textContent.trim();
+          if (!isFirstLine) {
+            if (format.toLowerCase() === 'bbcode') output += '\n';
+            else if (format.toLowerCase() === 'markdown') output += '\n';
+            else output += '\n';
+          }
+          if (format.toLowerCase() === 'bbcode') {
+            output += `[b][color=gray]${dateText}[/color][/b]\n`;
+          } else if (format.toLowerCase() === 'markdown') {
+            output += `**${dateText}**\n`;
+          } else {
+            output += `${dateText}\n`;
+          }
+          isFirstLine = false;
+        } else if (el.classList.contains('message-item')) {
+          if (el.style.contentVisibility === 'hidden' || el.style.fontSize === '0') continue;
+          const time = el.querySelector('.message-time')?.textContent || '';
+          const username = el.querySelector('.message-username')?.textContent || '';
+          const messageElement = el.querySelector('.message-text');
+          const message = getMessageWithAllElementsText(messageElement) || '';
+          const color = getUsernameColor(username);
+          const date = dateInput.value || today;
+          const url = `https://klavogonki.ru/chatlogs/${date}.html#${time}`;
+          if (format.toLowerCase() === 'bbcode') {
+            let bbMessage = message;
+            bbMessage = bbMessage.replace(/(^|\s|\():(\w+):(?=\s|\.|,|!|\?|$)/g, (m, pre, word) => `${pre}[img]https://klavogonki.ru/img/smilies/${word}.gif[/img]`);
+            output += `[url=${url}]${time}[/url] [color=${color.hex}]${username}[/color] ${bbMessage}\n`;
+          } else if (format.toLowerCase() === 'markdown') {
+            output += `[${time}](${url}) **${username}** ${message}\n`;
+          } else {
+            output += `[${time}] (${username}) ${message}\n`;
+          }
+          isFirstLine = false;
         }
       }
       if (format.toLowerCase() === 'bbcode') output += '[/hide]\n';
