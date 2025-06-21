@@ -654,3 +654,32 @@ export const addSVG = `
     <line x1="12" y1="5" x2="12" y2="19"></line>
     <line x1="5" y1="12" x2="19" y2="12"></line>
   </svg>`;
+
+// Inline SVG source for the "play" icon (parse inception button)
+const playSVGStrokeColor = "hsl(150, 70%, 60%)";
+export const playSVG = `
+  <svg xmlns="${svgUrl}"
+      width="${iconSize - 4}"
+      height="${iconSize - 4}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="${playSVGStrokeColor}"
+      stroke-width="${iconStrokeWidth}"
+      stroke-linecap="round" stroke-linejoin="round" class="feather feather-play">
+    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+  </svg>`;
+
+// Inline SVG source for the "pause" icon (parse pause button)
+const pauseSVGStrokeColor = "hsl(150, 70%, 60%)";
+export const pauseSVG = `
+  <svg xmlns="${svgUrl}"
+      width="${iconSize - 4}"
+      height="${iconSize - 4}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="${pauseSVGStrokeColor}"
+      stroke-width="${iconStrokeWidth}"
+      stroke-linecap="round" stroke-linejoin="round" class="feather feather-pause">
+    <rect x="6" y="4" width="4" height="16"></rect>
+    <rect x="14" y="4" width="4" height="16"></rect>
+  </svg>`;

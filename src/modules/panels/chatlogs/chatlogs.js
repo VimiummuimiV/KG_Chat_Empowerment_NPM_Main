@@ -15,7 +15,9 @@ import {
   toggleRightSVG,
   chevronLeftSVG,
   chevronRightSVG,
-  shuffleSVG
+  shuffleSVG,
+  playSVG,
+  pauseSVG
 } from "../../icons.js";
 
 // helpers
@@ -344,6 +346,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
   // Focus on the search input using requestAnimationFrame
   function focusOnSearchField() { requestAnimationFrame(function () { chatlogsSearchInput.focus(); }); } focusOnSearchField();
+
+  // Create a parse button in the panel header
+  const parseButton = document.createElement('div');
+  parseButton.className = 'large-button panel-header-parse-button';
+  parseButton.innerHTML = playSVG;
+  createCustomTooltip(parseButton, 'Parse Chat Logs');
+
+  panelControlButtons.appendChild(parseButton);
 
   // Create a date input toggle with similar styles as the close button
   const dateInputToggle = document.createElement('div');
