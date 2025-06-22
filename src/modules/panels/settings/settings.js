@@ -1,4 +1,5 @@
 import "./settings.scss" // settings styles
+import { getCurrentLanguage } from "../../helpers.js";
 
 // icons
 import {
@@ -118,20 +119,82 @@ function updateUserState(username, state) {
   }
 }
 
-// Function to create a spoiler container
+const settingsMessages = {
+  spoiler: {
+    tracked: {
+      en: { show: 'Show tracked', hide: 'Hide tracked' },
+      ru: { show: 'Показать отслеживаемых', hide: 'Скрыть отслеживаемых' }
+    },
+    mention: {
+      en: { show: 'Show mentions', hide: 'Hide mentions' },
+      ru: { show: 'Показать ключевые слова', hide: 'Скрыть ключевые слова' }
+    },
+    replacement: {
+      en: { show: 'Show replacements', hide: 'Hide replacements' },
+      ru: { show: 'Показать замены', hide: 'Скрыть замены' }
+    },
+    moderator: {
+      en: { show: 'Show moderators', hide: 'Hide moderators' },
+      ru: { show: 'Показать модераторов', hide: 'Скрыть модераторов' }
+    },
+    ignored: {
+      en: { show: 'Show ignored', hide: 'Hide ignored' },
+      ru: { show: 'Показать игнорируемых', hide: 'Скрыть игнорируемых' }
+    },
+    toggle: {
+      en: { show: 'Show toggles', hide: 'Hide toggles' },
+      ru: { show: 'Показать переключатели', hide: 'Скрыть переключатели' }
+    }
+  },
+  toggleDescriptions: {
+    static: {
+      en: 'Show chat static notifications',
+      ru: 'Показывать статические уведомления чата'
+    },
+    dynamic: {
+      en: 'Show global dynamic notifications',
+      ru: 'Показывать глобальные динамические уведомления'
+    },
+    presence: {
+      en: 'Play a beep sound and speak feedback when the user enters or leaves the chat',
+      ru: 'Воспроизводить звук и озвучивать, когда пользователь входит или выходит из чата'
+    },
+    gTTS: {
+      en: 'Switch to google TTS engine if available',
+      ru: 'Переключиться на Google TTS, если доступно'
+    },
+    counter: {
+      en: 'Create participants counter',
+      ru: 'Создать счетчик участников'
+    },
+    language: {
+      en: 'Interface language',
+      ru: 'Язык интерфейса'
+    }
+  }
+};
+
+// Helper function to create a spoiler container
 function createSpoilerContainer(contentElement, options = {}) {
   const container = document.createElement('div');
   container.classList.add("settings-spoiler");
   const toggleButton = document.createElement('button');
-  toggleButton.textContent = options.showText || 'Show Content';
+  // Use localized spoiler button text with emoji
+  const type = options.type;
+  const lang = getCurrentLanguage();
+  // Find emoji for this type from settingsConfig
+  const config = settingsConfig.find(cfg => cfg.type === type);
+  const emoji = config && config.emoji ? config.emoji + ' ' : '';
+  const spoilerMsg = settingsMessages.spoiler[type] || settingsMessages.spoiler.toggle;
+  toggleButton.textContent = (options.showText || (emoji + spoilerMsg[lang].show));
   contentElement.style.display = 'none';
 
   toggleButton.addEventListener('click', () => {
     const isHidden = contentElement.style.display === 'none';
-    contentElement.style.display = isHidden ? 'flex' : 'none';
     toggleButton.textContent = isHidden
-      ? (options.hideText || 'Hide Content')
-      : (options.showText || 'Show Content');
+      ? (options.hideText || (emoji + spoilerMsg[lang].hide))
+      : (options.showText || (emoji + spoilerMsg[lang].show));
+    contentElement.style.display = isHidden ? 'flex' : 'none';
   });
 
   container.appendChild(toggleButton);
@@ -210,19 +273,19 @@ function createIgnoredItem(user) {
 
 function createToggleItem(toggleConfig, optionValue) {
   const item = createContainer('toggle');
+  const lang = getCurrentLanguage();
   if (toggleConfig.type === 'language') {
     const select = document.createElement('select');
     select.className = 'language-toggle-select';
-    (toggleConfig.languages || []).forEach(lang => {
+    (toggleConfig.languages || []).forEach(langOpt => {
       const option = document.createElement('option');
-      option.value = lang.value;
-      option.textContent = lang.label;
-      if (optionValue === lang.value) option.selected = true;
+      option.value = langOpt.value;
+      option.textContent = langOpt.label;
       select.appendChild(option);
     });
     const label = document.createElement('span');
     label.className = 'toggle-description';
-    label.textContent = toggleConfig.description;
+    label.textContent = `${toggleConfig.emoji} ${settingsMessages.toggleDescriptions.language[lang]}`;
     item.appendChild(select);
     item.appendChild(label);
     return item;
@@ -236,7 +299,7 @@ function createToggleItem(toggleConfig, optionValue) {
   // Store category and type in data attributes
   description.dataset.category = toggleConfig.category;
   description.dataset.type = toggleConfig.type;
-  description.textContent = toggleConfig.description;
+  description.textContent = `${toggleConfig.emoji} ${settingsMessages.toggleDescriptions[toggleConfig.type][lang]}`;
 
   description.style.cursor = 'pointer';
   description.style.transition = 'color 0.15s ease-in-out';
@@ -311,37 +374,43 @@ const settingsConfig = [
 // Process toggle settings separately with categorization and defaults
 export const toggleSettingsConfig = [
   {
-    description: '👀 Show chat static notifications',
+    emoji: '👀',
+    description: 'Show chat static notifications',
     image: 'https://i.imgur.com/oUPSi9I.jpeg',
     category: 'notifications',
     type: 'static'
   },
   {
-    description: '👀 Show global dynamic notifications',
+    emoji: '👀',
+    description: 'Show global dynamic notifications',
     image: 'https://i.imgur.com/8ffCdUG.jpeg',
     category: 'notifications',
     type: 'dynamic'
   },
   {
-    description: '🔊 Play a beep sound and speak feedback when the user enters or leaves the chat',
+    emoji: '🔊',
+    description: 'Play a beep sound and speak feedback when the user enters or leaves the chat',
     image: 'https://i.imgur.com/6PXFIES.jpeg',
     category: 'sound',
     type: 'presence'
   },
   {
-    description: '🔊 Switch to google TTS engine if available',
+    emoji: '🔊',
+    description: 'Switch to google TTS engine if available',
     image: 'https://i.imgur.com/0H94LII.jpeg',
     category: 'sound',
     type: 'gTTS'
   },
   {
-    description: '📦️ Create participants counter',
+    emoji: '📦️',
+    description: 'Create participants counter',
     image: 'https://i.imgur.com/rqIVAgH.jpeg',
     category: 'elements',
     type: 'counter'
   },
   {
-    description: '🌐 Interface language',
+    emoji: '🌐',
+    description: 'Interface language',
     image: '',
     category: 'ui',
     type: 'language',
@@ -923,8 +992,9 @@ function showSettingsPanel() {
 
       // Wrap the container in a spoiler for all settings types
       const spoiler = createSpoilerContainer(container, {
-        showText: `${emoji} Show ${type}`,
-        hideText: `${emoji} Hide ${type}`
+        type,
+        showText: undefined, // Use localization
+        hideText: undefined  // Use localization
       });
       settingsContainer.appendChild(spoiler);
     });
