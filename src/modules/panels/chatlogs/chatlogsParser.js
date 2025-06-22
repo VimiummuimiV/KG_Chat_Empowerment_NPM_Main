@@ -246,11 +246,21 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
 
   // Main parse logic
   async function startParsing() {
+    // Expose parser state and stop function globally only when parsing starts, and only if not already set
+    if (!window.chatlogsParserState) {
+      window.chatlogsParserState = {
+        isRunning: () => isParsing,
+        stop: stopParsing
+      };
+    }
+    if (!window.stopChatlogsParser) {
+      window.stopChatlogsParser = stopParsing;
+    }
+
     isParsing = true;
     stopRequested = false;
     abortController = new AbortController();
     parseButton.innerHTML = pauseSVG;
-    parseButton.title = "Stop parsing";
 
     const opts = await promptOptions();
     if (!opts) {

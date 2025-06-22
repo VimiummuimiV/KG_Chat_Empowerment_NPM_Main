@@ -223,6 +223,12 @@ export function adjustVisibility(element, action, opacity) {
 
 // Function to create and fade the dimming element
 export function triggerDimmingElement(action) {
+  // Only stop the chatlogs parser if the chatlogs panel is present and being closed
+  const chatlogsPanel = document.querySelector('.chat-logs-panel');
+  if (action === 'hide' && chatlogsPanel) {
+    stopParserIfRunning();
+  }
+
   // Check if the dimming element already exists
   let dimming = document.querySelector('.dimming-background');
   // Check if the scaled thumbnail already exists
@@ -292,6 +298,18 @@ export function triggerTargetElement(element, action) {
     // Hide the target element
     adjustVisibility(element, 'hide', 1);
   });
+}
+
+function stopParserIfRunning() {
+  // --- STOP CHATLOGS PARSER IF RUNNING ---
+  if (window.chatlogsParserState && typeof window.chatlogsParserState.isRunning === 'function' && window.chatlogsParserState.isRunning()) {
+    if (typeof window.stopChatlogsParser === 'function') {
+      window.stopChatlogsParser();
+    }
+    // Clean up global references after stopping
+    delete window.chatlogsParserState;
+    delete window.stopChatlogsParser;
+  }
 }
 
 // Function to check if a URL is valid and contains encoded characters
