@@ -61,7 +61,10 @@ export function createChatLogsButton(panel) {
   showChatLogsButton.style.position = 'relative';
   showChatLogsButton.style.zIndex = '1';
   showChatLogsButton.innerHTML = chatLogsSVG; // Add icon
-  createCustomTooltip(showChatLogsButton, 'Show Chat Logs');
+  createCustomTooltip(showChatLogsButton, {
+    en: 'Show Chat Logs',
+    ru: 'Показать чат-логи'
+  });
 
   showChatLogsButton.addEventListener('click', async function () {
     addPulseEffect(showChatLogsButton); // Add pulse effect
@@ -282,11 +285,16 @@ export async function showChatLogsPanel(personalMessagesDate) {
   const chatlogsSearchInput = document.createElement('input');
   chatlogsSearchInput.className = 'chatlogs-search-input';
   chatlogsSearchInput.type = 'text';
-  createCustomTooltip(chatlogsSearchInput, `
-    [Ctrl + Click] clear input and reset filtered items
-    [Valid date + Enter] load chat logs for the date in input field (e.g. 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)
-    `
-  );
+  createCustomTooltip(chatlogsSearchInput, {
+    en: [
+      '[Ctrl + Click] clear input and reset filtered items',
+      '[Valid date + Enter] load chat logs for the date in input field (e.g. 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)'
+    ],
+    ru: [
+      '[Ctrl + Click] очистить поле и сбросить фильтр',
+      '[Корректная дата + Enter] загрузить чат-логи за выбранную дату (например, 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)'
+    ]
+  });
 
   // Append search input to the search container
   chatlogsSearchContainer.appendChild(chatlogsSearchInput);
@@ -352,7 +360,10 @@ export async function showChatLogsPanel(personalMessagesDate) {
   const parseButton = document.createElement('div');
   parseButton.className = 'large-button panel-header-parse-button';
   parseButton.innerHTML = playSVG;
-  createCustomTooltip(parseButton, 'Parse Chat Logs');
+  createCustomTooltip(parseButton, {
+    en: 'Parse Chat Logs',
+    ru: 'Спарсить логи чата'
+  });
   setupChatLogsParser(parseButton, chatLogsPanel);
 
   panelControlButtons.appendChild(parseButton);
@@ -392,7 +403,10 @@ export async function showChatLogsPanel(personalMessagesDate) {
   toggleMentionMessages.className = "large-button panel-header-toggle-mention-messages-button";
   // Set the inner HTML of the toggle component with a suitable SVG or text
   toggleMentionMessages.innerHTML = personalMessagesSVG;
-  createCustomTooltip(toggleMentionMessages, 'Toggle Mention Messages');
+  createCustomTooltip(toggleMentionMessages, {
+    en: 'Toggle Mention Messages',
+    ru: 'Показать только упоминания'
+  });
 
   // Add a click event listener to toggle the visibility of messages without mentions
   toggleMentionMessages.addEventListener('click', async () => {
@@ -415,7 +429,10 @@ export async function showChatLogsPanel(personalMessagesDate) {
   toggleMediaMessages.className = "large-button panel-header-toggle-media-messages-button";
   // Set the inner HTML of the toggle component with a suitable SVG or text
   toggleMediaMessages.innerHTML = mediaMessagesSVG;
-  createCustomTooltip(toggleMediaMessages, 'Toggle Media Messages');
+  createCustomTooltip(toggleMediaMessages, {
+    en: 'Toggle Media Messages',
+    ru: 'Показать только медиа контент'
+  });
   // Apply common styles to the component
   // applyHeaderButtonStyles(toggleMediaMessages, 'darkslategray');
 
@@ -449,13 +466,22 @@ export async function showChatLogsPanel(personalMessagesDate) {
   copyChatLogsUrl.className = "large-button panel-header-copy-button";
   // Set the inner HTML of the copy chat logs element with the clipboard SVG
   copyChatLogsUrl.innerHTML = clipboardSVG;
-  createCustomTooltip(copyChatLogsUrl, `
-    [Click] to copy Chat Logs Url
-    [Ctrl + Click] to save Chat Logs with title
-    [Shift + Click] to show/hide saved Chat Logs
-    [Alt + Click] to copy Chat Logs in BBCode, Markdown, or Plain format
-    [Alt + Shift + Click] to save Chat Logs in BBCode, Markdown, or Plain format
-  `);
+  createCustomTooltip(copyChatLogsUrl, {
+    en: [
+      '[Click] to copy Chat Logs Url',
+      '[Ctrl + Click] to save Chat Logs with title',
+      '[Shift + Click] to show/hide saved Chat Logs',
+      '[Alt + Click] to copy Chat Logs in BBCode, Markdown, or Plain format',
+      '[Alt + Shift + Click] to save Chat Logs in BBCode, Markdown, or Plain format'
+    ],
+    ru: [
+      '[Клик] скопировать ссылку на чат-логи',
+      '[Ctrl + Клик] сохранить чат-логи с заголовком',
+      '[Shift + Клик] показать/скрыть сохранённые чат-логи',
+      '[Alt + Клик] скопировать чат-логи в BBCode, Markdown или Plain',
+      '[Alt + Shift + Клик] сохранить чат-логи в BBCode, Markdown или Plain'
+    ]
+  });
 
   // Helper function to extract date from the URL
   const extractDateFromUrl = (url) => {
@@ -707,7 +733,13 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Function to update the toggle button's SVG and title based on current state
   function updateActiveUsersToggle(state) {
     toggleActiveUsers.innerHTML = state === 'shown' ? toggleLeftSVG : toggleRightSVG; // Toggle between SVGs
-    createCustomTooltip(toggleActiveUsers, state === 'shown' ? 'Hide User List' : 'Show User List');
+    createCustomTooltip(toggleActiveUsers, state === 'shown' ? {
+      en: 'Hide User List',
+      ru: 'Скрыть список пользователей'
+    } : {
+      en: 'Show User List',
+      ru: 'Показать список пользователей'
+    });
   }
 
   // Function to toggle active users and update localStorage, SVG, and title
@@ -738,19 +770,28 @@ export async function showChatLogsPanel(personalMessagesDate) {
   const oneDayBackward = document.createElement('div');
   oneDayBackward.className = "large-button panel-header-one-day-back-button";
   oneDayBackward.innerHTML = chevronLeftSVG; // Assuming you have chevronLeftSVG defined
-  createCustomTooltip(oneDayBackward, 'Previous Day');
+  createCustomTooltip(oneDayBackward, {
+    en: 'Previous Day',
+    ru: 'Предыдущий день'
+  });
 
   // Create and style the chevron right button
   const oneDayForward = document.createElement('div');
   oneDayForward.className = "large-button panel-header-one-day-forward-button";
   oneDayForward.innerHTML = chevronRightSVG; // Assuming you have chevronRightSVG defined
-  createCustomTooltip(oneDayForward, 'Next Day');
+  createCustomTooltip(oneDayForward, {
+    en: 'Next Day',
+    ru: 'Следующий день'
+  });
 
   // Create and style the shuffle button
   const randomDay = document.createElement('div');
   randomDay.className = "large-button panel-header-shuffle-button";
   randomDay.innerHTML = shuffleSVG; // Assuming you have shuffleSVG defined
-  createCustomTooltip(randomDay, 'Random Date');
+  createCustomTooltip(randomDay, {
+    en: 'Random Date',
+    ru: 'Случайная дата'
+  });
 
   // Function to get current date or fallback to today's date
   function getEffectiveDate() {
@@ -760,7 +801,10 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Function to update the date input and title
   const updateDateInputAndTitle = (newDate) => {
     dateInput.value = newDate; // Update the date input
-    createCustomTooltip(dateInputToggle, `Current date: ${newDate}`);
+    createCustomTooltip(chatlogsSearchInput, {
+      en: `Current date: ${newDate}`,
+      ru: `Текущая дата: ${newDate}`
+    });
   };
 
   // Event listener for the chevron left button
@@ -798,7 +842,10 @@ export async function showChatLogsPanel(personalMessagesDate) {
   const closePanelButton = document.createElement('div');
   closePanelButton.className = "large-button panel-header-close-button";
   closePanelButton.innerHTML = closeSVG;
-  createCustomTooltip(closePanelButton, 'Close panel');
+  createCustomTooltip(closePanelButton, {
+    en: 'Close panel',
+    ru: 'Закрыть панель'
+  });
 
   // Add a click event listener to the close panel button
   closePanelButton.addEventListener('click', () => {
@@ -916,13 +963,19 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Set the min attribute to '2012-02-12'
   dateInput.min = minimalChatlogsDate; // Assign the minimum date
   dateInput.value = dateToLoad; // Set the value to the date to load
-  createCustomTooltip(dateInputToggle, `Current date: ${dateToLoad}`); // Create a tooltip for the date input toggle
+  createCustomTooltip(dateInputToggle, {
+    en: `Current date: ${dateToLoad}`,
+    ru: `Текущая дата: ${dateToLoad}`
+  }); // Create a tooltip for the date input toggle
 
   // Add an event listener for the date input change
   dateInput.addEventListener('change', async (event) => {
     const selectedDate = event.target.value; // Get the selected date
     await loadChatLogs(selectedDate); // Load chat logs for the selected date
-    createCustomTooltip(dateInputToggle, `Current date: ${selectedDate}`); // Update the tooltip with the selected date
+    createCustomTooltip(dateInputToggle, {
+      en: `Current date: ${selectedDate}`,
+      ru: `Текущая дата: ${selectedDate}`
+    }); // Update the tooltip with the selected date
   });
 
   // Retrieves details from message items including usernames and message text.
@@ -1077,21 +1130,29 @@ export async function showChatLogsPanel(personalMessagesDate) {
     }
   });
 
-  // Create custom tooltips for message elements
-  createCustomTooltip('.message-time', chatLogsPanel, (el) => `
-    [Click] Open chatlog at ${el.textContent}
-    [Shift + Click] Copy chatlogs URL to clipboard
-  `, true);
+  // Create custom tooltips for message time elements
+  createCustomTooltip('.message-time', chatLogsPanel, (el) => ({
+    en: ` 
+      [Click] Open chatlog at ${el.textContent}
+      [Shift + Click] Copy chatlogs URL to clipboard
+    `,
+    ru: ` 
+      [Клик] открыть чатлог на ${el.textContent}
+      [Shift + Клик] скопировать ссылку на чатлог
+   `
+  }), true);
 
   // Create custom tooltips for username elements
-  createCustomTooltip('.message-username', chatLogsPanel, (el) => `
-    [Click] Open ${el.textContent} profile
-  `, true);
+  createCustomTooltip('.message-username', chatLogsPanel, (el) => ({
+    en: `[Click] Open ${el.textContent} profile`,
+    ru: `[Клик] открыть профиль ${el.textContent}`
+  }), true);
 
   // Create custom tooltips for message text elements
-  createCustomTooltip('.message-text', chatLogsPanel, (el) => `
-    [Click] Scroll message to the middle of the chat logs
-  `, true);
+  createCustomTooltip('.message-text', chatLogsPanel, (el) => ({
+    en: `[Click] Scroll message to the middle of the chat logs`,
+    ru: `[Клик] прокрутить сообщение к центру чата`
+  }), true);
 
   // Delegated event listeners for active users
   chatLogsPanel.addEventListener('click', (event) => {
@@ -1112,23 +1173,38 @@ export async function showChatLogsPanel(personalMessagesDate) {
   });
 
   // Create custom tooltips for active user names in the active users list
-  createCustomTooltip('.active-user-name', chatLogsPanel, (el) => `
-    [Click] to filter messages by ${el.textContent}
-    [Repeat Click] to clear ${el.textContent} from the search input
-    [Ctrl + Click] to add additional username to the search input
-  `, true);
+  createCustomTooltip('.active-user-name', chatLogsPanel, (el) => ({
+    en: `
+      [Click] to filter messages by ${el.textContent}
+      [Repeat Click] to clear ${el.textContent} from the search input
+      [Ctrl + Click] to add additional username to the search input
+    `,
+    ru: ` 
+      [Клик] фильтровать сообщения по ${el.textContent}
+      [Повторный клик] убрать ${el.textContent} из поиска
+      [Ctrl + Клик] добавить пользователя к поиску
+    `
+  }), true);
 
   // Delegation-based custom tooltip for saved chatlog links
-  createCustomTooltip('.saved-chatlog-url', chatLogsPanel, (el) => `
-    [Click] Load chat logs for ${el.textContent}
-    [Ctrl + Click] Remove this saved chat log
-    [Middle Click] Open in new tab
-  `, true);
+  createCustomTooltip('.saved-chatlog-url', chatLogsPanel, (el) => ({
+    en: `
+      [Click] Load chat logs for ${el.textContent}
+      [Ctrl + Click] Remove this saved chat log
+      [Middle Click]Open in new tab
+    `,
+    ru: `
+      [Клик] загрузить чат - логи за ${el.textContent}
+      [Ctrl + Клик] удалить сохранённый чатлог
+      [Средний клик] открыть в новой вкладке
+    `
+  }), true);
 
   // Delegation-based custom tooltip for saved chatlog titles
-  createCustomTooltip('.saved-chatlog-url-title', chatLogsPanel, (el) => `
-    [Click] Edit title for this chat log
-  `, true);
+  createCustomTooltip('.saved-chatlog-url-title', chatLogsPanel, (el) => ({
+    en: `[Click] Edit title for this chat log`,
+    ru: `[Клик] изменить заголовок для этого чатлога`
+  }), true);
 
   // Delegation-based click event for saved chatlog links and titles
   chatLogsPanel.addEventListener('click', async (event) => {

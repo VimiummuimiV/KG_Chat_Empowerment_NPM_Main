@@ -116,19 +116,31 @@ export function createScrollButtons(container) {
 
   const fullScrollUpButton = document.createElement('div');
   fullScrollUpButton.innerHTML = chevronsUpSVG;
-  createCustomTooltip(fullScrollUpButton, 'Scroll Up (Full)');
+  createCustomTooltip(fullScrollUpButton, {
+    en: 'Scroll Up (Full)',
+    ru: 'Прокрутить вверх (всё)'
+  });
 
   const partialScrollUpButton = document.createElement('div');
   partialScrollUpButton.innerHTML = chevronUpSVG;
-  createCustomTooltip(partialScrollUpButton, 'Scroll Up (Partial)');
+  createCustomTooltip(partialScrollUpButton, {
+    en: 'Scroll Up (Partial)',
+    ru: 'Прокрутить вверх (частично)'
+  });
 
   const partialScrollDownButton = document.createElement('div');
   partialScrollDownButton.innerHTML = chevronDownSVG;
-  createCustomTooltip(partialScrollDownButton, 'Scroll Down (Partial)');
+  createCustomTooltip(partialScrollDownButton, {
+    en: 'Scroll Down (Partial)',
+    ru: 'Прокрутить вниз (частично)'
+  });
 
   const fullScrollDownButton = document.createElement('div');
   fullScrollDownButton.innerHTML = chevronsDownSVG;
-  createCustomTooltip(fullScrollDownButton, 'Scroll Down (Full)');
+  createCustomTooltip(fullScrollDownButton, {
+    en: 'Scroll Down (Full)',
+    ru: 'Прокрутить вниз (всё)'
+  });
 
   const buttons = {
     fullScrollUpButton,
