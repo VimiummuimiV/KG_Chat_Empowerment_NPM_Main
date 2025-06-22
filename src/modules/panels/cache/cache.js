@@ -14,7 +14,8 @@ import {
   getUserProfileData,
   refreshFetchedUsers,
   calculateTimeOnSite,
-  loadProfileIntoIframe
+  loadProfileIntoIframe,
+  getCurrentLanguage
 } from "../../helpers.js";
 
 // notifications
@@ -43,6 +44,21 @@ import {
 
 import { addPulseEffect } from "../../animations.js"; // animations
 import { createCustomTooltip } from "../../tooltip.js";
+
+// --- Localization for cache panel interface ---
+const cacheMessages = {
+  threshold: {
+    icon: '🚧',
+    en: 'Threshold',
+    ru: 'Порог'
+  },
+  countdown: {
+    icon: '💣',
+    en: 'Countdown',
+    ru: 'Обратный отсчёт'
+  }
+};
+const currentLanguage = getCurrentLanguage();
 
 // Rank order mapping
 const rankOrder = {
@@ -114,7 +130,7 @@ function showCachePanel() {
 
   const dropTimeThresholdDescription = document.createElement('span');
   dropTimeThresholdDescription.className = 'drop-time-threshold-description';
-  dropTimeThresholdDescription.textContent = '🚧 Threshold';
+  dropTimeThresholdDescription.textContent = `${cacheMessages.threshold.icon} ${cacheMessages.threshold[currentLanguage]}`;
 
   const dropTimeThreshold = document.createElement('span');
   dropTimeThreshold.className = 'drop-time-threshold';
@@ -128,7 +144,7 @@ function showCachePanel() {
 
   const dropTimeExpirationDescription = document.createElement('span');
   dropTimeExpirationDescription.className = 'drop-time-expiration-description';
-  dropTimeExpirationDescription.textContent = '💣 Countdown';
+  dropTimeExpirationDescription.textContent = `${cacheMessages.countdown.icon} ${cacheMessages.countdown[currentLanguage]}`;
 
   const dropTimeExpiration = document.createElement('span');
   dropTimeExpiration.className = 'drop-time-expiration';
