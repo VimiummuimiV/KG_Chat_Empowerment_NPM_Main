@@ -204,6 +204,35 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     }
   }
 
+  // Helper to prompt for search terms
+  function promptSearchTerms() {
+    const searchInput = prompt(
+      [
+        'Enter search terms to filter messages (comma-separated):',
+        'Leave empty to show all messages from selected users.',
+        'Examples:',
+        'hello, world',
+        'error, bug, issue',
+        'Note: Search is case-insensitive and will find messages containing ANY of the terms.'
+      ].join('\n'),
+      ''
+    );
+    
+    if (searchInput === null) return null; // User cancelled
+    if (!searchInput || !searchInput.trim()) return []; // Empty means no filtering
+    
+    return searchInput.split(',').map(term => term.trim().toLowerCase()).filter(Boolean);
+  }
+
+  // Helper to check if message contains any of the search terms
+  function messageContainsSearchTerms(message, searchTerms) {
+    if (!searchTerms || searchTerms.length === 0) return true; // No search terms means show all
+    if (!message) return false;
+    
+    const lowerMessage = message.toLowerCase();
+    return searchTerms.some(term => lowerMessage.includes(term));
+  }
+
   // Main parse logic
   async function startParsing() {
     isParsing = true;
@@ -217,11 +246,21 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       resetButton();
       return;
     }
+
+    // Prompt for usernames
     const usernames = await promptUsernames();
     if (!usernames || usernames.length === 0) {
       resetButton();
       return;
     }
+    
+    // Prompt for message search terms
+    const searchTerms = promptSearchTerms();
+    if (searchTerms === null) {
+      resetButton();
+      return;
+    }
+    
     // Use opts.from and opts.to directly for all modes
     let from = opts.from;
     let to = opts.to;
@@ -233,6 +272,15 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     // Clear the messages container before starting
     const messagesContainer = getMessagesContainer(chatLogsPanelOrContainer);
     if (messagesContainer) messagesContainer.innerHTML = '';
+    
+    // Show search info if search terms are provided
+    if (messagesContainer && searchTerms.length > 0) {
+      const searchInfo = document.createElement('div');
+      searchInfo.className = 'search-info';
+      searchInfo.textContent = `Searching for messages containing: ${searchTerms.join(', ')}`;
+      messagesContainer.appendChild(searchInfo);
+    }
+    
     // Fetch and filter chat logs for each date in the range, render in real time
     const startDate = new Date(from);
     const endDate = new Date(to);
@@ -243,7 +291,13 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         const { chatlogs } = await fetchChatLogs(dateStr, null, abortController.signal);
         if (stopRequested) break;
         // Filter messages by username(s) and remove null/undefined and null message
-        const filtered = chatlogs.filter(log => log && log.message && usernames.includes(log.username));
+        let filtered = chatlogs.filter(log => log && log.message && usernames.includes(log.username));
+        
+        // NEW: Apply search term filtering
+        if (searchTerms.length > 0) {
+          filtered = filtered.filter(log => messageContainsSearchTerms(log.message, searchTerms));
+        }
+        
         if (stopRequested) break;
         allFiltered = allFiltered.concat(filtered);
         // Update message count map
@@ -274,7 +328,10 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     }
     // If nothing was found, show placeholder
     if (messagesContainer && allFiltered.length === 0) {
-      messagesContainer.innerHTML = '<div class="no-messages">No messages found for the selected user(s) and date(s).</div>';
+      const noMessagesText = searchTerms.length > 0 
+        ? `No messages found for the selected user(s) and date(s) containing the search terms: ${searchTerms.join(', ')}`
+        : 'No messages found for the selected user(s) and date(s).';
+      messagesContainer.innerHTML = `<div class="no-messages">${noMessagesText}</div>`;
       // Also clear userlist
       const panel = messagesContainer.closest('.chat-logs-panel');
       if (panel) {

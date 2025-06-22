@@ -30,6 +30,15 @@
   transform: translateX(-50%);
 }
 
+.popup-panel .search-info {
+  padding: 0.5em;
+  color: hsl(80, 60%, 70%);
+  background: hsla(80, 60%, 70%, 0.1);
+  border-radius: 0.4em !important;
+  width: fit-content;
+  margin: 0.5em;
+}
+
 // Chat length popup
 .length-field-popup {
   position: absolute;
