@@ -283,6 +283,7 @@ function createToggleItem(toggleConfig, optionValue) {
       option.textContent = langOpt.label;
       select.appendChild(option);
     });
+    select.value = optionValue;
     const label = document.createElement('span');
     label.className = 'toggle-description';
     label.textContent = `${toggleConfig.emoji} ${settingsMessages.toggleDescriptions.language[lang]}`;
