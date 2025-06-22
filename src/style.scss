@@ -509,7 +509,11 @@
 }
 
 .panel-header-shuffle-button {
-  background-color: darkslateblue;
+  background-color: hsl(250, 40%, 40%);
+
+  &.today {
+    background-color: hsl(50, 100%, 15%);
+  }
 }
 
 // Chat user list

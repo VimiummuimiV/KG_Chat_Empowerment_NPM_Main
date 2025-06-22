@@ -825,10 +825,21 @@ export async function showChatLogsPanel(personalMessagesDate) {
     focusOnSearchField();
   });
 
-  // Event listener for the shuffle button
+  // Event listener for the shuffle button (load today's logs after parsing done)
   randomDay.addEventListener('click', async () => {
-    const randomDate = getRandomDateInRange(); // Get a random date
-    await loadChatLogs(randomDate); // Load chat logs for the random date
+    if (randomDay.dataset.mode === 'loadToday') {
+      await loadChatLogs(today);
+      randomDay.dataset.mode = '';
+      randomDay.classList.remove('today');
+    } else {
+      const randomDate = getRandomDateInRange();
+      await loadChatLogs(randomDate);
+    }
+    randomDay.innerHTML = shuffleSVG;
+    createCustomTooltip(randomDay, {
+      en: 'Random Date',
+      ru: 'Случайная дата'
+    });
     showDateInput(dateInput);
     focusOnSearchField();
   });

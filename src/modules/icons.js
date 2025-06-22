@@ -499,7 +499,7 @@ export const chevronRightSVG = `
   </svg>`;
 
 // SVG for the "shuffle" icon, used to select a random year, month, and day
-const shuffleSVGStrokeColor = "rgb(169, 155, 255)";
+const shuffleSVGStrokeColor = "hsl(250, 40%, 80%)";
 export const shuffleSVG = `
   <svg xmlns="${svgUrl}"
       width="${iconSize - 4}"
@@ -514,6 +514,28 @@ export const shuffleSVG = `
     <polyline points="21 16 21 21 16 21"></polyline>
     <line x1="15" y1="15" x2="21" y2="21"></line>
     <line x1="4" y1="4" x2="9" y2="9"></line>
+  </svg>`;
+
+// SVG for the "sun" icon, used to load chat logs for the current day
+const sunSVGStrokeColor = "hsl(50, 100%, 50%)";
+export const sunSVG = `
+  <svg xmlns="${svgUrl}"
+      width="${iconSize - 4}"
+      height="${iconSize - 4}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="${sunSVGStrokeColor}"
+      stroke-width="${iconStrokeWidth}"
+      stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line>
+    <line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
   </svg>`;
 
 // Inline SVG source for the trash icon

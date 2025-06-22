@@ -1,10 +1,11 @@
-import { playSVG, pauseSVG } from "../../icons.js";
+import { playSVG, pauseSVG, shuffleSVG, sunSVG } from "../../icons.js";
 import { minimalChatlogsDate } from "../../definitions.js";
 import { fetchChatLogs } from './chatlogs.js';
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
 import { getCurrentLanguage, getExactUserIdByName, getHistoryUsernamesByName } from '../../helpers.js';
 import { chatlogsParserMessages } from './messages.js';
+import { createCustomTooltip } from "../../tooltip.js";
 
 /**
  * Attach parse logic to the parse button in the chat logs panel header.
@@ -203,6 +204,15 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     stopRequested = false;
     abortController = new AbortController();
     parseButton.innerHTML = pauseSVG;
+    const randomButton = chatLogsPanelOrContainer.querySelector('.panel-header-shuffle-button');
+    if (randomButton) {
+      randomButton.dataset.mode = '';
+      randomButton.innerHTML = shuffleSVG;
+      createCustomTooltip(randomButton, {
+        en: 'Random Date',
+        ru: 'Случайная дата'
+      });
+    }
 
     const opts = await promptOptions();
     if (!opts) {
@@ -352,6 +362,16 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     }
     isParsing = false;
     resetButton();
+    const randomButton = chatLogsPanelOrContainer.querySelector('.panel-header-shuffle-button');
+    if (randomButton) {
+      randomButton.dataset.mode = 'loadToday';
+      randomButton.classList.add('today');
+      randomButton.innerHTML = sunSVG;
+      createCustomTooltip(randomButton, {
+        en: 'Load Today\'s Chat Logs',
+        ru: 'Загрузить сегодняшние логи чата'
+      });
+    }
   }
 
   function resetButton() {
