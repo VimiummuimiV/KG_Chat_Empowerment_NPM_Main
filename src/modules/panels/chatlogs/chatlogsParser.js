@@ -3,7 +3,8 @@ import { minimalChatlogsDate } from "../../definitions.js";
 import { fetchChatLogs } from './chatlogs.js';
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
-import { getExactUserIdByName, getHistoryUsernamesByName } from '../../helpers.js';
+import { getCurrentLanguage, getExactUserIdByName, getHistoryUsernamesByName } from '../../helpers.js';
+import { chatlogsParserMessages } from './messages.js';
 
 /**
  * Attach parse logic to the parse button in the chat logs panel header.
@@ -14,6 +15,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
   let isParsing = false;
   let stopRequested = false;
   let abortController = null;
+  const lang = getCurrentLanguage();
 
   // Helper to get the messages container
   function getMessagesContainer(panelOrContainer) {
@@ -24,17 +26,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
 
   // Helper to prompt for options
   async function promptOptions() {
-    // Updated parse mode prompt
-    const modeInput = prompt(
-      [
-        'Select parse mode:',
-        '1. Single date',
-        '2. From date',
-        '3. Date range',
-        '4. From start'
-      ].join('\n'),
-      '1'
-    );
+    const modeInput = prompt(chatlogsParserMessages.selectParseMode[lang], '1');
     const opts = {};
     function isValidDateParts(year, month, day) {
       const now = new Date();
@@ -70,18 +62,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       // Prompt for date range in a single input (e.g. 240202-240303 or 2024-02-02 - 2024-03-03)
       let rangeInput, fromDate, toDate;
       while (true) {
-        rangeInput = prompt(
-          [
-            'Enter date range (any supported format, e.g. 240202-240303, 2024-02-02 - 2024-03-03):',
-            'Examples:',
-            '2024-01-01 - 2024-01-07',
-            '20240101-20240107',
-            '2024:01:01 - 2024:01:07',
-            '240101-240107',
-            '24-02-02 - 24-03-03',
-          ].join('\n'),
-          ''
-        );
+        rangeInput = prompt(chatlogsParserMessages.enterDateRange[lang], '');
         if (!rangeInput || !rangeInput.trim()) return null;
         // Accept with or without spaces around the dash
         const match = rangeInput.match(/([\d:\-]{6,10})\s*-\s*([\d:\-]{6,10})/);
@@ -95,24 +76,13 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
             return opts;
           }
         }
-        alert('Invalid range format or one/both dates out of bounds. Please try again.');
+        alert(chatlogsParserMessages.invalidRange[lang]);
       }
     } else if (modeInput === '2') {
       // Prompt for FROM date, TO is today
       let fromInput, fromDate;
       while (true) {
-        fromInput = prompt(
-          [
-            'Enter FROM date (any supported format):',
-            'Examples:',
-            '2024-01-01',
-            '20240101',
-            '2024:01:01',
-            '240101',
-            'Range will be FROM this date to today.'
-          ].join('\n'),
-          ''
-        );
+        fromInput = prompt(chatlogsParserMessages.enterFromDate[lang], '');
         if (!fromInput || !fromInput.trim()) return null;
         fromDate = normalizeDate(fromInput.trim());
         if (fromDate) {
@@ -121,23 +91,13 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
           opts.mode = 'fromdate';
           return opts;
         }
-        alert('Invalid FROM date format or date out of bounds. Please try again.');
+        alert(chatlogsParserMessages.invalidFromDate[lang]);
       }
     } else if (modeInput === '1') {
       // Prompt for single date
       let dateInput, dateVal;
       while (true) {
-        dateInput = prompt(
-          [
-            'Enter a date (any supported format):',
-            'Examples:',
-            '2024-01-01',
-            '20240101',
-            '2024:01:01',
-            '240101',
-          ].join('\n'),
-          ''
-        );
+        dateInput = prompt(chatlogsParserMessages.enterSingleDate[lang], '');
         if (!dateInput || !dateInput.trim()) return null;
         dateVal = normalizeDate(dateInput.trim());
         if (dateVal) {
@@ -146,10 +106,10 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
           opts.mode = 'single';
           return opts;
         }
-        alert('Invalid date format or date out of bounds. Please try again.');
+        alert(chatlogsParserMessages.invalidSingleDate[lang]);
       }
     } else {
-      alert('Invalid selection.');
+      alert(chatlogsParserMessages.invalidSelection[lang]);
       return null;
     }
   }
@@ -158,20 +118,11 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
   async function promptUsernames() {
     let usernamesInput = "";
     while (true) {
-      usernamesInput = prompt(
-        [
-          "Enter username(s) to parse (comma-separated):",
-          "Leave empty to search messages from all users."
-        ].join('\n'), 
-        usernamesInput || ""
-      );
-      if (usernamesInput === null) return null; // User cancelled
-      if (!usernamesInput || !usernamesInput.trim()) return []; // Empty means search all users
-      
+      usernamesInput = prompt(chatlogsParserMessages.enterUsernames[lang], usernamesInput || "");
+      if (usernamesInput === null) return null;
+      if (!usernamesInput || !usernamesInput.trim()) return [];
       let usernames = usernamesInput.split(',').map(u => u.trim()).filter(Boolean);
-      if (usernames.length === 0) return []; // If only whitespace, treat as empty
-      
-      // Validate each username using getExactUserIdByName
+      if (usernames.length === 0) return [];
       const invalidUsernames = [];
       for (const username of usernames) {
         const userId = await getExactUserIdByName(username);
@@ -180,29 +131,19 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       if (invalidUsernames.length > 0) {
         alert(
           invalidUsernames.length === 1
-            ? `User not found: ${invalidUsernames[0]}`
-            : `The following usernames are invalid or not found:\n${invalidUsernames.join(', ')}`
+            ? chatlogsParserMessages.userNotFound[lang](invalidUsernames[0])
+            : chatlogsParserMessages.usersNotFound[lang](invalidUsernames)
         );
-        // Loop again, keeping the previous value
         continue;
       }
-      // If only one username, ask if user wants to retrieve all previous history usernames
       if (usernames.length === 1) {
-        const answer = prompt(
-          `Do you want to retrieve all previous history usernames for this user? (1 - yes, 2 - no)`,
-          '2'
-        );
+        const answer = prompt(chatlogsParserMessages.retrieveHistoryPrompt[lang], '2');
         if (answer === '1') {
           if (typeof getHistoryUsernamesByName === 'function') {
             const historyUsernames = await getHistoryUsernamesByName(usernames[0]);
             if (Array.isArray(historyUsernames) && historyUsernames.length > 0) {
-              // Always keep the original username as first, then add unique history usernames
               const allUsernames = [usernames[0], ...historyUsernames.filter(u => u !== usernames[0])];
-              // Prompt user to confirm/edit the expanded list, no validation
-              const confirmed = prompt(
-                'Confirm or edit the list of usernames to parse (comma-separated):',
-                allUsernames.join(', ')
-              );
+              const confirmed = prompt(chatlogsParserMessages.confirmUsernames[lang], allUsernames.join(', '));
               if (!confirmed) return null;
               return confirmed.split(',').map(u => u.trim()).filter(Boolean);
             }
@@ -215,23 +156,9 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
 
   // Helper to prompt for search terms
   function promptSearchTerms(searchAllUsers = false) {
-    const searchInput = prompt(
-      [
-        'Enter search terms to filter messages (comma-separated):',
-        searchAllUsers 
-          ? 'This will search through all users\' messages for the specified terms.'
-          : 'Leave empty to show all messages from selected users.',
-        'Examples:',
-        'hello, world',
-        'error, bug, issue',
-        'Note: Search is case-insensitive and will find messages containing ANY of the terms.'
-      ].join('\n'),
-      ''
-    );
-    
-    if (searchInput === null) return null; // User cancelled
-    if (!searchInput || !searchInput.trim()) return []; // Empty means no filtering
-    
+    const searchInput = prompt(chatlogsParserMessages.enterSearchTerms[lang](searchAllUsers), '');
+    if (searchInput === null) return null;
+    if (!searchInput || !searchInput.trim()) return [];
     return searchInput.split(',').map(term => term.trim().toLowerCase()).filter(Boolean);
   }
 
@@ -239,7 +166,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
   function messageContainsSearchTerms(message, searchTerms) {
     if (!searchTerms || searchTerms.length === 0) return true; // No search terms means show all
     if (!message) return false;
-    
+
     const lowerMessage = message.toLowerCase();
     return searchTerms.some(term => lowerMessage.includes(term));
   }
@@ -274,23 +201,23 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       resetButton();
       return;
     }
-    
+
     const searchAllUsers = usernames.length === 0;
-    
+
     // Prompt for message search terms
     const searchTerms = promptSearchTerms(searchAllUsers);
     if (searchTerms === null) {
       resetButton();
       return;
     }
-    
+
     // If searching all users, search terms are required
     if (searchAllUsers && searchTerms.length === 0) {
-      alert('When searching all users, you must provide search terms to filter messages.');
+      alert(chatlogsParserMessages.searchAllUsersRequired[lang]);
       resetButton();
       return;
     }
-    
+
     // Use opts.from and opts.to directly for all modes
     let from = opts.from;
     let to = opts.to;
@@ -302,7 +229,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     // Clear the messages container before starting
     const messagesContainer = getMessagesContainer(chatLogsPanelOrContainer);
     if (messagesContainer) messagesContainer.innerHTML = '';
-    
+
     // Show search info
     if (messagesContainer) {
       const searchInfo = document.createElement('div');
@@ -316,7 +243,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       }
       messagesContainer.appendChild(searchInfo);
     }
-    
+
     // Fetch and filter chat logs for each date in the range, render in real time
     const startDate = new Date(from);
     const endDate = new Date(to);
@@ -326,30 +253,30 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       try {
         const { chatlogs } = await fetchChatLogs(dateStr, null, abortController.signal);
         if (stopRequested) break;
-        
+
         // Filter messages based on whether we're searching all users or specific users
         let filtered;
         if (searchAllUsers) {
           // Search all users, but only keep messages with valid content that match search terms
-          filtered = chatlogs.filter(log => 
-            log && 
-            log.message && 
+          filtered = chatlogs.filter(log =>
+            log &&
+            log.message &&
             messageContainsSearchTerms(log.message, searchTerms)
           );
         } else {
           // Filter by username(s) first, then apply search terms if provided
-          filtered = chatlogs.filter(log => 
-            log && 
-            log.message && 
+          filtered = chatlogs.filter(log =>
+            log &&
+            log.message &&
             usernames.includes(log.username)
           );
-          
+
           // Apply search term filtering if search terms are provided
           if (searchTerms.length > 0) {
             filtered = filtered.filter(log => messageContainsSearchTerms(log.message, searchTerms));
           }
         }
-        
+
         if (stopRequested) break;
         allFiltered = allFiltered.concat(filtered);
         // Update message count map
@@ -382,11 +309,11 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     if (messagesContainer && allFiltered.length === 0) {
       let noMessagesText;
       if (searchAllUsers) {
-        noMessagesText = `No messages found containing the search terms: ${searchTerms.join(', ')}`;
+        noMessagesText = chatlogsParserMessages.noMessagesFoundAll[lang](searchTerms);
       } else if (searchTerms.length > 0) {
-        noMessagesText = `No messages found for the selected user(s) and date(s) containing the search terms: ${searchTerms.join(', ')}`;
+        noMessagesText = chatlogsParserMessages.noMessagesFoundSome[lang](searchTerms);
       } else {
-        noMessagesText = 'No messages found for the selected user(s) and date(s).';
+        noMessagesText = chatlogsParserMessages.noMessagesFound[lang];
       }
       messagesContainer.innerHTML = `<div class="no-messages">${noMessagesText}</div>`;
       // Also clear userlist

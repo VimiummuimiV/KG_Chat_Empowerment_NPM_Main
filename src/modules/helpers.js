@@ -1465,3 +1465,14 @@ export function getMessageTextWithImgTitles(element) {
   }
   return result.trim();
 }
+
+// Utility to get current language from settings (toggle section)
+export function getCurrentLanguage() {
+  try {
+    const toggle = JSON.parse(localStorage.getItem('toggle')) || [];
+    const langSetting = toggle.find(s => s.category === 'ui' && s.type === 'language');
+    return langSetting?.option || 'en';
+  } catch {
+    return 'en';
+  }
+}

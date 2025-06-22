@@ -1,3 +1,5 @@
+import { getCurrentLanguage } from "./helpers.js";
+
 let tooltipEl = null, tooltipHideTimer = null, tooltipShowTimer = null;
 let tooltipIsVisible = false, tooltipIsShown = false, tooltipCurrentTarget = null;
 
@@ -66,17 +68,6 @@ function interpolateTooltip(content, target) {
     }
     return match;
   });
-}
-
-// Utility to get current language from settings (toggle section)
-function getCurrentLanguage() {
-  try {
-    const toggle = JSON.parse(localStorage.getItem('toggle')) || [];
-    const langSetting = toggle.find(s => s.category === 'ui' && s.type === 'language');
-    return langSetting?.option || 'en';
-  } catch {
-    return 'en';
-  }
 }
 
 export function createCustomTooltip(element, tooltipContent, delegation = false) {
