@@ -476,8 +476,8 @@ export function createSettingsButton(panel) {
   showSettingsButton.classList.add("empowerment-button", "settings-button");
 
   createCustomTooltip(showSettingsButton, {
-    en: 'Show Settings Panel',
-    ru: 'Открыть панель настроек'
+    en: 'Open Settings',
+    ru: 'Открыть настройки'
   });
   showSettingsButton.style.position = 'relative';
 

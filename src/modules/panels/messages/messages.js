@@ -72,8 +72,8 @@ export function createMessagesButton(panel) {
   showPersonalMessagesButton.appendChild(newMessageIndicator);
 
   createCustomTooltip(showPersonalMessagesButton, {
-    en: 'Show Personal Messages',
-    ru: 'Показать личные сообщения'
+    en: 'Open Messages',
+    ru: 'Открыть сообщения'
   });
 
   // Add a click event listener to the button

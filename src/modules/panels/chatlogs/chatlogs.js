@@ -62,8 +62,8 @@ export function createChatLogsButton(panel) {
   showChatLogsButton.style.zIndex = '1';
   showChatLogsButton.innerHTML = chatLogsSVG; // Add icon
   createCustomTooltip(showChatLogsButton, {
-    en: 'Show Chat Logs',
-    ru: 'Показать чат-логи'
+    en: 'Open Chat Logs',
+    ru: 'Открыть логи чата'
   });
 
   showChatLogsButton.addEventListener('click', async function () {

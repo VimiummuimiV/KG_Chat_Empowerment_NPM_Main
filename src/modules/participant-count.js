@@ -24,7 +24,7 @@ export function createChatUserCounter(panel, initialCount = 0) {
     return ranks.reduce((counts, rank) => {
       const count = document.getElementsByClassName(rank).length;
       if (count > 0) {
-        counts.push(`${rankData[rank]}${count}`);
+        counts.push(`${rankData[rank]}&nbsp;${count}&nbsp;`);
       }
       return counts;
     }, []);

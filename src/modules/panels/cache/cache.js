@@ -658,8 +658,8 @@ export function createCacheButton(panel) {
 
   // Replace with custom tooltip
   createCustomTooltip(showUserListCacheButton, {
-    en: 'Show Cache Panel',
-    ru: 'Показать панель кэша'
+    en: 'Open Cache',
+    ru: 'Открыть кэш'
   });
   showUserListCacheButton.addEventListener('click', () => {
     addPulseEffect(showUserListCacheButton);
