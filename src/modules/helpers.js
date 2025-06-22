@@ -449,6 +449,65 @@ export async function getExactUserIdByName(userName) {
   }
 }
 
+// Function to get user profile data by ID
+export async function getUserProfileById(userId) {
+  try {
+    const profileApiUrl = `https://klavogonki.ru/api/profile/get-summary?id=${userId}`;
+    const profileData = await fetchJSON(profileApiUrl);
+    return profileData;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
+  }
+}
+
+// Function to extract history usernames from profile data
+export function getHistoryUsernames(profileData) {
+  // Check if profileData exists and has the expected structure
+  if (!profileData || !profileData.user || !profileData.user.history || !Array.isArray(profileData.user.history)) {
+    return [];
+  }
+
+  // Extract all login names from the history array
+  const usernames = profileData.user.history.map(historyItem => {
+    return historyItem.login;
+  });
+
+  return usernames;
+}
+
+// Main function to get history usernames by user ID
+export async function getHistoryUsernamesById(userId) {
+  try {
+    const profileData = await getUserProfileById(userId);
+    if (!profileData) {
+      return [];
+    }
+    return getHistoryUsernames(profileData);
+  } catch (error) {
+    console.error('Error getting history usernames:', error);
+    return [];
+  }
+}
+
+// Main function to get history usernames by username (combines search + profile APIs)
+export async function getHistoryUsernamesByName(userName) {
+  try {
+    // First, get the user ID by username
+    const userId = await getExactUserIdByName(userName);
+    if (!userId) {
+      console.log(`User with username "${userName}" not found`);
+      return [];
+    }
+
+    // Then get the history usernames by ID
+    return await getHistoryUsernamesById(userId);
+  } catch (error) {
+    console.error('Error getting history usernames by name:', error);
+    return [];
+  }
+}
+
 // Helper function to get all user IDs by username via the search API
 export async function getUserIDsByName(userName) {
   const searchApiUrl = `https://klavogonki.ru/api/profile/search-users?query=${userName}`;

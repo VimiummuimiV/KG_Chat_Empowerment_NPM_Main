@@ -3,7 +3,7 @@ import { minimalChatlogsDate } from "../../definitions.js";
 import { fetchChatLogs } from './chatlogs.js';
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
-import { getExactUserIdByName } from '../../helpers.js';
+import { getExactUserIdByName, getHistoryUsernamesByName } from '../../helpers.js';
 
 /**
  * Attach parse logic to the parse button in the chat logs panel header.
@@ -159,7 +159,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     while (true) {
       usernamesInput = prompt("Enter username(s) to parse (comma-separated):", usernamesInput || "");
       if (!usernamesInput) return null;
-      const usernames = usernamesInput.split(',').map(u => u.trim()).filter(Boolean);
+      let usernames = usernamesInput.split(',').map(u => u.trim()).filter(Boolean);
       if (usernames.length === 0) return null;
       // Validate each username using getExactUserIdByName
       const invalidUsernames = [];
@@ -175,6 +175,29 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         );
         // Loop again, keeping the previous value
         continue;
+      }
+      // If only one username, ask if user wants to retrieve all previous history usernames
+      if (usernames.length === 1) {
+        const answer = prompt(
+          `Do you want to retrieve all previous history usernames for this user? (1 - yes, 2 - no)`,
+          '2'
+        );
+        if (answer === '1') {
+          if (typeof getHistoryUsernamesByName === 'function') {
+            const historyUsernames = await getHistoryUsernamesByName(usernames[0]);
+            if (Array.isArray(historyUsernames) && historyUsernames.length > 0) {
+              // Always keep the original username as first, then add unique history usernames
+              const allUsernames = [usernames[0], ...historyUsernames.filter(u => u !== usernames[0])];
+              // Prompt user to confirm/edit the expanded list, no validation
+              const confirmed = prompt(
+                'Confirm or edit the list of usernames to parse (comma-separated):',
+                allUsernames.join(', ')
+              );
+              if (!confirmed) return null;
+              return confirmed.split(',').map(u => u.trim()).filter(Boolean);
+            }
+          }
+        }
       }
       return usernames;
     }
