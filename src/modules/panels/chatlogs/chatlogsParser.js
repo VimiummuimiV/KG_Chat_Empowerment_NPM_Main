@@ -26,7 +26,13 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
 
   // Helper to prompt for options
   async function promptOptions() {
-    const modeInput = prompt(chatlogsParserMessages.selectParseMode[lang], '1');
+    let modeInput;
+    while (true) {
+      modeInput = prompt(chatlogsParserMessages.selectParseMode[lang], '1');
+      if (modeInput === null) return null;
+      if (["1", "2", "3", "4"].includes(modeInput)) break;
+      alert(chatlogsParserMessages.invalidSelection[lang]);
+    }
     const opts = {};
     function isValidDateParts(year, month, day) {
       const now = new Date();
@@ -63,7 +69,8 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       let rangeInput, fromDate, toDate;
       while (true) {
         rangeInput = prompt(chatlogsParserMessages.enterDateRange[lang], '');
-        if (!rangeInput || !rangeInput.trim()) return null;
+        if (rangeInput === null) return null;
+        if (!rangeInput.trim()) continue;
         // Accept with or without spaces around the dash
         const match = rangeInput.match(/([\d:\-]{6,10})\s*-\s*([\d:\-]{6,10})/);
         if (match) {
@@ -83,7 +90,8 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       let fromInput, fromDate;
       while (true) {
         fromInput = prompt(chatlogsParserMessages.enterFromDate[lang], '');
-        if (!fromInput || !fromInput.trim()) return null;
+        if (fromInput === null) return null;
+        if (!fromInput.trim()) continue;
         fromDate = normalizeDate(fromInput.trim());
         if (fromDate) {
           opts.from = fromDate;
@@ -98,7 +106,8 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       let dateInput, dateVal;
       while (true) {
         dateInput = prompt(chatlogsParserMessages.enterSingleDate[lang], '');
-        if (!dateInput || !dateInput.trim()) return null;
+        if (dateInput === null) return null;
+        if (!dateInput.trim()) continue;
         dateVal = normalizeDate(dateInput.trim());
         if (dateVal) {
           opts.from = dateVal;
@@ -106,11 +115,8 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
           opts.mode = 'single';
           return opts;
         }
-        alert(chatlogsParserMessages.invalidSingleDate[lang]);
+        alert(chatlogsParserMessages.invalidDate[lang]);
       }
-    } else {
-      alert(chatlogsParserMessages.invalidSelection[lang]);
-      return null;
     }
   }
 
@@ -156,10 +162,19 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
 
   // Helper to prompt for search terms
   function promptSearchTerms(searchAllUsers = false) {
-    const searchInput = prompt(chatlogsParserMessages.enterSearchTerms[lang](searchAllUsers), '');
-    if (searchInput === null) return null;
-    if (!searchInput || !searchInput.trim()) return [];
-    return searchInput.split(',').map(term => term.trim().toLowerCase()).filter(Boolean);
+    let searchInput;
+    while (true) {
+      searchInput = prompt(chatlogsParserMessages.enterSearchTerms[lang](searchAllUsers), '');
+      if (searchInput === null) return null;
+      if (!searchInput.trim()) {
+        if (searchAllUsers) {
+          alert(chatlogsParserMessages.searchAllUsersRequired[lang]);
+          continue;
+        }
+        return [];
+      }
+      return searchInput.split(',').map(term => term.trim().toLowerCase()).filter(Boolean);
+    }
   }
 
   // Helper to check if message contains any of the search terms
@@ -233,7 +248,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     // Show search info
     if (messagesContainer) {
       const searchInfo = document.createElement('div');
-      searchInfo.className = 'search-info';
+      searchInfo.className = 'search-messages-info';
       if (searchAllUsers) {
         searchInfo.textContent = `Searching all users for messages containing: ${searchTerms.join(', ')}`;
       } else if (searchTerms.length > 0) {
@@ -315,7 +330,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       } else {
         noMessagesText = chatlogsParserMessages.noMessagesFound[lang];
       }
-      messagesContainer.innerHTML = `<div class="no-messages">${noMessagesText}</div>`;
+      messagesContainer.innerHTML = `<div class="no-messages-info">${noMessagesText}</div>`;
       // Also clear userlist
       const panel = messagesContainer.closest('.chat-logs-panel');
       if (panel) {
