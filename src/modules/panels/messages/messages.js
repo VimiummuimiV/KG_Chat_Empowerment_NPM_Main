@@ -29,7 +29,7 @@ import {
 } from '../../helpers.js';
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
-import { showChatLogsPanel, fetchChatLogs } from "../chatlogs/chatlogs.js"; // chatlogs
+import { showChatLogsPanel } from "../chatlogs/chatlogs.js"; // chatlogs
 import { createCustomTooltip } from "../../tooltip.js"; // tooltip
 
 // definitions
@@ -71,7 +71,10 @@ export function createMessagesButton(panel) {
 
   showPersonalMessagesButton.appendChild(newMessageIndicator);
 
-  createCustomTooltip(showPersonalMessagesButton, 'Show Personal Messages');
+  createCustomTooltip(showPersonalMessagesButton, {
+    en: 'Show Personal Messages',
+    ru: 'Показать личные сообщения'
+  });
 
   // Add a click event listener to the button
   showPersonalMessagesButton.addEventListener('click', function () {
@@ -361,7 +364,10 @@ async function showMessagesPanel() {
   const messagesSearchInput = document.createElement('input');
   messagesSearchInput.className = 'personal-messages-search-input';
   messagesSearchInput.type = 'search';
-  createCustomTooltip(messagesSearchInput, '[Ctrl + Click] to clear search input and display all personal messages');
+  createCustomTooltip(messagesSearchInput, {
+    en: '[Ctrl + Click] to clear search input and display all personal messages',
+    ru: '[Ctrl + Click] чтобы очистить поиск и показать все личные сообщения'
+  });
 
   // Append the search input to the search container
   messagesSearchContainer.appendChild(messagesSearchInput);
@@ -374,7 +380,10 @@ async function showMessagesPanel() {
   const saveMessagesButton = document.createElement('div');
   saveMessagesButton.className = 'large-button panel-header-save-button';
   saveMessagesButton.innerHTML = saveSVG;
-  createCustomTooltip(saveMessagesButton, 'Save messages');
+  createCustomTooltip(saveMessagesButton, {
+    en: 'Save messages',
+    ru: 'Сохранить сообщения'
+  });
   saveMessagesButton.style.opacity = "0";
 
   // Handle the save button click to restore the backup
@@ -413,7 +422,10 @@ async function showMessagesPanel() {
   const importMessagesButton = document.createElement('div');
   importMessagesButton.className = "large-button panel-header-import-button";
   importMessagesButton.innerHTML = importSVG;
-  createCustomTooltip(importMessagesButton, 'Import messages');
+  createCustomTooltip(importMessagesButton, {
+    en: 'Import messages',
+    ru: 'Импортировать сообщения'
+  });
 
   importMessagesButton.addEventListener('click', () => {
     isMessagesImport = true;
@@ -476,7 +488,10 @@ async function showMessagesPanel() {
   const exportMessagesButton = document.createElement('div');
   exportMessagesButton.className = "large-button panel-header-export-button";
   exportMessagesButton.innerHTML = exportSVG;
-  createCustomTooltip(exportMessagesButton, 'Export messages');
+  createCustomTooltip(exportMessagesButton, {
+    en: 'Export messages',
+    ru: 'Экспортировать сообщения'
+  });
 
   // Add event listener for exporting messages
   exportMessagesButton.addEventListener('click', () => {
@@ -505,7 +520,10 @@ async function showMessagesPanel() {
   copyPersonalMessagesButton.className = "large-button panel-header-copy-button";
   // Set the inner HTML of the copy personal messages button element with the clipboard SVG
   copyPersonalMessagesButton.innerHTML = clipboardSVG;
-  createCustomTooltip(copyPersonalMessagesButton, 'Copy Personal Messages');
+  createCustomTooltip(copyPersonalMessagesButton, {
+    en: 'Copy Personal Messages',
+    ru: 'Скопировать личные сообщения'
+  });
 
   // Event listener to copy the text content of the messages container
   copyPersonalMessagesButton.addEventListener('click', () => {
@@ -554,7 +572,10 @@ async function showMessagesPanel() {
   // Create a clear cache button with the provided SVG icon
   const clearCacheButton = document.createElement('div');
   clearCacheButton.className = "large-button panel-header-clear-button";
-  createCustomTooltip(clearCacheButton, 'Clear personal messages');
+  createCustomTooltip(clearCacheButton, {
+    en: 'Clear personal messages',
+    ru: 'Очистить личные сообщения'
+  });
   clearCacheButton.innerHTML = trashSVG;
 
   // Add a click event listener to the clear cache button
@@ -585,7 +606,10 @@ async function showMessagesPanel() {
   // Create a close button with the provided SVG icon
   const closePanelButton = document.createElement('div');
   closePanelButton.className = "large-button panel-header-close-button";
-  createCustomTooltip(closePanelButton, 'Close panel');
+  createCustomTooltip(closePanelButton, {
+    en: 'Close panel',
+    ru: 'Закрыть панель'
+  });
   closePanelButton.innerHTML = closeSVG;
 
   // Add a click event listener to the close panel button
@@ -946,22 +970,38 @@ async function showMessagesPanel() {
   document.addEventListener('keydown', panelsEvents.handlePersonalMessagesKeydown);
 
   // Create custom tooltips for various message elements (time, username, text)
-  createCustomTooltip('.message-time', cachedMessagesPanel, (el) => {
-    const moscowTime = calibrateToMoscowTime(el.textContent);
-    return `
-      [Click] Open chatlog at ${moscowTime}
+  createCustomTooltip('.message-time', cachedMessagesPanel, (el) => ({
+    en: `
+      [Click] Open chatlog at ${calibrateToMoscowTime(el.textContent)}
       [Shift + Click] Copy chatlogs URL to clipboard
-      [Ctrl + Click] Remove all messages starting from ${moscowTime}
-    `;
-  }, true);
+      [Ctrl + Click] Remove all messages starting from ${calibrateToMoscowTime(el.textContent)}
+    `,
+    ru: `
+      [Клик] Открыть чатлог в ${calibrateToMoscowTime(el.textContent)}
+      [Shift + Клик] Скопировать ссылку на чатлог
+      [Ctrl + Клик] Удалить все сообщения начиная с ${calibrateToMoscowTime(el.textContent)}
+    `
+  }), true);
 
-  createCustomTooltip('.message-username', cachedMessagesPanel, (el) => `
-    [Click] Open ${el.textContent} profile
-    [Ctrl + Click] Remove all messages from ${el.textContent} user
-  `, true);
+  createCustomTooltip('.message-username', cachedMessagesPanel, (el) => ({
+    en: `
+      [Click] Open ${el.textContent} profile
+      [Ctrl + Click] Remove all messages from ${el.textContent} user
+    `,
+    ru: `
+      [Клик] Открыть профиль ${el.textContent}
+      [Ctrl + Клик] Удалить все сообщения пользователя ${el.textContent}
+    `
+  }), true);
 
-  createCustomTooltip('.message-text', cachedMessagesPanel, (el) => `
-    [Click] Search for this message
-    [Ctrl + Click] Remove only this message
-  `, true);
+  createCustomTooltip('.message-text', cachedMessagesPanel, (el) => ({
+    en: `
+      [Click] Search for this message
+      [Ctrl + Click] Remove only this message
+    `,
+    ru: `
+      [Клик] Найти это сообщение
+      [Ctrl + Клик] Удалить только это сообщение
+    `
+  }), true);
 }

@@ -82,9 +82,6 @@ function getCurrentLanguage() {
 export function createCustomTooltip(element, tooltipContent, delegation = false) {
   if (tooltipContent == null) return; // Skip if content is null/undefined
 
-  // Use helper to resolve language string
-  let resolvedTooltipContent = resolveLanguageString(tooltipContent);
-
   // Create tooltip element if it doesn't exist
   tooltipEl ||= (() => {
     const tooltipDiv = document.createElement('div');
@@ -97,13 +94,10 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
 
   if (delegation) {
     // Delegation mode: attach event listeners to the parent element
-    const selector = element; // In delegation mode, element is actually a selector string
-    const parentElement = tooltipContent; // In delegation mode, tooltipContent is actually the parent element
-    const actualTooltipContent = arguments[2]; // The actual tooltip content is the third argument
-    // Use helper to resolve language string
-    let resolvedDelegatedContent = resolveLanguageString(actualTooltipContent);
+    const selector = element; // In delegation mode, element is a selector string
+    const parentElement = tooltipContent; // In delegation mode, tooltipContent is the parent element
+    const actualTooltipContent = arguments[2]; // The actual tooltip content (function, string, or object)
 
-    // Use WeakMap for parentElement -> Set of selectors
     if (!delegationHandlers.has(parentElement)) {
       delegationHandlers.set(parentElement, new Set());
     }
@@ -120,20 +114,16 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
         clearTimeout(tooltipHideTimer);
         clearTimeout(tooltipShowTimer);
 
-        // Get tooltip content - could be static or dynamic based on target
-        let content = resolvedDelegatedContent;
-
-        // If content is a function, call it with the target element
+        // Always process: function -> resolve language -> interpolate
+        let content = actualTooltipContent;
         if (typeof content === 'function') {
           content = content(target);
         }
-
-        // Always interpolate ${...} placeholders
+        content = resolveLanguageString(content);
         if (typeof content === 'string') {
           content = interpolateTooltip(content, target);
         }
 
-        // Highlight [Action]Message pairs in the tooltip content
         tooltipEl.innerHTML = highlightTooltipActions(content);
         tooltipEl.style.display = 'flex';
         tooltipEl.style.opacity = '0';
@@ -150,7 +140,6 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
       const handleMouseLeave = (e) => {
         const target = e.target.closest(selector);
         if (!target) return;
-
         hideTooltipElement();
         document.removeEventListener('mousemove', tooltipTrackMouse);
       };
@@ -158,7 +147,6 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
       const handleClick = (e) => {
         const target = e.target.closest(selector);
         if (!target) return;
-
         hideTooltipElement();
       };
 
@@ -168,8 +156,16 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
     }
   } else {
     // Standard mode: attach event listeners directly to the element
-    // Always update the tooltip content stored on the element.
-    element._tooltipContent = resolvedTooltipContent;
+    // Always process: function -> resolve language -> interpolate
+    let content = tooltipContent;
+    if (typeof content === 'function') {
+      content = content(element);
+    }
+    content = resolveLanguageString(content);
+    if (typeof content === 'string') {
+      content = interpolateTooltip(content, element);
+    }
+    element._tooltipContent = content;
 
     if (!element._tooltipInitialized) {
       element._tooltipInitialized = true;
@@ -180,7 +176,6 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
         clearTimeout(tooltipHideTimer);
         clearTimeout(tooltipShowTimer);
 
-        // Highlight [Action]Message pairs in the tooltip content
         tooltipEl.innerHTML = highlightTooltipActions(element._tooltipContent);
         tooltipEl.style.display = 'flex';
         tooltipEl.style.opacity = '0';

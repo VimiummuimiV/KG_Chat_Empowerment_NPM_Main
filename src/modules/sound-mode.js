@@ -20,11 +20,16 @@ export let voicePitch = KG_Chat_Empowerment.voiceSettings.voicePitch ?? defaultV
 let soundSwitcher, soundSwitcherIcon;
 
 export function createSoundSwitcherButton(panel) {
+  const tooltipTexts = {
+    silence: { en: 'Do not disturb', ru: 'Не беспокоить' },
+    beep: { en: 'Notify with beep signal', ru: 'Уведомлять звуковым сигналом' },
+    voice: { en: 'Notify with voice API', ru: 'Уведомлять голосом' }
+  };
   soundSwitcher = document.createElement('div');
   const state = KG_Chat_Empowerment.messageSettings.messageNotificationState || 'silence';
   soundSwitcher.classList.add("empowerment-button", "sound-switcher-button");
   soundSwitcher.id = state;
-  createCustomTooltip(soundSwitcher, KG_Chat_Empowerment.messageSettings.messageNotificationTitle || 'Do not disturb');
+  createCustomTooltip(soundSwitcher, tooltipTexts[state]);
 
   soundSwitcherIcon = document.createElement('span');
   soundSwitcherIcon.classList.add('sound-switcher-icon');
@@ -39,21 +44,21 @@ export function createSoundSwitcherButton(panel) {
       switch (this.id) {
         case 'silence':
           this.id = 'beep';
-          createCustomTooltip(this, 'Notify with beep signal');
+          createCustomTooltip(this, tooltipTexts['beep']);
           KG_Chat_Empowerment.messageSettings.messageNotificationState = 'beep';
-          KG_Chat_Empowerment.messageSettings.messageNotificationTitle = 'Notify with beep signal';
+          KG_Chat_Empowerment.messageSettings.messageNotificationTitle = tooltipTexts['beep'].en;
           break;
         case 'beep':
           this.id = 'voice';
-          createCustomTooltip(this, 'Notify with voice API');
+          createCustomTooltip(this, tooltipTexts['voice']);
           KG_Chat_Empowerment.messageSettings.messageNotificationState = 'voice';
-          KG_Chat_Empowerment.messageSettings.messageNotificationTitle = 'Notify with voice API';
+          KG_Chat_Empowerment.messageSettings.messageNotificationTitle = tooltipTexts['voice'].en;
           break;
         case 'voice':
           this.id = 'silence';
-          createCustomTooltip(this, 'Do not disturb');
+          createCustomTooltip(this, tooltipTexts['silence']);
           KG_Chat_Empowerment.messageSettings.messageNotificationState = 'silence';
-          KG_Chat_Empowerment.messageSettings.messageNotificationTitle = 'Do not disturb';
+          KG_Chat_Empowerment.messageSettings.messageNotificationTitle = tooltipTexts['silence'].en;
           break;
       }
       localStorage.setItem('KG_Chat_Empowerment', JSON.stringify(KG_Chat_Empowerment));
