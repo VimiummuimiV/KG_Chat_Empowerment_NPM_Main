@@ -210,6 +210,23 @@ function createIgnoredItem(user) {
 
 function createToggleItem(toggleConfig, optionValue) {
   const item = createContainer('toggle');
+  if (toggleConfig.type === 'language') {
+    const select = document.createElement('select');
+    select.className = 'language-toggle-select';
+    (toggleConfig.languages || []).forEach(lang => {
+      const option = document.createElement('option');
+      option.value = lang.value;
+      option.textContent = lang.label;
+      if (optionValue === lang.value) option.selected = true;
+      select.appendChild(option);
+    });
+    const label = document.createElement('span');
+    label.className = 'toggle-description';
+    label.textContent = toggleConfig.description;
+    item.appendChild(select);
+    item.appendChild(label);
+    return item;
+  }
 
   const select = document.createElement('select');
   select.className = 'toggle-select';
@@ -322,6 +339,16 @@ export const toggleSettingsConfig = [
     image: 'https://i.imgur.com/rqIVAgH.jpeg',
     category: 'elements',
     type: 'counter'
+  },
+  {
+    description: '🌐 Interface language',
+    image: '',
+    category: 'ui',
+    type: 'language',
+    languages: [
+      { value: 'en', label: '🇬🇧 English' },
+      { value: 'ru', label: '🇷🇺 Русский' }
+    ]
   }
 ];
 
@@ -673,14 +700,21 @@ function showSettingsPanel() {
       // In your save logic where you process toggle items
       container.querySelectorAll('.settings-toggle-container .toggle-item').forEach(item => {
         const descriptionElement = item.querySelector('.toggle-description');
-        const selectElement = item.querySelector('.toggle-select');
-        const selectedValue = selectElement?.value.trim() || 'no';
-
-        currentValues.toggle.push({
-          category: descriptionElement.dataset.category,
-          type: descriptionElement.dataset.type,
-          option: selectedValue
-        });
+        const selectElement = item.querySelector('select');
+        if (descriptionElement && descriptionElement.textContent.includes('Interface language')) {
+          currentValues.toggle.push({
+            category: 'ui',
+            type: 'language',
+            option: selectElement.value
+          });
+        } else {
+          const selectedValue = selectElement?.value.trim() || 'no';
+          currentValues.toggle.push({
+            category: descriptionElement.dataset.category,
+            type: descriptionElement.dataset.type,
+            option: selectedValue
+          });
+        }
       });
 
       // Check if any values have changed compared to previous state
@@ -857,7 +891,13 @@ function showSettingsPanel() {
           const storedSetting = storedToggleSettings.find(
             s => s.category === toggle.category && s.type === toggle.type
           );
-          const optionValue = storedSetting ? storedSetting.option : 'yes';
+          let optionValue = 'yes';
+          if (toggle.type === 'language') {
+            const storedSetting = storedToggleSettings.find(s => s.category === 'ui' && s.type === 'language');
+            optionValue = storedSetting ? storedSetting.option : 'en';
+          } else {
+            optionValue = storedSetting ? storedSetting.option : 'yes';
+          }
           const toggleItem = createToggleItem(toggle, optionValue);
           container.appendChild(toggleItem);
         });
