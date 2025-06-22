@@ -198,7 +198,10 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
 
   const newNameElement = document.createElement('a');
   newNameElement.classList.add('name');
-  createCustomTooltip(newNameElement, 'Send private message');
+  createCustomTooltip(newNameElement, {
+    en: 'Send private message',
+    ru: 'Отправить приватное сообщение'
+  });
   newNameElement.dataset.user = userId;
   newNameElement.textContent = userName;
 
@@ -264,7 +267,10 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
 
   if (userToTrack) {
     const trackedIcon = document.createElement('div');
-    createCustomTooltip(trackedIcon, 'Tracked user');
+    createCustomTooltip(trackedIcon, {
+      en: 'Tracked user',
+      ru: 'Отслеживаемый пользователь'
+    });
     trackedIcon.classList.add('tracked');
     trackedIcon.innerHTML = trackedSVG;
     newUserElement.appendChild(trackedIcon);
@@ -276,7 +282,10 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
   // Create and hide a message element if the user is in ignored
   if (isIgnoredUser) {
     const ignoredIcon = document.createElement('div');
-    createCustomTooltip(ignoredIcon, 'Ignored user');
+    createCustomTooltip(ignoredIcon, {
+      en: 'Ignored user',
+      ru: 'Игнорируемый пользователь'
+    });
     ignoredIcon.classList.add('ignored');
     ignoredIcon.innerHTML = ignoredSVG;
     newUserElement.appendChild(ignoredIcon);
@@ -291,6 +300,10 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
   // If a moderator icon is found or the current user is in the moderator array, append the moderator icon.
   if (hasModeratorIcon || isModerator) {
     const moderatorIcon = document.createElement('div');
+    createCustomTooltip(moderatorIcon, {
+      en: 'Moderator',
+      ru: 'Модератор'
+    });
     moderatorIcon.classList.add('moderator');
     moderatorIcon.innerHTML = moderatorSVG; // Assuming 'moderatorSVG' contains the SVG for the icon
     newUserElement.appendChild(moderatorIcon);
