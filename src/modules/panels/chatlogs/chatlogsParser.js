@@ -13,6 +13,7 @@ import { getExactUserIdByName, getHistoryUsernamesByName } from '../../helpers.j
 export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
   let isParsing = false;
   let stopRequested = false;
+  let abortController = null;
 
   // Helper to get the messages container
   function getMessagesContainer(panelOrContainer) {
@@ -207,6 +208,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
   async function startParsing() {
     isParsing = true;
     stopRequested = false;
+    abortController = new AbortController();
     parseButton.innerHTML = pauseSVG;
     parseButton.title = "Stop parsing";
 
@@ -237,22 +239,38 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     let currentDate = new Date(startDate);
     while (currentDate <= endDate && !stopRequested) {
       const dateStr = currentDate.toISOString().slice(0, 10);
-      const { chatlogs } = await fetchChatLogs(dateStr, null);
-      // Filter messages by username(s) and remove null/undefined and null message
-      const filtered = chatlogs.filter(log => log && log.message && usernames.includes(log.username));
-      allFiltered = allFiltered.concat(filtered);
-      // Update message count map
-      filtered.forEach(({ username }) => {
-        usernameMessageCountMap.set(username, (usernameMessageCountMap.get(username) || 0) + 1);
-      });
-      // Render incrementally
-      if (messagesContainer && filtered.length > 0) {
-        renderChatMessages(filtered, messagesContainer, usernameHueMap, true, dateStr);
-        renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'), usernameHueMap);
+      try {
+        const { chatlogs } = await fetchChatLogs(dateStr, null, abortController.signal);
+        if (stopRequested) break;
+        // Filter messages by username(s) and remove null/undefined and null message
+        const filtered = chatlogs.filter(log => log && log.message && usernames.includes(log.username));
+        if (stopRequested) break;
+        allFiltered = allFiltered.concat(filtered);
+        // Update message count map
+        filtered.forEach(({ username }) => {
+          usernameMessageCountMap.set(username, (usernameMessageCountMap.get(username) || 0) + 1);
+        });
+        if (stopRequested) break;
+        // Render incrementally
+        if (messagesContainer && filtered.length > 0) {
+          renderChatMessages(filtered, messagesContainer, usernameHueMap, true, dateStr);
+          if (stopRequested) break;
+          renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'), usernameHueMap);
+        }
+        if (stopRequested) break;
+        // Optional: add a small delay for smoother UI
+        await new Promise(res => setTimeout(res, 60));
+        if (stopRequested) break;
+        currentDate.setDate(currentDate.getDate() + 1);
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('Parsing was aborted');
+          break;
+        } else {
+          console.error('Error during parsing:', error);
+          break;
+        }
       }
-      // Optional: add a small delay for smoother UI
-      await new Promise(res => setTimeout(res, 60));
-      currentDate.setDate(currentDate.getDate() + 1);
     }
     // If nothing was found, show placeholder
     if (messagesContainer && allFiltered.length === 0) {
@@ -273,6 +291,9 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
 
   function stopParsing() {
     stopRequested = true;
+    if (abortController) {
+      abortController.abort();
+    }
     isParsing = false;
     resetButton();
   }
@@ -281,6 +302,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     parseButton.innerHTML = playSVG;
     isParsing = false;
     stopRequested = false;
+    abortController = null;
   }
 
   parseButton.addEventListener('click', async () => {
