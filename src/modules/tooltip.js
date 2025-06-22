@@ -44,6 +44,15 @@ new MutationObserver(() => {
 // Store delegation handlers to avoid duplicates (use WeakMap for auto-cleanup)
 const delegationHandlers = new WeakMap();
 
+// Helper to resolve language string from an object or return as-is
+function resolveLanguageString(content) {
+  if (typeof content === 'object' && content !== null && !Array.isArray(content)) {
+    const lang = getCurrentLanguage();
+    return content[lang] || content['en'] || Object.values(content)[0];
+  }
+  return content;
+}
+
 function interpolateTooltip(content, target) {
   return content.replace(/\$\{([^}]+)\}/g, (match, key) => { // Match ${key} placeholders
     if (target.hasAttribute && target.hasAttribute(key)) {
@@ -59,8 +68,22 @@ function interpolateTooltip(content, target) {
   });
 }
 
+// Utility to get current language from settings (toggle section)
+function getCurrentLanguage() {
+  try {
+    const toggle = JSON.parse(localStorage.getItem('toggle')) || [];
+    const langSetting = toggle.find(s => s.category === 'ui' && s.type === 'language');
+    return langSetting?.option || 'en';
+  } catch {
+    return 'en';
+  }
+}
+
 export function createCustomTooltip(element, tooltipContent, delegation = false) {
   if (tooltipContent == null) return; // Skip if content is null/undefined
+
+  // Use helper to resolve language string
+  let resolvedTooltipContent = resolveLanguageString(tooltipContent);
 
   // Create tooltip element if it doesn't exist
   tooltipEl ||= (() => {
@@ -77,6 +100,8 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
     const selector = element; // In delegation mode, element is actually a selector string
     const parentElement = tooltipContent; // In delegation mode, tooltipContent is actually the parent element
     const actualTooltipContent = arguments[2]; // The actual tooltip content is the third argument
+    // Use helper to resolve language string
+    let resolvedDelegatedContent = resolveLanguageString(actualTooltipContent);
 
     // Use WeakMap for parentElement -> Set of selectors
     if (!delegationHandlers.has(parentElement)) {
@@ -96,7 +121,7 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
         clearTimeout(tooltipShowTimer);
 
         // Get tooltip content - could be static or dynamic based on target
-        let content = actualTooltipContent;
+        let content = resolvedDelegatedContent;
 
         // If content is a function, call it with the target element
         if (typeof content === 'function') {
@@ -144,7 +169,7 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
   } else {
     // Standard mode: attach event listeners directly to the element
     // Always update the tooltip content stored on the element.
-    element._tooltipContent = tooltipContent;
+    element._tooltipContent = resolvedTooltipContent;
 
     if (!element._tooltipInitialized) {
       element._tooltipInitialized = true;
