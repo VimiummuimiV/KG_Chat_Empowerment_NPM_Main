@@ -121,7 +121,10 @@ function showCachePanel() {
   const storedThresholdTime = localStorage.getItem('cacheRefreshThresholdHours');
   dropTimeThreshold.innerHTML = storedThresholdTime || '00:00:00';
   dropTimeThreshold.addEventListener('click', setCacheRefreshTime);
-  createCustomTooltip(dropTimeThreshold, 'Click to set cache refresh time');
+  createCustomTooltip(dropTimeThreshold, {
+    en: 'Click to set cache refresh time',
+    ru: 'Нажмите, чтобы установить время обновления кэша'
+  });
 
   const dropTimeExpirationDescription = document.createElement('span');
   dropTimeExpirationDescription.className = 'drop-time-expiration-description';
@@ -129,7 +132,10 @@ function showCachePanel() {
 
   const dropTimeExpiration = document.createElement('span');
   dropTimeExpiration.className = 'drop-time-expiration';
-  createCustomTooltip(dropTimeExpiration, 'Time until cache refresh');
+  createCustomTooltip(dropTimeExpiration, {
+    en: 'Time until cache refresh',
+    ru: 'Время до обновления кэша'
+  });
 
   function setCacheRefreshTime() {
     let isValidInput = false;
@@ -163,10 +169,16 @@ function showCachePanel() {
   const cacheSearchInput = document.createElement('input');
   cacheSearchInput.className = 'cached-users-search-input';
   cacheSearchInput.type = 'text';
-  createCustomTooltip(cacheSearchInput, `
-    [Ctrl + Click] to clear the input and display all users
-    [Enter] to activate user search mode on the site
-  `);
+  createCustomTooltip(cacheSearchInput, {
+    en: `
+      [Ctrl + Click] to clear the input and display all users
+      [Enter] to activate user search mode on the site
+    `,
+    ru: ` 
+      [Ctrl + Клик] очистить поле и показать всех пользователей
+      [Enter] включить режим поиска пользователей на сайте
+    `
+  });
   cacheSearchContainer.appendChild(cacheSearchInput);
 
   cacheSearchInput.addEventListener('click', (event) => {
@@ -293,7 +305,10 @@ function showCachePanel() {
   cachePanelSearchMode.className = 'large-button user-mode-button';
   cachePanelSearchMode.innerHTML = usersSVG;
   const currentSearchMode = localStorage.getItem('cachePanelSearchMode') || (localStorage.setItem('cachePanelSearchMode', 'cache'), 'cache');
-  createCustomTooltip(cachePanelSearchMode, `Current active mode: ${currentSearchMode}`);
+  createCustomTooltip(cachePanelSearchMode, {
+    en: (mode => `Current active mode: ${mode}`)(currentSearchMode),
+    ru: (mode => `Текущий активный режим: ${mode === 'cache' ? 'кэш' : 'поиск'}`)(currentSearchMode)
+  });
 
   function updateStyles(mode) {
     cachePanelSearchMode.classList.toggle('cache-mode-button', mode === 'cache');
@@ -305,7 +320,10 @@ function showCachePanel() {
     const newMode = localStorage.getItem('cachePanelSearchMode') === 'cache' ? 'fetch' : 'cache';
     localStorage.setItem('cachePanelSearchMode', newMode);
     updateStyles(newMode);
-    createCustomTooltip(cachePanelSearchMode, `Current active mode: ${newMode}`);
+    createCustomTooltip(cachePanelSearchMode, {
+      en: `Current active mode: ${newMode}`,
+      ru: `Текущий активный режим: ${newMode === 'cache' ? 'кэш' : 'поиск'}`
+    });
 
     // Toggle visibility of user containers based on the mode
     const oldUsersContainer = document.querySelector('.old-users');
@@ -338,7 +356,10 @@ function showCachePanel() {
 
   const clearCacheButton = document.createElement('div');
   clearCacheButton.className = 'large-button panel-header-clear-button';
-  createCustomTooltip(clearCacheButton, 'Clear cache');
+  createCustomTooltip(clearCacheButton, {
+    en: 'Clear cache',
+    ru: 'Очистить кэш'
+  });
   clearCacheButton.innerHTML = trashSVG;
   clearCacheButton.addEventListener('click', () => {
     hideCachePanel();
@@ -350,7 +371,10 @@ function showCachePanel() {
 
   const closePanelButton = document.createElement('div');
   closePanelButton.className = 'large-button panel-header-close-button';
-  createCustomTooltip(closePanelButton, 'Close panel');
+  createCustomTooltip(closePanelButton, {
+    en: 'Close panel',
+    ru: 'Закрыть панель'
+  });
   closePanelButton.innerHTML = closeSVG;
   closePanelButton.addEventListener('click', hideCachePanel);
   panelControlButtons.appendChild(closePanelButton);
@@ -419,11 +443,18 @@ function showCachePanel() {
     loginElement.className = 'login';
     loginElement.textContent = userData.login;
     loginElement.href = `https://klavogonki.ru/profile/${userId}`;
-    createCustomTooltip(loginElement, `
-      [Click] to open profile in iframe (summary)
-      [Ctrl + Click] to open profile in iframe (messages)
-      [Ctrl + Shift + Click] to open profile in a new tab (messages)
-    `);
+    createCustomTooltip(loginElement, {
+      en: ` 
+        [Click] to open profile in iframe (summary)
+        [Ctrl + Click] to open profile in iframe (messages)
+        [Ctrl + Shift + Click] to open profile in a new tab (messages)
+      `,
+      ru: ` 
+        [Клик] открыть профиль в iframe (сводка)
+        [Ctrl + Клик] открыть профиль в iframe (сообщения)
+        [Ctrl + Shift + Клик] открыть профиль в новой вкладке (сообщения)
+      `
+    });
 
     loginContainer.appendChild(loginElement);
 
@@ -447,7 +478,10 @@ function showCachePanel() {
       visitsElement.className = `visits ${userData.tracked ? 'tracked' : 'untracked'}`;
       visitsElement.textContent = userData.visits;
       visitsElement.dataset.userId = userId;
-      createCustomTooltip(visitsElement, `View action log for ${userData.login}`);
+      createCustomTooltip(visitsElement, {
+        en: `View action log for ${userData.login}`,
+        ru: `Посмотреть журнал действий для ${userData.login}`
+      });
       updateVisitsEmoticon(visitsElement);
       loginContainer.appendChild(visitsElement);
 
@@ -623,7 +657,10 @@ export function createCacheButton(panel) {
   showUserListCacheButton.appendChild(cacheUserCount);
 
   // Replace with custom tooltip
-  createCustomTooltip(showUserListCacheButton, 'Show Cache Panel');
+  createCustomTooltip(showUserListCacheButton, {
+    en: 'Show Cache Panel',
+    ru: 'Показать панель кэша'
+  });
   showUserListCacheButton.addEventListener('click', () => {
     addPulseEffect(showUserListCacheButton);
     showCachePanel();
