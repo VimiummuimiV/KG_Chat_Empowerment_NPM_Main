@@ -215,6 +215,14 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     }
   }
 
+  // Helper to calculate percent complete
+  function getPercentComplete(currentDate, startDate, endDate) {
+    const total = endDate - startDate;
+    const done = currentDate - startDate;
+    if (total <= 0) return 100;
+    return Math.min(100, Math.max(0, Math.round((done / total) * 100)));
+  }
+
   // Main parse logic
   async function startParsing() {
     // Expose parser state and stop function globally only when parsing starts, and only if not already set
@@ -309,8 +317,9 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     while (currentDate <= endDate && !stopRequested) {
       const dateStr = currentDate.toISOString().slice(0, 10);
       if (searchDateInfo) {
+        const percent = getPercentComplete(currentDate, startDate, endDate);
         searchDateInfo.textContent =
-          (lang === 'ru' ? 'Дата: ' : 'Date: ') + dateStr;
+          (lang === 'ru' ? 'Дата: ' : 'Date: ') + dateStr + ` (${percent}%)`;
       }
       try {
         const { chatlogs } = await fetchChatLogs(dateStr, null, abortController.signal);
