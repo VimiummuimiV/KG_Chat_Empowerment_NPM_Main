@@ -625,23 +625,29 @@ export async function showChatLogsPanel(personalMessagesDate) {
         return { bb: hex, hex };
       };
 
-      // Helper to extract message text including image alt/title text
-      function getMessageWithAllElementsText(messageElement) {
+      // Helper to extract message text including image alt/title text and handle search-match underline
+      function getMessageWithAllElementsText(messageElement, format) {
         if (!messageElement) return '';
         let result = '';
         for (const node of messageElement.childNodes) {
           if (node.nodeType === Node.TEXT_NODE) {
             result += node.textContent;
           } else if (node.nodeType === Node.ELEMENT_NODE) {
-            if (node.tagName === 'IMG') {
-              // For images, include alt or title if present, else fallback to src
+            if (node.classList.contains && node.classList.contains('search-match')) {
+              // Underline for highlighted search terms
+              if (format === 'bbcode') {
+                result += `[u]${getMessageWithAllElementsText(node, format)}[/u]`;
+              } else if (format === 'markdown') {
+                result += `*${getMessageWithAllElementsText(node, format)}*`;
+              } else {
+                result += getMessageWithAllElementsText(node, format);
+              }
+            } else if (node.tagName === 'IMG') {
               result += node.getAttribute('alt') || node.getAttribute('title') || '';
             } else if (node.tagName === 'A') {
-              // For links, include the text content
               result += node.textContent;
             } else {
-              // Recursively extract from children
-              result += getMessageWithAllElementsText(node);
+              result += getMessageWithAllElementsText(node, format);
             }
           }
         }
@@ -680,7 +686,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
           const time = el.querySelector('.message-time')?.textContent || '';
           const username = el.querySelector('.message-username')?.textContent || '';
           const messageElement = el.querySelector('.message-text');
-          const message = getMessageWithAllElementsText(messageElement) || '';
+          const message = getMessageWithAllElementsText(messageElement, format) || '';
           const color = getUsernameColor(username);
           // Use the closest previous date header for this message
           const date = currentDateForMessages || dateInput.value || today;
