@@ -217,14 +217,17 @@ export const fetchChatLogs = async (date, messagesContainer) => {
     console.error('[fetchChatLogs] Error getting totalIndexedDBSizeFromIndexedDB:', e);
   }
 
-  // Format cache size for display (MB if >= 1000 KB, else KB)
+  // Format cache size for display (GB if >= 1000 MB, MB if >= 1000 KB, else KB)
   function formatCacheSize(sizeKB) {
     const num = parseFloat(sizeKB);
     if (isNaN(num)) return sizeKB;
-    if (num >= 1000) {
+    if (num >= 1024 * 1024) { // 1 GB = 1024 * 1024 KB
+      return (num / (1024 * 1024)).toFixed(2) + (lang === 'ru' ? ' ГБ' : ' GB');
+    }
+    if (num >= 1024) { // 1 MB = 1024 KB
       return (num / 1024).toFixed(2) + (lang === 'ru' ? ' МБ' : ' MB');
     }
-    return num.toFixed(2) + (lang === 'ru' ? ' КБ' : ' KB');
+    return num.toFixed(2) + (lang === 'ru' ? ' КБ' : ' KB'); // 1 KB = 1024 bytes
   }
 
   let placeholder = (lang === 'ru'
