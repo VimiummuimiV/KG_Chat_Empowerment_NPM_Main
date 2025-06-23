@@ -276,6 +276,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     if (messagesContainer) messagesContainer.innerHTML = '';
 
     // Show search info
+    let searchDateInfo = null;
     if (messagesContainer) {
       const searchInfo = document.createElement('div');
       searchInfo.className = 'search-messages-info';
@@ -293,6 +294,12 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
           : `Showing all messages from: ${usernames.join(', ')}`;
       }
       messagesContainer.appendChild(searchInfo);
+
+      // Add date info element next to search info
+      searchDateInfo = document.createElement('div');
+      searchDateInfo.className = 'search-messages-date';
+      searchDateInfo.textContent = '';
+      searchInfo.insertAdjacentElement('afterend', searchDateInfo);
     }
 
     // Fetch and filter chat logs for each date in the range, render in real time
@@ -301,6 +308,10 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     let currentDate = new Date(startDate);
     while (currentDate <= endDate && !stopRequested) {
       const dateStr = currentDate.toISOString().slice(0, 10);
+      if (searchDateInfo) {
+        searchDateInfo.textContent =
+          (lang === 'ru' ? 'Дата: ' : 'Date: ') + dateStr;
+      }
       try {
         const { chatlogs } = await fetchChatLogs(dateStr, null, abortController.signal);
         if (stopRequested) break;

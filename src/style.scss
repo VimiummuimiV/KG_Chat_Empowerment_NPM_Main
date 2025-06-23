@@ -31,6 +31,7 @@
 }
 
 .popup-panel .search-messages-info,
+.popup-panel .search-messages-date,
 .popup-panel .no-messages-info {
   padding: 0.5em;
   border-radius: 0.4em !important;
@@ -41,6 +42,11 @@
 .popup-panel .search-messages-info {
   color: hsl(80, 60%, 70%);
   background: hsla(80, 60%, 70%, 0.1);
+}
+
+.popup-panel .search-messages-date {
+  color: hsl(40, 60%, 70%);
+  background: hsla(40, 60%, 70%, 0.1);
 }
 
 .popup-panel .no-messages-info {
