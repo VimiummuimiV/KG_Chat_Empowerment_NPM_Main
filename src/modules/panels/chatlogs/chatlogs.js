@@ -217,6 +217,16 @@ export const fetchChatLogs = async (date, messagesContainer) => {
     console.error('[fetchChatLogs] Error getting totalIndexedDBSizeFromIndexedDB:', e);
   }
 
+  // Format cache size for display (MB if >= 1000 KB, else KB)
+  function formatCacheSize(sizeKB) {
+    const num = parseFloat(sizeKB);
+    if (isNaN(num)) return sizeKB;
+    if (num >= 1000) {
+      return (num / 1024).toFixed(2) + (lang === 'ru' ? ' МБ' : ' MB');
+    }
+    return num.toFixed(2) + (lang === 'ru' ? ' КБ' : ' KB');
+  }
+
   let placeholder = (lang === 'ru'
     ? `Размер: ${sizeInKB} КБ`
     : `Size: ${sizeInKB} KB`);
@@ -226,9 +236,10 @@ export const fetchChatLogs = async (date, messagesContainer) => {
     placeholder += loadedFromIndexedDB ? (lang === 'ru' ? ' (Кэш)' : ' (Cache)') : '';
   }
   if (totalIndexedDBSizeKB !== null) {
+    const formattedCacheSize = formatCacheSize(totalIndexedDBSizeKB);
     placeholder += lang === 'ru'
-      ? ` | Кэш: ${totalIndexedDBSizeKB} КБ`
-      : ` | Cache: ${totalIndexedDBSizeKB} KB`;
+      ? ` | Кэш: ${formattedCacheSize}`
+      : ` | Cache: ${formattedCacheSize}`;
   }
   return {
     chatlogs: finalChatlogs,
