@@ -31,6 +31,7 @@ import {
   getExactUserIdByName,
   copyChatlogsUrlToClipboard
 } from '../../helpers.js';
+import { getCurrentLanguage } from '../../helpers.js';
 
 // definitions
 import {
@@ -47,6 +48,8 @@ import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
 
 const { ignored } = settingsState;
+
+const lang = getCurrentLanguage();
 
 // Define dynamic variables
 let {
@@ -196,8 +199,17 @@ export const fetchChatLogs = async (date, messagesContainer) => {
       chatlogs: finalChatlogs,
       url: url,
       size: htmlContent.length,
-      info: limitReached,
+      info: limitReached
+        ? (lang === 'ru' ? 'Достигнут лимит размера файла.' : 'Limit reached: file size.')
+        : null,
       error: null,
+      placeholder: limitReached
+        ? (lang === 'ru'
+          ? `Достигнут лимит: Размер: ${htmlContent.length} байт. Всего сообщений: ${finalChatlogs.length}`
+          : `Limit reached: Size: ${htmlContent.length} bytes. Total messages: ${finalChatlogs.length}`)
+        : (lang === 'ru'
+          ? `Всего сообщений: ${finalChatlogs.length}`
+          : `Total messages: ${finalChatlogs.length}`)
     }
   } catch (error) {
     // Handle other errors (e.g., parsing errors)
@@ -206,6 +218,8 @@ export const fetchChatLogs = async (date, messagesContainer) => {
       url: url,
       size: 0,
       error: error.message,
+      info: null,
+      placeholder: lang === 'ru' ? 'Ошибка при обработке логов.' : 'Error processing logs.'
     }
   }
 }
@@ -339,13 +353,33 @@ export async function showChatLogsPanel(personalMessagesDate) {
         await loadChatLogs(normalizedDate); // Load chat logs for the determined date
         showDateInput(dateInput);
       } else {
-        alert('Please enter a valid date.\n\nValid formats include:\n' +
-          '1. yyyy-mm-dd\n' +
-          '2. yyyy:mm:dd\n' +
-          '3. yy-mm-dd\n' +
-          '4. yy:mm:dd\n' +
-          '5. yyyymmdd\n' +
-          '6. yymmdd\n\n');
+        const lang = getCurrentLanguage();
+        const alertMsg = lang === 'ru'
+          ? [
+            'Пожалуйста, введите корректную дату.',
+            '',
+            'Допустимые форматы:',
+            '1. гггг-мм-дд',
+            '2. гггг:мм:дд',
+            '3. гг-мм-дд',
+            '4. гг:мм:дд',
+            '5. ггггммдд',
+            '6. ггммдд',
+            ''
+          ].join('\n')
+          : [
+            'Please enter a valid date.',
+            '',
+            'Valid formats include:',
+            '1. yyyy-mm-dd',
+            '2. yyyy:mm:dd',
+            '3. yy-mm-dd',
+            '4. yy:mm:dd',
+            '5. yyyymmdd',
+            '6. yymmdd',
+            ''
+          ].join('\n');
+        alert(alertMsg);
       }
 
       // Clear the input value after processing the "Enter" key
@@ -799,12 +833,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
   }
 
   // Function to update the date input and title
-  const updateDateInputAndTitle = (newDate) => {
+  const updateDateTooltip = (newDate) => {
     dateInput.value = newDate; // Update the date input
-    createCustomTooltip(chatlogsSearchInput, {
+    const tooltipContent = {
       en: `Current date: ${newDate}`,
       ru: `Текущая дата: ${newDate}`
-    });
+    };
+    createCustomTooltip(dateInput, tooltipContent);
+    createCustomTooltip(dateInputToggle, tooltipContent);
   };
 
   // Event listener for the chevron left button
@@ -899,7 +935,9 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Function to load the total message count into the placeholder without replacing the existing text
   function loadTotalMessageCount() {
     if (chatLogsContainer.childElementCount > 0) {
-      chatlogsSearchInput.placeholder += ` | Total messages: ${chatLogsContainer.childElementCount}`;
+      const lang = getCurrentLanguage();
+      const totalMsgLabel = lang === 'ru' ? 'Всего сообщений' : 'Total messages';
+      chatlogsSearchInput.placeholder += ` | ${totalMsgLabel}: ${chatLogsContainer.childElementCount}`;
     }
   }
 
@@ -912,21 +950,37 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
     // Check if the provided date is out of bounds (less than minimalChatlogsDate or greater than today)
     if (formattedDate < minimalChatlogsDate || formattedDate > today) {
-      alert(formattedDate < minimalChatlogsDate ? `The selected date cannot be earlier than ${minimalChatlogsDate}.` : "You cannot load a future date.");
+      const lang = getCurrentLanguage();
+      const minDateMsg =
+        lang === 'ru'
+          ? `Выбранная дата не может быть раньше ${minimalChatlogsDate}.`
+          : `The selected date cannot be earlier than ${minimalChatlogsDate}.`;
+      const futureDateMsg =
+        lang === 'ru'
+          ? 'Вы не можете загрузить будущую дату.'
+          : 'You cannot load a future date.';
+      alert(
+        formattedDate < minimalChatlogsDate
+          ? minDateMsg
+          : futureDateMsg
+      );
       return; // Exit the function if the date is invalid
     }
 
-    // Call the updateDateInputAndTitle function with the formattedDate
-    updateDateInputAndTitle(formattedDate);
+    // Call the updateDateTooltip function with the formattedDate
+    updateDateTooltip(formattedDate);
 
     // Fetch chat logs and pass the chatLogsContainer as the parent container
     const { chatlogs, url, size, info, error } = await fetchChatLogs(formattedDate, chatLogsContainer);
 
     // Convert size to KB
     const sizeInKB = (size / 1024).toFixed(2);
-
+    const lang = getCurrentLanguage();
+    const errorLabel = lang === 'ru' ? 'Ошибка' : 'Error';
+    const limitLabel = lang === 'ru' ? 'Достигнут лимит' : 'Limit reached';
+    const sizeLabel = lang === 'ru' ? 'Размер' : 'Size';
     // Set placeholder for size in KB, info, or error
-    chatlogsSearchInput.placeholder = error ? `Error: ${error}` : (info ? `Limit reached: ${sizeInKB} KB` : info || `Size: ${sizeInKB} KB`);
+    chatlogsSearchInput.placeholder = error ? `${errorLabel}: ${error}` : (info ? `${limitLabel}: ${sizeInKB} KB` : info || `${sizeLabel}: ${sizeInKB} KB`);
 
     // Assign the fetched URL to the chatLogsUrlForCopy variable
     chatLogsUrlForCopy = url;
