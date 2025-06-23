@@ -32,6 +32,11 @@ import {
   copyChatlogsUrlToClipboard
 } from '../../helpers.js';
 import { getCurrentLanguage } from '../../helpers.js';
+import {
+  saveChatlogToIndexedDB,
+  readChatlogFromIndexedDB,
+  getTotalChatlogsSizeFromIndexedDB
+} from './chatlogsStorage.js';
 
 // definitions
 import {
@@ -87,6 +92,30 @@ export const fetchChatLogs = async (date, messagesContainer) => {
 
   // Construct the URL to fetch chat logs for the specified date with the random parameter
   const url = `https://klavogonki.ru/chatlogs/${date}.html?rand=${randomParam}`;
+
+  // Try to use IndexedDB if available
+  let html = await readChatlogFromIndexedDB(date);
+  let loadedFromIndexedDB = !!html;
+  if (!html) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Network response was not ok');
+      html = await response.text();
+      // Save to IndexedDB for future use, but only if date is not today
+      if (date !== today) {
+        await saveChatlogToIndexedDB(date, html);
+      }
+    } catch (error) {
+      return {
+        chatlogs: [],
+        url: url,
+        size: 0,
+        error: error.message,
+        info: null,
+        placeholder: lang === 'ru' ? 'Ошибка при обработке логов.' : 'Error processing logs.'
+      };
+    }
+  }
 
   // Function to parse the HTML and extract chat log entries
   const parseChatLog = (html) => {
@@ -154,73 +183,62 @@ export const fetchChatLogs = async (date, messagesContainer) => {
     }).filter(Boolean);
   };
 
+  // Limit the size of the HTML to 1MB (or whatever is appropriate)
+  const sizeLimitKB = 1000;
+  const sizeLimitBytes = sizeLimitKB * 1024;
+  const htmlContent = html.length > sizeLimitBytes ? html.slice(0, sizeLimitBytes) : html;
+
+  // Parse the HTML and extract chat logs
+  const chatlogs = parseChatLog(htmlContent);
+  const limitReached = html.length > sizeLimitBytes;
+
+  // Step 1: Remove consecutive duplicate messages
+  const noSpamMessages = [];
+  let lastMessage = null;
+  for (const log of chatlogs) {
+    const isDifferentMessage = log.message !== lastMessage?.message;
+    const isDifferentUser = log.username !== lastMessage?.username;
+    if (isDifferentMessage || isDifferentUser) {
+      noSpamMessages.push(log);
+      lastMessage = log;
+    }
+  }
+  // Step 2: Filter out messages from ignored users
+  const finalChatlogs = noSpamMessages.filter((log) => !ignored.includes(log.username));
+
+  // Return the filtered chat logs, size of HTML, URL, and info
+  const sizeInKB = (htmlContent.length / 1024).toFixed(2);
+
+  // --- Calculate total size of all chatlogs in IndexedDB ---
+  let totalIndexedDBSizeKB = null;
   try {
-    // Fetch chat logs from the URL
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    totalIndexedDBSizeKB = await getTotalChatlogsSizeFromIndexedDB();
+  } catch (e) {
+    console.error('[fetchChatLogs] Error getting totalIndexedDBSizeFromIndexedDB:', e);
+  }
 
-    // Get the HTML content
-    const html = await response.text();
-
-    // Limit the size of the HTML to 5KB
-    const sizeLimitKB = 1000; // Set the size limit in KB
-    const sizeLimitBytes = sizeLimitKB * 1024; // Convert KB to bytes
-    const htmlContent = html.length > sizeLimitBytes ? html.slice(0, sizeLimitBytes) : html;
-
-    // Parse the HTML and extract chat logs
-    const chatlogs = parseChatLog(htmlContent);
-
-    const limitReached = html.length > sizeLimitBytes;
-
-    // Step 1: Remove consecutive duplicate messages
-    const noSpamMessages = [];
-    let lastMessage = null;
-
-    for (const log of chatlogs) {
-      const isDifferentMessage = log.message !== lastMessage?.message;
-      const isDifferentUser = log.username !== lastMessage?.username;
-
-      // Include the message if:
-      // - It's the first message, or
-      // - It's a different message or from a different user
-      if (isDifferentMessage || isDifferentUser) {
-        noSpamMessages.push(log);
-        lastMessage = log;
-      }
-    }
-
-    // Step 2: Filter out messages from ignored users
-    const finalChatlogs = noSpamMessages.filter((log) => !ignored.includes(log.username));
-
-    // Return the filtered chat logs, size of HTML, URL, and info
-    return {
-      chatlogs: finalChatlogs,
-      url: url,
-      size: htmlContent.length,
-      info: limitReached
-        ? (lang === 'ru' ? 'Достигнут лимит размера файла.' : 'Limit reached: file size.')
-        : null,
-      error: null,
-      placeholder: limitReached
-        ? (lang === 'ru'
-          ? `Достигнут лимит: Размер: ${htmlContent.length} байт. Всего сообщений: ${finalChatlogs.length}`
-          : `Limit reached: Size: ${htmlContent.length} bytes. Total messages: ${finalChatlogs.length}`)
-        : (lang === 'ru'
-          ? `Всего сообщений: ${finalChatlogs.length}`
-          : `Total messages: ${finalChatlogs.length}`)
-    }
-  } catch (error) {
-    // Handle other errors (e.g., parsing errors)
-    return {
-      chatlogs: [],
-      url: url,
-      size: 0,
-      error: error.message,
-      info: null,
-      placeholder: lang === 'ru' ? 'Ошибка при обработке логов.' : 'Error processing logs.'
-    }
+  let placeholder = (lang === 'ru'
+    ? `Размер: ${sizeInKB} КБ`
+    : `Size: ${sizeInKB} KB`);
+  if (limitReached) {
+    placeholder += lang === 'ru' ? ' (Достигнут лимит файла)' : ' (File limit reached)';
+  } else {
+    placeholder += loadedFromIndexedDB ? (lang === 'ru' ? ' (Кэш)' : ' (Cache)') : '';
+  }
+  if (totalIndexedDBSizeKB !== null) {
+    placeholder += lang === 'ru'
+      ? ` | Кэш: ${totalIndexedDBSizeKB} КБ`
+      : ` | Cache: ${totalIndexedDBSizeKB} KB`;
+  }
+  return {
+    chatlogs: finalChatlogs,
+    url: url,
+    size: htmlContent.length,
+    info: limitReached
+      ? (lang === 'ru' ? 'Достигнут лимит размера файла.' : 'File size limit reached.')
+      : (loadedFromIndexedDB ? (lang === 'ru' ? 'Загружено из кэша.' : 'Loaded from cache.') : null),
+    error: null,
+    placeholder
   }
 }
 
@@ -981,16 +999,10 @@ export async function showChatLogsPanel(personalMessagesDate) {
     updateDateTooltip(formattedDate);
 
     // Fetch chat logs and pass the chatLogsContainer as the parent container
-    const { chatlogs, url, size, info, error } = await fetchChatLogs(formattedDate, chatLogsContainer);
+    const { chatlogs, url, placeholder } = await fetchChatLogs(formattedDate, chatLogsContainer);
 
-    // Convert size to KB
-    const sizeInKB = (size / 1024).toFixed(2);
-    const lang = getCurrentLanguage();
-    const errorLabel = lang === 'ru' ? 'Ошибка' : 'Error';
-    const limitLabel = lang === 'ru' ? 'Достигнут лимит' : 'Limit reached';
-    const sizeLabel = lang === 'ru' ? 'Размер' : 'Size';
-    // Set placeholder for size in KB, info, or error
-    chatlogsSearchInput.placeholder = error ? `${errorLabel}: ${error}` : (info ? `${limitLabel}: ${sizeInKB} KB` : info || `${sizeLabel}: ${sizeInKB} KB`);
+    // Use the placeholder returned from fetchChatLogs (includes cache size info)
+    chatlogsSearchInput.placeholder = placeholder;
 
     // Assign the fetched URL to the chatLogsUrlForCopy variable
     chatLogsUrlForCopy = url;
