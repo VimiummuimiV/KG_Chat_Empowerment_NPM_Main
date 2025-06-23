@@ -652,12 +652,15 @@ export async function showChatLogsPanel(personalMessagesDate) {
       let output = '';
       let isFirstLine = true;
       if (format.toLowerCase() === 'bbcode') output = '[hide]\n';
+      // --- Track the current date for each message ---
+      let currentDateForMessages = '';
       for (const el of chatLogElements) {
         if (el.classList.contains('date-item')) {
           // Skip hidden date
           if (el.style.contentVisibility === 'hidden' || el.style.fontSize === '0') continue;
           // Date header
           const dateText = el.textContent.trim();
+          currentDateForMessages = dateText; // Update current date for following messages
           if (!isFirstLine) {
             if (format.toLowerCase() === 'bbcode') output += '\n';
             else if (format.toLowerCase() === 'markdown') output += '\n';
@@ -679,7 +682,8 @@ export async function showChatLogsPanel(personalMessagesDate) {
           const messageElement = el.querySelector('.message-text');
           const message = getMessageWithAllElementsText(messageElement) || '';
           const color = getUsernameColor(username);
-          const date = dateInput.value || today;
+          // Use the closest previous date header for this message
+          const date = currentDateForMessages || dateInput.value || today;
           const url = `https://klavogonki.ru/chatlogs/${date}.html#${time}`;
           if (format.toLowerCase() === 'bbcode') {
             let bbMessage = message;
