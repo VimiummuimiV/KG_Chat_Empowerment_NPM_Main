@@ -187,6 +187,34 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     return searchTerms.some(term => lowerMessage.includes(term));
   }
 
+  // Helper to set the random button to 'today' mode
+  function setRandomButtonToTodayMode() {
+    const randomButton = chatLogsPanelOrContainer.querySelector('.panel-header-shuffle-button');
+    if (randomButton) {
+      randomButton.dataset.mode = 'loadToday';
+      randomButton.classList.add('today');
+      randomButton.innerHTML = sunSVG;
+      createCustomTooltip(randomButton, {
+        en: 'Load Today\'s Chat Logs',
+        ru: 'Загрузить сегодняшние логи чата'
+      });
+    }
+  }
+
+  // Helper to set the random button to default (random) mode
+  function setRandomButtonToDefault() {
+    const randomButton = chatLogsPanelOrContainer.querySelector('.panel-header-shuffle-button');
+    if (randomButton) {
+      randomButton.dataset.mode = '';
+      randomButton.classList.remove('today');
+      randomButton.innerHTML = shuffleSVG;
+      createCustomTooltip(randomButton, {
+        en: 'Random Date',
+        ru: 'Случайная дата'
+      });
+    }
+  }
+
   // Main parse logic
   async function startParsing() {
     // Expose parser state and stop function globally only when parsing starts, and only if not already set
@@ -204,16 +232,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     stopRequested = false;
     abortController = new AbortController();
     parseButton.innerHTML = pauseSVG;
-    const randomButton = chatLogsPanelOrContainer.querySelector('.panel-header-shuffle-button');
-    if (randomButton) {
-      randomButton.dataset.mode = '';
-      randomButton.innerHTML = shuffleSVG;
-      randomButton.classList.remove('today');
-      createCustomTooltip(randomButton, {
-        en: 'Random Date',
-        ru: 'Случайная дата'
-      });
-    }
+    setRandomButtonToDefault();
 
     const opts = await promptOptions();
     if (!opts) {
@@ -368,6 +387,8 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     if (messagesContainer) {
       renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'), usernameHueMap);
     }
+    // If parsing stopped automatically, update random button to today mode
+    setRandomButtonToTodayMode();
   }
 
   function stopParsing() {
@@ -377,16 +398,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     }
     isParsing = false;
     resetButton();
-    const randomButton = chatLogsPanelOrContainer.querySelector('.panel-header-shuffle-button');
-    if (randomButton) {
-      randomButton.dataset.mode = 'loadToday';
-      randomButton.classList.add('today');
-      randomButton.innerHTML = sunSVG;
-      createCustomTooltip(randomButton, {
-        en: 'Load Today\'s Chat Logs',
-        ru: 'Загрузить сегодняшние логи чата'
-      });
-    }
+    setRandomButtonToTodayMode();
   }
 
   function resetButton() {
