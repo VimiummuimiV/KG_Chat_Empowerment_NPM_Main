@@ -311,7 +311,15 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         if (stopRequested) break;
         // Render incrementally
         if (messagesContainer && filtered.length > 0) {
-          renderChatMessages(filtered, messagesContainer, usernameHueMap, true, dateStr);
+          renderChatMessages(
+            filtered,
+            messagesContainer,
+            usernameHueMap,
+            true,
+            dateStr,
+            searchTerms,
+            searchTerms && searchTerms.length > 0 // highlightSearch true if search terms present
+          );
           if (stopRequested) break;
           renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'), usernameHueMap);
         }
