@@ -208,6 +208,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     if (randomButton) {
       randomButton.dataset.mode = '';
       randomButton.innerHTML = shuffleSVG;
+      randomButton.classList.remove('today');
       createCustomTooltip(randomButton, {
         en: 'Random Date',
         ru: 'Случайная дата'
