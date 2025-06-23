@@ -260,11 +260,17 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       const searchInfo = document.createElement('div');
       searchInfo.className = 'search-messages-info';
       if (searchAllUsers) {
-        searchInfo.textContent = `Searching all users for messages containing: ${searchTerms.join(', ')}`;
+        searchInfo.textContent = lang === 'ru'
+          ? `Поиск по всем пользователям по словам: ${searchTerms.join(', ')}`
+          : `Searching all users for messages containing: ${searchTerms.join(', ')}`;
       } else if (searchTerms.length > 0) {
-        searchInfo.textContent = `Searching for messages from: ${usernames.join(', ')}, containing: ${searchTerms.join(', ')}`;
+        searchInfo.textContent = lang === 'ru'
+          ? `Поиск сообщений от: ${usernames.join(', ')}, содержащих: ${searchTerms.join(', ')}`
+          : `Searching for messages from: ${usernames.join(', ')}, containing: ${searchTerms.join(', ')}`;
       } else {
-        searchInfo.textContent = `Showing all messages from: ${usernames.join(', ')}`;
+        searchInfo.textContent = lang === 'ru'
+          ? `Показаны все сообщения от: ${usernames.join(', ')}`
+          : `Showing all messages from: ${usernames.join(', ')}`;
       }
       messagesContainer.appendChild(searchInfo);
     }
