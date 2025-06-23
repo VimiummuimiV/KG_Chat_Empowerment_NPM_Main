@@ -1110,11 +1110,23 @@ export async function showChatLogsPanel(personalMessagesDate) {
     if (messageItem || messageTextElement) {
       resetMessagesVisibility();
       if (timeElement) {
-        const date = dateInput.value;
+        let date = dateInput.value;
         const time = timeElement.textContent;
         if (event.shiftKey) {
           event.preventDefault();
           event.stopPropagation();
+          // Try to find the nearest previous .date-item
+          let dateItem = timeElement.closest('.chat-logs-container');
+          if (dateItem) {
+            let prev = timeElement.parentElement;
+            while (prev && !prev.classList.contains('date-item')) {
+              prev = prev.previousElementSibling;
+            }
+            if (prev && prev.classList.contains('date-item')) {
+              // Use the text of the nearest previous .date-item as the date
+              date = prev.textContent.trim();
+            }
+          }
           copyChatlogsUrlToClipboard(date, time, timeElement);
           return;
         }
