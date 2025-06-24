@@ -91,10 +91,11 @@ export const fetchChatLogs = async (date, messagesContainer) => {
   // Clear the messagesContainer if it exists
   messagesContainer && (messagesContainer.innerHTML = '');
 
-  // Define skipped result object once
+  const url = `https://klavogonki.ru/chatlogs/${date}.html`;
+
   const skippedResult = {
     chatlogs: [],
-    url: null,
+    url: url,
     size: 0,
     error: null,
     info: lang === 'ru' ? 'Пропущено: слишком большой лог.' : 'Skipped: chatlog too large.',
@@ -103,18 +104,25 @@ export const fetchChatLogs = async (date, messagesContainer) => {
 
   // Generate a random 20-digit number
   const randomParam = Math.floor(Math.random() * 10 ** 20);
-
-  // Construct the URL to fetch chat logs for the specified date with the random parameter
-  const url = `https://klavogonki.ru/chatlogs/${date}.html?rand=${randomParam}`;
+  const fetchUrl = `${url}?rand=${randomParam}`;
 
   // Try to use IndexedDB if available
-  let html = await readChatlogFromIndexedDB(date);
-  let loadedFromIndexedDB = !!html;
+  let html;
+  let loadedFromIndexedDB = false;
+  const entry = await readChatlogFromIndexedDB(date);
+  if (entry) {
+    if (entry.skipped) {
+      return skippedResult;
+    } else if (entry.html) {
+      html = entry.html;
+      loadedFromIndexedDB = true;
+    }
+  }
+
   if (!html) {
     try {
-      const response = await fetch(url);
+      const response = await fetch(fetchUrl);
       if (!response.ok) throw new Error('Network response was not ok');
-      // Stream and check size as we read
       const reader = response.body.getReader();
       let receivedLength = 0;
       let chunks = [];
@@ -124,15 +132,16 @@ export const fetchChatLogs = async (date, messagesContainer) => {
         if (value) {
           receivedLength += value.length;
           if (receivedLength > CHATLOG_SIZE_LIMIT_BYTES) {
-            // Too large, abort and skip this day
             reader.cancel();
+            if (date !== today) {
+              await saveChatlogToIndexedDB({ date, skipped: true, reason: 'too large' });
+            }
             return skippedResult;
           }
           chunks.push(value);
         }
         done = streamDone;
       }
-      // Concatenate all chunks
       let htmlUint8 = new Uint8Array(receivedLength);
       let position = 0;
       for (let chunk of chunks) {
@@ -140,17 +149,13 @@ export const fetchChatLogs = async (date, messagesContainer) => {
         position += chunk.length;
       }
       html = new TextDecoder('utf-8').decode(htmlUint8);
-
-      // Save to IndexedDB for future use, but only if date is not today and only save the trimmed htmlContent
-      const htmlContent = html.length > CHATLOG_SIZE_LIMIT_BYTES ? html.slice(0, CHATLOG_SIZE_LIMIT_BYTES) : html;
       if (date !== today) {
-        await saveChatlogToIndexedDB(date, htmlContent);
+        await saveChatlogToIndexedDB({ date, html });
       }
-      html = htmlContent;
     } catch (error) {
       return {
         chatlogs: [],
-        url: url,
+        url: fetchUrl,
         size: 0,
         error: error.message,
         info: null,
@@ -209,14 +214,12 @@ export const fetchChatLogs = async (date, messagesContainer) => {
         };
       }
 
-      // Handle case where username is not found, and instead, `mne` class is present (system message)
       const systemMessageElement = timeElement.nextElementSibling;
       if (systemMessageElement && systemMessageElement.classList.contains('mne')) {
-        // Extract the text directly from the <font> element
         const messageText = systemMessageElement.textContent.trim();
         return {
           time: timeElement.textContent.trim().replace(/[\[\]]/g, ''),
-          username: 'SYSTEM', // Set username as 'SYSTEM' for system messages
+          username: 'SYSTEM',
           message: messageText || null,
         };
       }
@@ -225,10 +228,7 @@ export const fetchChatLogs = async (date, messagesContainer) => {
     }).filter(Boolean);
   };
 
-  // Use shared size limit constant
   const htmlContent = html.length > CHATLOG_SIZE_LIMIT_BYTES ? html.slice(0, CHATLOG_SIZE_LIMIT_BYTES) : html;
-
-  // Parse the HTML and extract chat logs
   const chatlogs = parseChatLog(htmlContent);
   const limitReached = html.length > CHATLOG_SIZE_LIMIT_BYTES;
 
@@ -256,18 +256,12 @@ export const fetchChatLogs = async (date, messagesContainer) => {
   function formatCacheSize(sizeKB) {
     const num = parseFloat(sizeKB);
     if (isNaN(num)) return sizeKB;
-    if (num >= 1024 * 1024) {
-      return (num / (1024 * 1024)).toFixed(2) + (lang === 'ru' ? ' ГБ' : ' GB');
-    }
-    if (num >= 1024) {
-      return (num / 1024).toFixed(2) + (lang === 'ru' ? ' МБ' : ' MB');
-    }
+    if (num >= 1024 * 1024) return (num / (1024 * 1024)).toFixed(2) + (lang === 'ru' ? ' ГБ' : ' GB');
+    if (num >= 1024) return (num / 1024).toFixed(2) + (lang === 'ru' ? ' МБ' : ' MB');
     return num.toFixed(2) + (lang === 'ru' ? ' КБ' : ' KB');
   }
 
-  let placeholder = (lang === 'ru'
-    ? `Размер: ${sizeInKB} КБ`
-    : `Size: ${sizeInKB} KB`);
+  let placeholder = lang === 'ru' ? `Размер: ${sizeInKB} КБ` : `Size: ${sizeInKB} KB`;
   if (limitReached) {
     placeholder += lang === 'ru' ? ' (Достигнут лимит файла)' : ' (File limit reached)';
   } else {
@@ -275,10 +269,9 @@ export const fetchChatLogs = async (date, messagesContainer) => {
   }
   if (totalIndexedDBSizeKB !== null && !isNaN(totalIndexedDBSizeKB)) {
     const formattedCacheSize = formatCacheSize(totalIndexedDBSizeKB);
-    placeholder += lang === 'ru'
-      ? ` | Кэш: ${formattedCacheSize}`
-      : ` | Cache: ${formattedCacheSize}`;
+    placeholder += lang === 'ru' ? ` | Кэш: ${formattedCacheSize}` : ` | Cache: ${formattedCacheSize}`;
   }
+
   return {
     chatlogs: finalChatlogs,
     url: url,

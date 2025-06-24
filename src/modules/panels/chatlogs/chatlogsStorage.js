@@ -16,20 +16,18 @@ export function initChatlogsDB() {
   });
 }
 
-export async function saveChatlogToIndexedDB(date, html) {
+export async function saveChatlogToIndexedDB(entry) {
   const db = await initChatlogsDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    const req = store.get(date);
+    const req = store.get(entry.date);
     req.onsuccess = () => {
-      const prevSize = req.result && typeof req.result.html === 'string'
-        ? new Blob([req.result.html]).size
-        : 0;
-      const newSize = new Blob([html]).size;
-      store.put({ date, html });
+      const prevEntry = req.result;
+      const prevSize = prevEntry && prevEntry.html ? new Blob([prevEntry.html]).size : 0;
+      const newSize = entry.html ? new Blob([entry.html]).size : 0;
+      store.put(entry);
       tx.oncomplete = () => {
-        // Update cache
         let totalKB = getCachedTotalSize();
         totalKB = totalKB + (newSize - prevSize) / 1024;
         setCachedTotalSize(totalKB);
@@ -47,7 +45,7 @@ export async function readChatlogFromIndexedDB(date) {
     const tx = db.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
     const req = store.get(date);
-    req.onsuccess = () => resolve(req.result ? req.result.html : null);
+    req.onsuccess = () => resolve(req.result); // Return the entire entry object
     req.onerror = () => reject(req.error);
   });
 }
@@ -59,12 +57,10 @@ export async function deleteChatlogFromIndexedDB(date) {
     const store = tx.objectStore(STORE_NAME);
     const req = store.get(date);
     req.onsuccess = () => {
-      const prevSize = req.result && typeof req.result.html === 'string'
-        ? new Blob([req.result.html]).size
-        : 0;
+      const prevEntry = req.result;
+      const prevSize = prevEntry && prevEntry.html ? new Blob([prevEntry.html]).size : 0;
       store.delete(date);
       tx.oncomplete = () => {
-        // Update cache
         let totalKB = getCachedTotalSize();
         totalKB = totalKB - prevSize / 1024;
         setCachedTotalSize(Math.max(0, totalKB));
@@ -113,7 +109,7 @@ export async function recalculateTotalChatlogsSize() {
       let totalBytes = 0;
       if (Array.isArray(req.result)) {
         for (const entry of req.result) {
-          if (entry && typeof entry.html === 'string') {
+          if (entry && entry.html) {
             totalBytes += new Blob([entry.html]).size;
           }
         }
