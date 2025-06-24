@@ -35,7 +35,7 @@ import { getCurrentLanguage } from '../../helpers.js';
 import {
   saveChatlogToIndexedDB,
   readChatlogFromIndexedDB,
-  getTotalChatlogsSizeFromIndexedDB
+  getTotalChatlogsSizeCached
 } from './chatlogsStorage.js';
 
 // definitions
@@ -210,24 +210,19 @@ export const fetchChatLogs = async (date, messagesContainer) => {
   const sizeInKB = (htmlContent.length / 1024).toFixed(2);
 
   // --- Calculate total size of all chatlogs in IndexedDB ---
-  let totalIndexedDBSizeKB = null;
-  try {
-    totalIndexedDBSizeKB = await getTotalChatlogsSizeFromIndexedDB();
-  } catch (e) {
-    console.error('[fetchChatLogs] Error getting totalIndexedDBSizeFromIndexedDB:', e);
-  }
+  const totalIndexedDBSizeKB = getTotalChatlogsSizeCached();
 
-  // Format cache size for display (GB if >= 1000 MB, MB if >= 1000 KB, else KB)
+  // Format cache size for display (GB if >= 1024 MB, MB if >= 1024 KB, else KB)
   function formatCacheSize(sizeKB) {
     const num = parseFloat(sizeKB);
     if (isNaN(num)) return sizeKB;
-    if (num >= 1024 * 1024) { // 1 GB = 1024 * 1024 KB
+    if (num >= 1024 * 1024) {
       return (num / (1024 * 1024)).toFixed(2) + (lang === 'ru' ? ' ГБ' : ' GB');
     }
-    if (num >= 1024) { // 1 MB = 1024 KB
+    if (num >= 1024) {
       return (num / 1024).toFixed(2) + (lang === 'ru' ? ' МБ' : ' MB');
     }
-    return num.toFixed(2) + (lang === 'ru' ? ' КБ' : ' KB'); // 1 KB = 1024 bytes
+    return num.toFixed(2) + (lang === 'ru' ? ' КБ' : ' KB');
   }
 
   let placeholder = (lang === 'ru'
@@ -238,7 +233,7 @@ export const fetchChatLogs = async (date, messagesContainer) => {
   } else {
     placeholder += loadedFromIndexedDB ? (lang === 'ru' ? ' (Кэш)' : ' (Cache)') : '';
   }
-  if (totalIndexedDBSizeKB !== null) {
+  if (totalIndexedDBSizeKB !== null && !isNaN(totalIndexedDBSizeKB)) {
     const formattedCacheSize = formatCacheSize(totalIndexedDBSizeKB);
     placeholder += lang === 'ru'
       ? ` | Кэш: ${formattedCacheSize}`

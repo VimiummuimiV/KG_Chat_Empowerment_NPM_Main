@@ -21,9 +21,23 @@ export async function saveChatlogToIndexedDB(date, html) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    store.put({ date, html });
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
+    const req = store.get(date);
+    req.onsuccess = () => {
+      const prevSize = req.result && typeof req.result.html === 'string'
+        ? new Blob([req.result.html]).size
+        : 0;
+      const newSize = new Blob([html]).size;
+      store.put({ date, html });
+      tx.oncomplete = () => {
+        // Update cache
+        let totalKB = getCachedTotalSize();
+        totalKB = totalKB + (newSize - prevSize) / 1024;
+        setCachedTotalSize(totalKB);
+        resolve();
+      };
+      tx.onerror = () => reject(tx.error);
+    };
+    req.onerror = () => reject(req.error);
   });
 }
 
@@ -43,9 +57,22 @@ export async function deleteChatlogFromIndexedDB(date) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    store.delete(date);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
+    const req = store.get(date);
+    req.onsuccess = () => {
+      const prevSize = req.result && typeof req.result.html === 'string'
+        ? new Blob([req.result.html]).size
+        : 0;
+      store.delete(date);
+      tx.oncomplete = () => {
+        // Update cache
+        let totalKB = getCachedTotalSize();
+        totalKB = totalKB - prevSize / 1024;
+        setCachedTotalSize(Math.max(0, totalKB));
+        resolve();
+      };
+      tx.onerror = () => reject(tx.error);
+    };
+    req.onerror = () => reject(req.error);
   });
 }
 
@@ -60,7 +87,21 @@ export async function listAllChatlogDates() {
   });
 }
 
-export async function getTotalChatlogsSizeFromIndexedDB() {
+// --- Caching logic for total chatlogs size ---
+function getCachedTotalSize() {
+  return parseFloat(localStorage.getItem('chatlogsTotalSizeKB') || '0');
+}
+function setCachedTotalSize(sizeKB) {
+  localStorage.setItem('chatlogsTotalSizeKB', Number(sizeKB).toFixed(2));
+}
+
+// Use this for fast UI display
+export function getTotalChatlogsSizeCached() {
+  return getCachedTotalSize();
+}
+
+// Optionally, provide a way to recalculate (e.g. on a button click)
+export async function recalculateTotalChatlogsSize() {
   const db = await initChatlogsDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readonly');
@@ -75,7 +116,8 @@ export async function getTotalChatlogsSizeFromIndexedDB() {
           }
         }
       }
-      const totalKB = (totalBytes / 1024).toFixed(2);
+      const totalKB = totalBytes / 1024;
+      setCachedTotalSize(totalKB);
       resolve(totalKB);
     };
     req.onerror = () => reject(req.error);
