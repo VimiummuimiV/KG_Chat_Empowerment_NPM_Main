@@ -6,6 +6,7 @@ import { renderActiveUsers } from './chatlogsUserlist.js';
 import { getCurrentLanguage, getExactUserIdByName, getHistoryUsernamesByName } from '../../helpers.js';
 import { chatlogsParserMessages } from './messages.js';
 import { createCustomTooltip } from "../../tooltip.js";
+import { deleteChatlogFromIndexedDB } from "./chatlogsStorage.js";
 
 /**
  * Attach parse logic to the parse button in the chat logs panel header.
@@ -428,11 +429,23 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     abortController = null;
   }
 
-  parseButton.addEventListener('click', async () => {
-    if (!isParsing) {
-      await startParsing();
+  parseButton.addEventListener('click', async (event) => {
+    if (event.ctrlKey) {
+      if (confirm(lang === 'ru'
+        ? 'Вы уверены, что хотите удалить все сохранённые чатлоги?'
+        : 'Are you sure you want to delete all saved chatlogs?')) {
+        await deleteChatlogFromIndexedDB();
+        alert(lang === 'ru'
+          ? 'Все чатлоги удалены, размер кэша сброшен.'
+          : 'All chatlogs deleted and cache size reset.');
+      }
+      return;
     } else {
-      stopParsing();
+      if (!isParsing) {
+        await startParsing();
+      } else {
+        stopParsing();
+      }
     }
   });
 }

@@ -455,8 +455,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
   parseButton.className = 'large-button panel-header-parse-button';
   parseButton.innerHTML = playSVG;
   createCustomTooltip(parseButton, {
-    en: 'Parse Chat Logs',
-    ru: 'Спарсить логи чата'
+    en: `
+      [Click] to parse Chat Logs
+      [Ctrl + Click] to delete stored Chat Logs from IndexedDB
+    `,
+    ru: `
+      [Клик] спарсить логи чата
+      [Ctrl + Клик] удалить сохранённые логи из IndexedDB
+    `
   });
   setupChatLogsParser(parseButton, chatLogsPanel);
 
