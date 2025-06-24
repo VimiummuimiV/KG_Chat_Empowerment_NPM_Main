@@ -261,7 +261,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       // Prompt for usernames and fetch registration dates
       let usernamesInput = await promptUsernames();
       if (usernamesInput === null || usernamesInput.length === 0) {
-        alert(lang === 'ru' ? 'Не выбраны пользователи.' : 'No users selected.');
+        alert(chatlogsParserMessages.noUsersSelected[lang]);
         resetButton();
         return;
       }
@@ -278,17 +278,14 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         if (regDate) regDates.push(regDate);
       }
       if (!regDates.length) {
-        alert(lang === 'ru' ? 'Не удалось получить дату регистрации.' : 'Could not get registration date.');
+        alert(chatlogsParserMessages.unableToGetRegDate[lang]);
         resetButton();
         return;
       }
       // Use the earliest registration date
       let minDate = regDates.sort()[0];
       // Prompt user to edit or confirm the start date
-      let promptMsg = lang === 'ru'
-        ? `С какой даты начать парсинг? (дата регистрации: ${minDate})`
-        : `From which date to start parsing? (registration date: ${minDate})`;
-      let editedDate = prompt(promptMsg, minDate);
+      let editedDate = prompt(chatlogsParserMessages.editStartDate[lang](minDate), minDate);
       if (!editedDate) {
         resetButton();
         return;
@@ -296,18 +293,14 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       // Normalize and validate the edited date using normalizeDate and isValidDateParts
       editedDate = normalizeDate(editedDate.trim());
       if (!editedDate) {
-        alert(lang === 'ru' ? 'Неверный формат даты.' : 'Invalid date format.');
+        alert(chatlogsParserMessages.invalidEditedDate[lang]);
         resetButton();
         return;
       }
       // Clamp to minimalChatlogsDate if needed
       let minAllowed = minimalChatlogsDate;
       if (editedDate < minAllowed) {
-        alert(
-          lang === 'ru'
-            ? `Логи чата доступны только с ${minAllowed}. Используется эта дата.`
-            : `Chat logs are only available from ${minAllowed}. Using this date.`
-        );
+        alert(chatlogsParserMessages.dateBeforeMinimal[lang](minAllowed));
         editedDate = minAllowed;
       }
       opts.from = editedDate;
@@ -495,13 +488,9 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
 
   parseButton.addEventListener('click', async (event) => {
     if (event.ctrlKey) {
-      if (confirm(lang === 'ru'
-        ? 'Вы уверены, что хотите удалить все сохранённые чатлоги?'
-        : 'Are you sure you want to delete all saved chatlogs?')) {
+      if (confirm(chatlogsParserMessages.deleteConfirm[lang])) {
         await deleteChatlogFromIndexedDB();
-        alert(lang === 'ru'
-          ? 'Все чатлоги удалены, размер кэша сброшен.'
-          : 'All chatlogs deleted and cache size reset.');
+        alert(chatlogsParserMessages.deleteSuccess[lang]);
       }
       return;
     } else {
