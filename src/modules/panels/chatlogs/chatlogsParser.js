@@ -300,6 +300,16 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         resetButton();
         return;
       }
+      // Clamp to minimalChatlogsDate if needed
+      let minAllowed = minimalChatlogsDate;
+      if (editedDate < minAllowed) {
+        alert(
+          lang === 'ru'
+            ? `Логи чата доступны только с ${minAllowed}. Используется эта дата.`
+            : `Chat logs are only available from ${minAllowed}. Using this date.`
+        );
+        editedDate = minAllowed;
+      }
       opts.from = editedDate;
       opts.to = new Date().toISOString().slice(0, 10);
       usernames = usernamesInput;
