@@ -549,50 +549,57 @@ async function getDataById(userId, dataType) {
   }
 }
 
-// Universal data extractor function
+// Universal data extractor function - CLEANED VERSION
 function extractData(summary, dataType) {
-  if (!summary?.user) return null;
-  
+  if (!summary) return null;
+
+  const data = {
+    ...(summary.user || {}),
+    ...summary
+  };
+
   switch (dataType) {
     case 'usernamesHistory':
-      if (!summary.user.history || !Array.isArray(summary.user.history)) {
-        return [];
-      }
-      return summary.user.history.map(historyItem => historyItem.login);
-    
-    case 'registeredDate':
-      return summary.user.registered || null;
-    
+      return Array.isArray(data.history)
+        ? data.history.map(item => item.login)
+        : [];
+
     case 'currentLogin':
-      return summary.user.login || null;
-    
+      return data.login || null;
+
     case 'userId':
-      return summary.user.id || null;
-    
+      return data.id || null;
+
     case 'level':
-      return summary.user.level || null;
-    
+      return data.level || null;
+
     case 'status':
-      return summary.user.status || null;
-    
+      return data.status || null;
+
     case 'title':
-      return summary.user.title || null;
-    
+      return data.title || (data.status?.title ?? null);
+
     case 'car':
-      return summary.user.car || null;
-    
+      return data.car || null;
+
     case 'isOnline':
-      return summary.user.is_online || false;
-    
+      return data.is_online ?? false;
+
     case 'avatar':
-      return summary.user.avatar || null;
-    
-    case 'stats':
-      return summary.stats || null;
-    
+      return data.avatar || null;
+
+    case 'blocked':
+      return data.blocked ?? null;
+
+    case 'isFriend':
+      return data.is_friend ?? false;
+
+    case 'publicPrefs':
+      return data.public_prefs || null;
+
     case 'allUserData':
-      return summary.user;
-    
+      return data;
+
     default:
       throw new Error(`Unknown data type: ${dataType}`);
   }
