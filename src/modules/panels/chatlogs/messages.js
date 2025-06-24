@@ -118,12 +118,12 @@ export const chatlogsParserMessages = {
     ].join('\n')
   },
   userNotFound: { // Alert
-    en: username => `${WARN} ${USER} not found: ${username}`,
-    ru: username => `${WARN} ${USER} не найден: ${username}`
+    en: username => `${WARN} not found: ${USER} ${username}`,
+    ru: username => `${WARN} не найден: ${USER} ${username}`
   },
   usersNotFound: { // Alert
-    en: usernames => `${WARN} The following ${USER} usernames are invalid or not found:\n${usernames.join(', ')}`,
-    ru: usernames => `${WARN} Следующие ${USER} имена пользователей неверны или не найдены:\n${usernames.join(', ')}`
+    en: usernames => `${WARN} The following ${USER} usernames are invalid or not found: ${usernames.join(', ')}`,
+    ru: usernames => `${WARN} Следующие ${USER} имена пользователей неверны или не найдены: ${usernames.join(', ')}`
   },
   retrieveHistoryPrompt: { // Prompt
     en: `${INFO} Do you want to retrieve all previous ${USER} history usernames for this user? (1 - yes, 2 - no)`,
