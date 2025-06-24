@@ -117,13 +117,9 @@ export const chatlogsParserMessages = {
       `${INFO} Оставьте пустым, чтобы искать ${CONTENT} сообщения всех ${USER} пользователей.`
     ].join('\n')
   },
-  userNotFound: { // Alert
-    en: username => `${WARN} not found: ${USER} ${username}`,
-    ru: username => `${WARN} не найден: ${USER} ${username}`
-  },
-  usersNotFound: { // Alert
-    en: usernames => `${WARN} The following ${USER} usernames are invalid or not found: ${usernames.join(', ')}`,
-    ru: usernames => `${WARN} Следующие ${USER} имена пользователей неверны или не найдены: ${usernames.join(', ')}`
+  userPossiblyBanned: { // Confirm
+    en: username => `${WARN} User ${USER} ${username} not found. The user may be banned or deleted. Continue anyway?`,
+    ru: username => `${WARN} Пользователь ${USER} ${username} не найден. Возможно, пользователь забанен или удалён. Продолжить в любом случае?`
   },
   retrieveHistoryPrompt: { // Prompt
     en: `${INFO} Do you want to retrieve all previous ${USER} history usernames for this user? (1 - yes, 2 - no)`,

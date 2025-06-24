@@ -138,26 +138,29 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       if (!usernamesInput || !usernamesInput.trim()) return [];
       let usernames = usernamesInput.split(',').map(u => u.trim()).filter(Boolean);
       if (usernames.length === 0) return [];
-      const invalidUsernames = [];
+      const validUsernames = [];
       for (const username of usernames) {
         const userId = await getExactUserIdByName(username);
-        if (!userId) invalidUsernames.push(username);
+        if (!userId) {
+          // Ask user if they want to proceed (possibly banned)
+          if (confirm(chatlogsParserMessages.userPossiblyBanned[lang](username))) {
+            validUsernames.push(username);
+          }
+        } else {
+          validUsernames.push(username);
+        }
       }
-      if (invalidUsernames.length > 0) {
-        alert(
-          invalidUsernames.length === 1
-            ? chatlogsParserMessages.userNotFound[lang](invalidUsernames[0])
-            : chatlogsParserMessages.usersNotFound[lang](invalidUsernames)
-        );
+      if (validUsernames.length === 0) {
+        // If all were skipped or not found, just continue the prompt loop (no alert)
         continue;
       }
-      if (usernames.length === 1) {
+      if (validUsernames.length === 1) {
         const answer = prompt(chatlogsParserMessages.retrieveHistoryPrompt[lang], '2');
         if (answer === '1') {
           if (typeof getDataByName === 'function') {
-            const historyUsernames = await getDataByName(usernames[0], 'usernamesHistory');
+            const historyUsernames = await getDataByName(validUsernames[0], 'usernamesHistory');
             if (Array.isArray(historyUsernames) && historyUsernames.length > 0) {
-              const allUsernames = [usernames[0], ...historyUsernames.filter(u => u !== usernames[0])];
+              const allUsernames = [validUsernames[0], ...historyUsernames.filter(u => u !== validUsernames[0])];
               const confirmed = prompt(chatlogsParserMessages.confirmUsernames[lang], allUsernames.join(', '));
               if (!confirmed) return null;
               return confirmed.split(',').map(u => u.trim()).filter(Boolean);
@@ -165,7 +168,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
           }
         }
       }
-      return usernames;
+      return validUsernames;
     }
   }
 
