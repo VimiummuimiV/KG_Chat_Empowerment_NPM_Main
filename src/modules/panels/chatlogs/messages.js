@@ -13,14 +13,16 @@ export const chatlogsParserMessages = {
       '1. Single date',
       '2. From date',
       '3. Date range',
-      '4. From start'
+      '4. From start',
+      '5. From registered date'
     ].join('\n'),
     ru: [
       `${INFO} Выберите режим парсинга`,
       '1. Одна дата',
       '2. С даты',
       '3. Диапазон дат',
-      '4. С самого начала'
+      '4. С самого начала',
+      '5. С даты регистрации'
     ].join('\n')
   },
   enterDateRange: {

@@ -19,6 +19,34 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
   let abortController = null;
   const lang = getCurrentLanguage();
 
+  // Move these helpers to the top-level scope so they are accessible everywhere
+  function isValidDateParts(year, month, day) {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    year = parseInt(year, 10);
+    month = parseInt(month, 10);
+    day = parseInt(day, 10);
+    if (year > currentYear) return false;
+    if (month < 1 || month > 12) return false;
+    if (day < 1 || day > 31) return false;
+    return true;
+  }
+
+  function normalizeDate(str) {
+    let y, m, d;
+    if (/^\d{4}[:\-]\d{2}[:\-]\d{2}$/.test(str)) {
+      [y, m, d] = str.replace(/:/g, '-').split('-');
+    } else if (/^\d{8}$/.test(str)) {
+      y = str.slice(0, 4); m = str.slice(4, 6); d = str.slice(6, 8);
+    } else if (/^\d{6}$/.test(str)) {
+      y = '20' + str.slice(0, 2); m = str.slice(2, 4); d = str.slice(4, 6);
+    } else {
+      return null;
+    }
+    if (!isValidDateParts(y, m, d)) return null;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
   // Helper to get the messages container
   function getMessagesContainer(panelOrContainer) {
     if (!panelOrContainer) return null;
@@ -32,36 +60,15 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     while (true) {
       modeInput = prompt(chatlogsParserMessages.selectParseMode[lang], '1');
       if (modeInput === null) return null;
-      if (["1", "2", "3", "4"].includes(modeInput)) break;
+      if (["1", "2", "3", "4", "5"].includes(modeInput)) break;
       alert(chatlogsParserMessages.invalidSelection[lang]);
     }
     const opts = {};
-    function isValidDateParts(year, month, day) {
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      year = parseInt(year, 10);
-      month = parseInt(month, 10);
-      day = parseInt(day, 10);
-      if (year > currentYear) return false;
-      if (month < 1 || month > 12) return false;
-      if (day < 1 || day > 31) return false;
-      return true;
-    }
-    function normalizeDate(str) {
-      let y, m, d;
-      if (/^\d{4}[:\-]\d{2}[:\-]\d{2}$/.test(str)) {
-        [y, m, d] = str.replace(/:/g, '-').split('-');
-      } else if (/^\d{8}$/.test(str)) {
-        y = str.slice(0, 4); m = str.slice(4, 6); d = str.slice(6, 8);
-      } else if (/^\d{6}$/.test(str)) {
-        y = '20' + str.slice(0, 2); m = str.slice(2, 4); d = str.slice(4, 6);
-      } else {
-        return null;
-      }
-      if (!isValidDateParts(y, m, d)) return null;
-      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-    }
-    if (modeInput === '4') {
+    if (modeInput === '5') {
+      opts.mode = 'fromregistered';
+      // We'll fetch the date after prompting for usernames in startParsing
+      return opts;
+    } else if (modeInput === '4') {
       opts.from = minimalChatlogsDate;
       opts.to = new Date().toISOString().slice(0, 10);
       opts.mode = 'fromstart';
@@ -249,13 +256,60 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       return;
     }
 
-    // Prompt for usernames
-    const usernames = await promptUsernames();
-    if (usernames === null) {
-      resetButton();
-      return;
+    let usernames;
+    if (opts.mode === 'fromregistered') {
+      // Prompt for usernames and fetch registration dates
+      let usernamesInput = await promptUsernames();
+      if (usernamesInput === null || usernamesInput.length === 0) {
+        alert(lang === 'ru' ? 'Не выбраны пользователи.' : 'No users selected.');
+        resetButton();
+        return;
+      }
+      // Fetch registration dates for all usernames
+      let regDates = [];
+      for (const username of usernamesInput) {
+        let reg = await getDataByName(username, 'registered');
+        let regDate = null;
+        if (typeof reg === 'string') {
+          regDate = reg;
+        } else if (typeof reg === 'number') {
+          regDate = new Date(reg * 1000).toISOString().slice(0, 10);
+        }
+        if (regDate) regDates.push(regDate);
+      }
+      if (!regDates.length) {
+        alert(lang === 'ru' ? 'Не удалось получить дату регистрации.' : 'Could not get registration date.');
+        resetButton();
+        return;
+      }
+      // Use the earliest registration date
+      let minDate = regDates.sort()[0];
+      // Prompt user to edit or confirm the start date
+      let promptMsg = lang === 'ru'
+        ? `С какой даты начать парсинг? (дата регистрации: ${minDate})`
+        : `From which date to start parsing? (registration date: ${minDate})`;
+      let editedDate = prompt(promptMsg, minDate);
+      if (!editedDate) {
+        resetButton();
+        return;
+      }
+      // Normalize and validate the edited date using normalizeDate and isValidDateParts
+      editedDate = normalizeDate(editedDate.trim());
+      if (!editedDate) {
+        alert(lang === 'ru' ? 'Неверный формат даты.' : 'Invalid date format.');
+        resetButton();
+        return;
+      }
+      opts.from = editedDate;
+      opts.to = new Date().toISOString().slice(0, 10);
+      usernames = usernamesInput;
+    } else {
+      usernames = await promptUsernames();
+      if (usernames === null) {
+        resetButton();
+        return;
+      }
     }
-
     const searchAllUsers = usernames.length === 0;
 
     // Prompt for message search terms
