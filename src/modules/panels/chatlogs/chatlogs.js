@@ -56,6 +56,10 @@ const { ignored } = settingsState;
 
 const lang = getCurrentLanguage();
 
+// --- Chatlog HTML size limit (shared constant) ---
+const CHATLOG_SIZE_LIMIT_KB = 1000;
+const CHATLOG_SIZE_LIMIT_BYTES = CHATLOG_SIZE_LIMIT_KB * 1024;
+
 // Define dynamic variables
 let {
   panelsEvents
@@ -100,11 +104,45 @@ export const fetchChatLogs = async (date, messagesContainer) => {
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error('Network response was not ok');
-      html = await response.text();
-      // Save to IndexedDB for future use, but only if date is not today
-      if (date !== today) {
-        await saveChatlogToIndexedDB(date, html);
+      // Stream and check size as we read
+      const reader = response.body.getReader();
+      let receivedLength = 0;
+      let chunks = [];
+      let done = false;
+      while (!done) {
+        const { value, done: streamDone } = await reader.read();
+        if (value) {
+          receivedLength += value.length;
+          if (receivedLength > CHATLOG_SIZE_LIMIT_BYTES) {
+            // Too large, abort and skip this day
+            reader.cancel();
+            return {
+              chatlogs: [],
+              url: url,
+              size: 0,
+              error: null,
+              info: lang === 'ru' ? 'Пропущено: слишком большой лог.' : 'Skipped: chatlog too large.',
+              placeholder: lang === 'ru' ? 'Пропущено: слишком большой лог.' : 'Skipped: chatlog too large.'
+            };
+          }
+          chunks.push(value);
+        }
+        done = streamDone;
       }
+      // Concatenate all chunks
+      let htmlUint8 = new Uint8Array(receivedLength);
+      let position = 0;
+      for (let chunk of chunks) {
+        htmlUint8.set(chunk, position);
+        position += chunk.length;
+      }
+      html = new TextDecoder('utf-8').decode(htmlUint8);
+      // Save to IndexedDB for future use, but only if date is not today and only save the trimmed htmlContent
+      const htmlContent = html.length > CHATLOG_SIZE_LIMIT_BYTES ? html.slice(0, CHATLOG_SIZE_LIMIT_BYTES) : html;
+      if (date !== today) {
+        await saveChatlogToIndexedDB(date, htmlContent);
+      }
+      html = htmlContent;
     } catch (error) {
       return {
         chatlogs: [],
@@ -183,14 +221,12 @@ export const fetchChatLogs = async (date, messagesContainer) => {
     }).filter(Boolean);
   };
 
-  // Limit the size of the HTML to 1MB (or whatever is appropriate)
-  const sizeLimitKB = 1000;
-  const sizeLimitBytes = sizeLimitKB * 1024;
-  const htmlContent = html.length > sizeLimitBytes ? html.slice(0, sizeLimitBytes) : html;
+  // Use shared size limit constant
+  const htmlContent = html.length > CHATLOG_SIZE_LIMIT_BYTES ? html.slice(0, CHATLOG_SIZE_LIMIT_BYTES) : html;
 
   // Parse the HTML and extract chat logs
   const chatlogs = parseChatLog(htmlContent);
-  const limitReached = html.length > sizeLimitBytes;
+  const limitReached = html.length > CHATLOG_SIZE_LIMIT_BYTES;
 
   // Step 1: Remove consecutive duplicate messages
   const noSpamMessages = [];
