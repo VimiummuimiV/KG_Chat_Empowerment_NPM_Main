@@ -454,6 +454,8 @@ export function getRandomEmojiAvatar() {
   return newEmoji;
 }
 
+// --- DATA API HELPERS START ---
+
 // Helper to fetch JSON and validate response
 export async function fetchJSON(url) {
   const response = await fetch(url);
@@ -461,94 +463,142 @@ export async function fetchJSON(url) {
   return response.json();
 }
 
-// Helper function to get Exact user ID by username via the search API
+// Helper function to get exact user ID by username via the search API
 export async function getExactUserIdByName(userName) {
   try {
-    // Define the search API URL
     const searchApiUrl = `https://klavogonki.ru/api/profile/search-users?query=${userName}`;
-    // Get search results from the API
     const searchResults = await fetchJSON(searchApiUrl);
-    // Ensure search results exist and contain data
-    if (!searchResults.all?.length) return false;
-    // Return the ID of the user with the exact matching login
+    
+    if (!searchResults.all?.length) return null;
+    
     const user = searchResults.all.find(user => user.login === userName);
-    if (!user) return false;
-    return user.id;
+    return user ? user.id : null;
   } catch (error) {
-    return false;
-  }
-}
-
-// Function to get user profile data by ID
-export async function getUserProfileById(userId) {
-  try {
-    const profileApiUrl = `https://klavogonki.ru/api/profile/get-summary?id=${userId}`;
-    const profileData = await fetchJSON(profileApiUrl);
-    return profileData;
-  } catch (error) {
-    console.error('Error fetching user profile:', error);
+    console.error('Error getting user ID:', error);
     return null;
   }
 }
 
-// Function to extract history usernames from profile data
-export function getHistoryUsernames(profileData) {
-  // Check if profileData exists and has the expected structure
-  if (!profileData || !profileData.user || !profileData.user.history || !Array.isArray(profileData.user.history)) {
-    return [];
-  }
-
-  // Extract all login names from the history array
-  const usernames = profileData.user.history.map(historyItem => {
-    return historyItem.login;
-  });
-
-  return usernames;
-}
-
-// Main function to get history usernames by user ID
-export async function getHistoryUsernamesById(userId) {
+// Helper function to get all user IDs by username via the search API
+export async function getAllUserIDsByName(userName) {
   try {
-    const profileData = await getUserProfileById(userId);
-    if (!profileData) {
-      return [];
-    }
-    return getHistoryUsernames(profileData);
+    const searchApiUrl = `https://klavogonki.ru/api/profile/search-users?query=${userName}`;
+    const searchResults = await fetchJSON(searchApiUrl);
+    
+    if (!searchResults.all?.length) return [];
+    
+    return searchResults.all.map(user => user.id);
   } catch (error) {
-    console.error('Error getting history usernames:', error);
+    console.error('Error getting user IDs:', error);
     return [];
   }
 }
 
-// Main function to get history usernames by username (combines search + profile APIs)
-export async function getHistoryUsernamesByName(userName) {
+// MAIN FUNCTION: Get full user summary by username
+async function getUserSummaryByName(userName) {
   try {
     // First, get the user ID by username
     const userId = await getExactUserIdByName(userName);
     if (!userId) {
-      console.log(`User with username "${userName}" not found`);
-      return [];
+      throw new Error(`User with username "${userName}" not found`);
     }
-
-    // Then get the history usernames by ID
-    return await getHistoryUsernamesById(userId);
+    
+    // Get the full profile summary
+    const profileApiUrl = `https://klavogonki.ru/api/profile/get-summary?id=${userId}`;
+    const summary = await fetchJSON(profileApiUrl);
+    
+    return summary;
   } catch (error) {
-    console.error('Error getting history usernames by name:', error);
-    return [];
+    console.error('Error getting user summary:', error);
+    throw error;
   }
 }
 
-// Helper function to get all user IDs by username via the search API
-export async function getUserIDsByName(userName) {
-  const searchApiUrl = `https://klavogonki.ru/api/profile/search-users?query=${userName}`;
-  const searchResults = await fetchJSON(searchApiUrl);
-
-  const foundUsers = searchResults.all; // Get all search results
-  if (!foundUsers || foundUsers.length === 0) throw new Error(`User ${userName} not found.`);
-
-  // Return an array of user IDs
-  return foundUsers.map(user => user.id);
+// Convenience function to get specific data by username
+export async function getDataByName(userName, dataType) {
+  try {
+    const summary = await getUserSummaryByName(userName);
+    return extractData(summary, dataType);
+  } catch (error) {
+    console.error(`Error getting ${dataType} for user ${userName}:`, error);
+    return null;
+  }
 }
+
+// MAIN FUNCTION: Get full user summary by ID
+async function getUserSummaryById(userId) {
+  try {
+    const profileApiUrl = `https://klavogonki.ru/api/profile/get-summary?id=${userId}`;
+    const summary = await fetchJSON(profileApiUrl);
+    
+    return summary;
+  } catch (error) {
+    console.error('Error getting user summary:', error);
+    throw error;
+  }
+}
+
+// Convenience function to get specific data by user ID
+async function getDataById(userId, dataType) {
+  try {
+    const summary = await getUserSummaryById(userId);
+    return extractData(summary, dataType);
+  } catch (error) {
+    console.error(`Error getting ${dataType} for user ID ${userId}:`, error);
+    return null;
+  }
+}
+
+// Universal data extractor function
+function extractData(summary, dataType) {
+  if (!summary?.user) return null;
+  
+  switch (dataType) {
+    case 'usernamesHistory':
+      if (!summary.user.history || !Array.isArray(summary.user.history)) {
+        return [];
+      }
+      return summary.user.history.map(historyItem => historyItem.login);
+    
+    case 'registeredDate':
+      return summary.user.registered || null;
+    
+    case 'currentLogin':
+      return summary.user.login || null;
+    
+    case 'userId':
+      return summary.user.id || null;
+    
+    case 'level':
+      return summary.user.level || null;
+    
+    case 'status':
+      return summary.user.status || null;
+    
+    case 'title':
+      return summary.user.title || null;
+    
+    case 'car':
+      return summary.user.car || null;
+    
+    case 'isOnline':
+      return summary.user.is_online || false;
+    
+    case 'avatar':
+      return summary.user.avatar || null;
+    
+    case 'stats':
+      return summary.stats || null;
+    
+    case 'allUserData':
+      return summary.user;
+    
+    default:
+      throw new Error(`Unknown data type: ${dataType}`);
+  }
+}
+
+// --- DATA API HELPERS END ---
 
 // Function to validate required user data
 function validateUserData(user) {

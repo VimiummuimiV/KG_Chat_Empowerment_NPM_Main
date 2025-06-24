@@ -3,7 +3,7 @@ import { minimalChatlogsDate } from "../../definitions.js";
 import { fetchChatLogs } from './chatlogs.js';
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
-import { getCurrentLanguage, getExactUserIdByName, getHistoryUsernamesByName } from '../../helpers.js';
+import { getCurrentLanguage, getExactUserIdByName, getDataByName } from '../../helpers.js';
 import { chatlogsParserMessages } from './messages.js';
 import { createCustomTooltip } from "../../tooltip.js";
 import { deleteChatlogFromIndexedDB } from "./chatlogsStorage.js";
@@ -147,8 +147,8 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       if (usernames.length === 1) {
         const answer = prompt(chatlogsParserMessages.retrieveHistoryPrompt[lang], '2');
         if (answer === '1') {
-          if (typeof getHistoryUsernamesByName === 'function') {
-            const historyUsernames = await getHistoryUsernamesByName(usernames[0]);
+          if (typeof getDataByName === 'function') {
+            const historyUsernames = await getDataByName(usernames[0], 'usernamesHistory');
             if (Array.isArray(historyUsernames) && historyUsernames.length > 0) {
               const allUsernames = [usernames[0], ...historyUsernames.filter(u => u !== usernames[0])];
               const confirmed = prompt(chatlogsParserMessages.confirmUsernames[lang], allUsernames.join(', '));

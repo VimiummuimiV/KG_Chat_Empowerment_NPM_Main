@@ -10,7 +10,7 @@ import {
   triggerTargetElement,
   getRandomEmojiAvatar,
   adjustVisibility,
-  getUserIDsByName,
+  getAllUserIDsByName,
   getUserProfileData,
   refreshFetchedUsers,
   calculateTimeOnSite,
@@ -242,7 +242,7 @@ function showCachePanel() {
       const userElements = [];
 
       try {
-        const userIds = await getUserIDsByName(username);
+        const userIds = await getAllUserIDsByName(username);
         await Promise.all(userIds.map(async (userId) => {
           const profileData = await getUserProfileData(userId, false);
           const userData = {
