@@ -373,8 +373,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       const dateStr = currentDate.toISOString().slice(0, 10);
       if (searchDateInfo) {
         const percent = getPercentComplete(currentDate, startDate, endDate);
-        searchDateInfo.textContent =
-          (lang === 'ru' ? 'Дата: ' : 'Date: ') + dateStr + ` (${percent}%)`;
+        searchDateInfo.textContent = chatlogsParserMessages.dateProgressInfo[lang](from, dateStr, percent);
       }
       try {
         const { chatlogs } = await fetchChatLogs(dateStr, null, abortController.signal);

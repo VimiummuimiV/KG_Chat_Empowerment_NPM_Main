@@ -194,6 +194,12 @@ export const chatlogsParserMessages = {
     ru: usernames => `${SEARCH} Показаны все ${CONTENT} сообщения от: ${USER} ${usernames.join(', ')}`
   },
 
+  // Date progress info message (UI Message)
+  dateProgressInfo: { // UI Message
+    en: (initialDate, currentDate, percent) => `${DATE} Start: ${initialDate} | Current: ${currentDate} | Progress: ${percent}%`,
+    ru: (initialDate, currentDate, percent) => `${DATE} Начало: ${initialDate} | Текущая: ${currentDate} | Прогресс: ${percent}%`
+  },
+
   // No messages found messages (UI Messages)
   noMessagesFoundAll: { // UI Message
     en: searchTerms => `${WARN} No ${CONTENT} messages found containing the search terms: ${searchTerms.join(', ')}`,
