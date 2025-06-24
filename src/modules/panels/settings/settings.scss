@@ -49,6 +49,8 @@
   .settings-spoiler {
 
     button {
+      display: inline-flex !important;
+      width: 230px !important;
       position: relative;
       font: 1em Montserrat;
       color: lightgreen;
