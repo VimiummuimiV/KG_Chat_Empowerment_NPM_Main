@@ -360,8 +360,14 @@ export function processEncodedLinks(type) {
 
 // Creates and manages an iframe modal for profile content
 export const loadProfileIntoIframe = (url) => {
+  // Check if iframe already exists
+  let profileIframe = document.querySelector('.profile-iframe-container');
+  if (profileIframe) {
+    profileIframe.src = url;
+    return;
+  }
   // Create iframe element and configure basic attributes
-  const profileIframe = document.createElement('iframe');
+  profileIframe = document.createElement('iframe');
   profileIframe.classList.add('profile-iframe-container');
   profileIframe.src = url;
 
@@ -386,8 +392,16 @@ export const loadProfileIntoIframe = (url) => {
       event.preventDefault();
       removeIframe();
     }
-    // Close iframe when clicking outside
+    // Close iframe when clicking outside, but ignore clicks on .profile, .name, .login or their descendants
     if (event.type === 'mousedown' && !profileIframe.contains(event.target)) {
+      // Check if the click target or any ancestor has .profile, .name, or .login class
+      let el = event.target;
+      while (el && el !== document.body) {
+        if (el.classList && (el.classList.contains('profile') || el.classList.contains('name') || el.classList.contains('login'))) {
+          return; // Do not close if clicked on these elements or their descendants
+        }
+        el = el.parentElement;
+      }
       removeIframe();
     }
   };
