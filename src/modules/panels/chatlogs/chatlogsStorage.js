@@ -88,11 +88,13 @@ export async function listAllChatlogDates() {
 }
 
 // --- Caching logic for total chatlogs size ---
+const TOTAL_SIZE_CACHE_KEY = 'chatlogsTotalSizeKB';
+
 function getCachedTotalSize() {
-  return parseFloat(localStorage.getItem('chatlogsTotalSizeKB') || '0');
+  return parseFloat(localStorage.getItem(TOTAL_SIZE_CACHE_KEY) || '0');
 }
 function setCachedTotalSize(sizeKB) {
-  localStorage.setItem('chatlogsTotalSizeKB', Number(sizeKB).toFixed(2));
+  localStorage.setItem(TOTAL_SIZE_CACHE_KEY, Number(sizeKB).toFixed(2));
 }
 
 // Use this for fast UI display

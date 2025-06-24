@@ -91,6 +91,16 @@ export const fetchChatLogs = async (date, messagesContainer) => {
   // Clear the messagesContainer if it exists
   messagesContainer && (messagesContainer.innerHTML = '');
 
+  // Define skipped result object once
+  const skippedResult = {
+    chatlogs: [],
+    url: null,
+    size: 0,
+    error: null,
+    info: lang === 'ru' ? 'Пропущено: слишком большой лог.' : 'Skipped: chatlog too large.',
+    placeholder: lang === 'ru' ? 'Пропущено: слишком большой лог.' : 'Skipped: chatlog too large.'
+  };
+
   // Generate a random 20-digit number
   const randomParam = Math.floor(Math.random() * 10 ** 20);
 
@@ -116,14 +126,7 @@ export const fetchChatLogs = async (date, messagesContainer) => {
           if (receivedLength > CHATLOG_SIZE_LIMIT_BYTES) {
             // Too large, abort and skip this day
             reader.cancel();
-            return {
-              chatlogs: [],
-              url: url,
-              size: 0,
-              error: null,
-              info: lang === 'ru' ? 'Пропущено: слишком большой лог.' : 'Skipped: chatlog too large.',
-              placeholder: lang === 'ru' ? 'Пропущено: слишком большой лог.' : 'Skipped: chatlog too large.'
-            };
+            return skippedResult;
           }
           chunks.push(value);
         }
@@ -137,6 +140,7 @@ export const fetchChatLogs = async (date, messagesContainer) => {
         position += chunk.length;
       }
       html = new TextDecoder('utf-8').decode(htmlUint8);
+
       // Save to IndexedDB for future use, but only if date is not today and only save the trimmed htmlContent
       const htmlContent = html.length > CHATLOG_SIZE_LIMIT_BYTES ? html.slice(0, CHATLOG_SIZE_LIMIT_BYTES) : html;
       if (date !== today) {
