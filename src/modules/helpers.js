@@ -456,6 +456,19 @@ export function getRandomEmojiAvatar() {
 
 // --- DATA API HELPERS START ---
 
+// Function to convert Unix timestamp to YYYY-MM-DD format
+function formatRegisteredDate(registered) {
+  if (!registered || !registered.sec) {
+    return null;
+  }
+
+  // Convert Unix timestamp (seconds) to Date object
+  const date = new Date(registered.sec * 1000);
+
+  // Format as YYYY-MM-DD
+  return date.toISOString().split('T')[0];
+}
+
 // Helper to fetch JSON and validate response
 export async function fetchJSON(url) {
   const response = await fetch(url);
@@ -468,9 +481,9 @@ export async function getExactUserIdByName(userName) {
   try {
     const searchApiUrl = `https://klavogonki.ru/api/profile/search-users?query=${userName}`;
     const searchResults = await fetchJSON(searchApiUrl);
-    
+
     if (!searchResults.all?.length) return null;
-    
+
     const user = searchResults.all.find(user => user.login === userName);
     return user ? user.id : null;
   } catch (error) {
@@ -484,9 +497,9 @@ export async function getAllUserIDsByName(userName) {
   try {
     const searchApiUrl = `https://klavogonki.ru/api/profile/search-users?query=${userName}`;
     const searchResults = await fetchJSON(searchApiUrl);
-    
+
     if (!searchResults.all?.length) return [];
-    
+
     return searchResults.all.map(user => user.id);
   } catch (error) {
     console.error('Error getting user IDs:', error);
@@ -494,19 +507,11 @@ export async function getAllUserIDsByName(userName) {
   }
 }
 
-// MAIN FUNCTION: Get full user summary by username
-async function getUserSummaryByName(userName) {
+// Get user summary data by ID
+async function getUserSummaryById(userId) {
   try {
-    // First, get the user ID by username
-    const userId = await getExactUserIdByName(userName);
-    if (!userId) {
-      throw new Error(`User with username "${userName}" not found`);
-    }
-    
-    // Get the full profile summary
     const profileApiUrl = `https://klavogonki.ru/api/profile/get-summary?id=${userId}`;
     const summary = await fetchJSON(profileApiUrl);
-    
     return summary;
   } catch (error) {
     console.error('Error getting user summary:', error);
@@ -514,95 +519,201 @@ async function getUserSummaryByName(userName) {
   }
 }
 
-// Convenience function to get specific data by username
+// Get user index data by ID
+async function getUserIndexDataById(userId) {
+  try {
+    const indexApiUrl = `https://klavogonki.ru/api/profile/get-index-data?userId=${userId}`;
+    const indexData = await fetchJSON(indexApiUrl);
+    return indexData;
+  } catch (error) {
+    console.error('Error getting user index data:', error);
+    throw error;
+  }
+}
+
+// Data types that require the index-data API
+const INDEX_DATA_TYPES = new Set([
+  'bio',
+  'bioText',
+  'bioOldText',
+  'bioEditedDate',
+  'stats',
+  'registered',
+  'achievesCount',
+  'totalRaces',
+  'bestSpeed',
+  'ratingLevel',
+  'friendsCount',
+  'vocsCount',
+  'carsCount',
+  'achieves',
+  'allIndexData'
+]);
+
+// Data types that require the summary API
+const SUMMARY_DATA_TYPES = new Set([
+  'usernamesHistory',
+  'currentLogin',
+  'userId',
+  'level',
+  'status',
+  'title',
+  'car',
+  'isOnline',
+  'avatar',
+  'blocked',
+  'isFriend',
+  'publicPrefs',
+  'allUserData'
+]);
+
+// MAIN FUNCTION: Get specific data by username - automatically chooses correct API
 export async function getDataByName(userName, dataType) {
   try {
-    const summary = await getUserSummaryByName(userName);
-    return extractData(summary, dataType);
+    const userId = await getExactUserIdByName(userName);
+    if (!userId) {
+      throw new Error(`User with username "${userName}" not found`);
+    }
+
+    return await getDataById(userId, dataType);
   } catch (error) {
     console.error(`Error getting ${dataType} for user ${userName}:`, error);
     return null;
   }
 }
 
-// MAIN FUNCTION: Get full user summary by ID
-async function getUserSummaryById(userId) {
+// MAIN FUNCTION: Get specific data by user ID - automatically chooses correct API
+export async function getDataById(userId, dataType) {
   try {
-    const profileApiUrl = `https://klavogonki.ru/api/profile/get-summary?id=${userId}`;
-    const summary = await fetchJSON(profileApiUrl);
-    
-    return summary;
-  } catch (error) {
-    console.error('Error getting user summary:', error);
-    throw error;
-  }
-}
-
-// Convenience function to get specific data by user ID
-async function getDataById(userId, dataType) {
-  try {
-    const summary = await getUserSummaryById(userId);
-    return extractData(summary, dataType);
+    // Determine which API to use based on data type
+    if (INDEX_DATA_TYPES.has(dataType)) {
+      const indexData = await getUserIndexDataById(userId);
+      return extractData(indexData, dataType, 'index');
+    } else if (SUMMARY_DATA_TYPES.has(dataType)) {
+      const summary = await getUserSummaryById(userId);
+      return extractData(summary, dataType, 'summary');
+    } else {
+      throw new Error(`Unknown data type: ${dataType}`);
+    }
   } catch (error) {
     console.error(`Error getting ${dataType} for user ID ${userId}:`, error);
     return null;
   }
 }
 
-// Universal data extractor function - CLEANED VERSION
-function extractData(summary, dataType) {
-  if (!summary) return null;
+// Universal data extractor function - handles both API responses
+function extractData(data, dataType, apiType) {
+  if (!data) return null;
 
-  const data = {
-    ...(summary.user || {}),
-    ...summary
-  };
+  // Handle summary API data types
+  if (apiType === 'summary') {
+    const userData = {
+      ...(data.user || {}),
+      ...data
+    };
 
-  switch (dataType) {
-    case 'usernamesHistory':
-      return Array.isArray(data.history)
-        ? data.history.map(item => item.login)
-        : [];
+    switch (dataType) {
+      case 'usernamesHistory':
+        return Array.isArray(userData.history)
+          ? userData.history.map(item => item.login)
+          : [];
 
-    case 'currentLogin':
-      return data.login || null;
+      case 'currentLogin':
+        return userData.login || null;
 
-    case 'userId':
-      return data.id || null;
+      case 'userId':
+        return userData.id || null;
 
-    case 'level':
-      return data.level || null;
+      case 'level':
+        return userData.level || null;
 
-    case 'status':
-      return data.status || null;
+      case 'status':
+        return userData.status || null;
 
-    case 'title':
-      return data.title || (data.status?.title ?? null);
+      case 'title':
+        return userData.title || (userData.status?.title ?? null);
 
-    case 'car':
-      return data.car || null;
+      case 'car':
+        return userData.car || null;
 
-    case 'isOnline':
-      return data.is_online ?? false;
+      case 'isOnline':
+        return userData.is_online ?? false;
 
-    case 'avatar':
-      return data.avatar || null;
+      case 'avatar':
+        return userData.avatar || null;
 
-    case 'blocked':
-      return data.blocked ?? null;
+      case 'blocked':
+        return userData.blocked ?? null;
 
-    case 'isFriend':
-      return data.is_friend ?? false;
+      case 'isFriend':
+        return userData.is_friend ?? false;
 
-    case 'publicPrefs':
-      return data.public_prefs || null;
+      case 'publicPrefs':
+        return userData.public_prefs || null;
 
-    case 'allUserData':
-      return data;
+      case 'allUserData':
+        return userData;
 
-    default:
-      throw new Error(`Unknown data type: ${dataType}`);
+      default:
+        return null;
+    }
   }
+
+  // Handle index API data types
+  if (apiType === 'index') {
+    switch (dataType) {
+      case 'bio':
+        return data.bio || null;
+
+      case 'bioText':
+        return data.bio?.text || null;
+
+      case 'bioOldText':
+        return data.bio?.old_text || null;
+
+      case 'bioEditedDate':
+        return data.bio?.edited_date || null;
+
+      case 'stats':
+        return data.stats || null;
+
+      case 'registered':
+        // Format the registered date properly
+        return formatRegisteredDate(data.stats?.registered);
+
+      case 'achievesCount':
+        return data.stats?.achieves_cnt || null;
+
+      case 'totalRaces':
+        return data.stats?.total_num_races || null;
+
+      case 'bestSpeed':
+        return data.stats?.best_speed || null;
+
+      case 'ratingLevel':
+        return data.stats?.rating_level || null;
+
+      case 'friendsCount':
+        return data.stats?.friends_cnt || null;
+
+      case 'vocsCount':
+        return data.stats?.vocs_cnt || null;
+
+      case 'carsCount':
+        return data.stats?.cars_cnt || null;
+
+      case 'achieves':
+        return data.achieves || null;
+
+      case 'allIndexData':
+        return data;
+
+      default:
+        return null;
+    }
+  }
+
+  return null;
 }
 
 // --- DATA API HELPERS END ---
