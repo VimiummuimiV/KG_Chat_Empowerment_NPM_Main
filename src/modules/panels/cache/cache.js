@@ -12,6 +12,7 @@ import {
 } from "../../helpers.js";
 
 import { getUserProfileData } from "../../helpers/userProfileData.js";
+import { getDataById } from "../../helpers/apiData.js";
 
 import {
   triggerTargetElement,
@@ -460,6 +461,22 @@ function showCachePanel() {
     const loginContainer = document.createElement('div');
     loginContainer.className = 'login-container';
 
+    const presentMarker = document.createElement('span');
+    // Define marker first as gray
+    presentMarker.className = 'present-marker waiting';
+
+    // Real-time update for online status using efficient API helper
+    if (typeof getDataById === 'function') {
+      getDataById(userId, 'isOnline').then(isOnline => {
+        presentMarker.classList.remove('waiting');
+        presentMarker.className = `present-marker ${isOnline ? 'online' : 'offline'}`;
+      }).catch(() => {
+        console.error(`Failed to fetch online status for user ${userId}`);
+      });
+    }
+
+    loginContainer.appendChild(presentMarker);
+
     const loginElement = document.createElement('a');
     loginElement.className = 'login';
     loginElement.textContent = userData.login;
@@ -697,6 +714,9 @@ function showCachePanel() {
 
   // Delegated tooltips for user metrics
   createCustomTooltip(
+    '.waiting,' +
+    '.online,' +
+    '.offline,' +
     '.login,' +
     '.visits,' +
     '.best-speed,' +
@@ -705,6 +725,25 @@ function showCachePanel() {
     '.friends-count',
     fetchedUsersContainer,
     (el) => {
+      if (el.classList.contains('waiting')) {
+        return {
+          en: 'Waiting for presence status',
+          ru: 'Ожидание статуса присутствия'
+        };
+      }
+      if (el.classList.contains('online')) {
+        return {
+          en: 'Online',
+          ru: 'Онлайн'
+        };
+      }
+      if (el.classList.contains('offline')) {
+        return {
+          en: 'Offline',
+          ru: 'Оффлайн'
+        };
+      }
+
       if (el.classList.contains('login')) {
         return {
           en: ` 

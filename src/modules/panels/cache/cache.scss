@@ -40,11 +40,11 @@
   .drop-time-threshold {
     padding: 0.6em;
     color: lightcoral;
-    font-family: 'Roboto Mono', monospace;
+    font-family: "Roboto Mono", monospace;
     font-size: 1.1em;
     font-weight: bold;
     border-radius: 0.2em !important;
-    border: 1px solid rgba(240, 128, 128, 0.20);
+    border: 1px solid rgba(240, 128, 128, 0.2);
     background-color: rgba(240, 128, 128, 0.05);
     transition: filter 0.3s;
     filter: sepia(0);
@@ -63,7 +63,7 @@
   .drop-time-expiration {
     padding: 0.6em;
     color: antiquewhite;
-    font-family: 'Roboto Mono', monospace;
+    font-family: "Roboto Mono", monospace;
     font-size: 1.1em;
   }
 
@@ -79,7 +79,7 @@
     width: 100%;
     padding: 10px;
     font-size: 1em;
-    font-family: 'Montserrat';
+    font-family: "Montserrat";
     color: bisque !important;
     border-radius: 0.2em !important;
     box-sizing: border-box;
@@ -90,7 +90,7 @@
   .error-message {
     width: fit-content;
     white-space: nowrap;
-    font-family: 'Montserrat';
+    font-family: "Montserrat";
     color: lightcoral;
   }
 
@@ -202,10 +202,56 @@
     }
   }
 
+  .present-marker {
+    display: inline-flex;
+    width: 8px;
+    height: 8px;
+    margin-right: 4px;
+    border-radius: 50% !important;
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 40%;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50% !important;
+      background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.7) 20%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      pointer-events: none;
+    }
+
+    &.waiting {
+      background-color: #f0ad4e;
+      box-shadow: 0 1px 3px 0 rgba(128, 64, 0, 0.45),
+        0 0 0 1px rgba(128, 64, 0, 0.1) inset,
+        0 2px 6px 0 rgba(128, 64, 0, 0.25) !important;
+    }
+
+    &.online {
+      background-color: greenyellow;
+      box-shadow: 0 1px 3px 0 rgba(0, 64, 0, 0.45),
+        0 0 0 1px rgba(0, 64, 0, 0.1) inset, 0 2px 6px 0 rgba(0, 64, 0, 0.25) !important;
+    }
+
+    &.offline {
+      background-color: crimson;
+      box-shadow: 0 1px 3px 0 rgba(128, 0, 32, 0.45),
+        0 0 0 1px rgba(128, 0, 32, 0.1) inset,
+        0 2px 6px 0 rgba(128, 0, 32, 0.25) !important;
+    }
+  }
+
   .login {
     color: skyblue !important;
     text-decoration: none;
-    font-family: 'Montserrat', sans-serif;
+    font-family: "Montserrat", sans-serif;
     transition: color 0.3s ease;
 
     &:hover {
