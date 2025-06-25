@@ -221,30 +221,31 @@
       border-radius: 50% !important;
       background: radial-gradient(
         circle,
-        rgba(255, 255, 255, 0.7) 20%,
-        rgba(255, 255, 255, 0) 100%
+        hsla(0, 0%, 100%, 0.7) 20%,
+        hsla(0, 0%, 100%, 0) 100%
       );
       pointer-events: none;
     }
 
     &.waiting {
-      background-color: #f0ad4e;
-      box-shadow: 0 1px 3px 0 rgba(128, 64, 0, 0.45),
-        0 0 0 1px rgba(128, 64, 0, 0.1) inset,
-        0 2px 6px 0 rgba(128, 64, 0, 0.25) !important;
+      background-color: hsl(0, 0%, 50%);
+      box-shadow: 0 1px 3px 0 hsla(0, 0%, 15%, 0.5),
+        0 0 0 1px hsla(0, 0%, 15%, 0.1) inset,
+        0 2px 6px 0 hsla(0, 0%, 15%, 0.25) !important;
     }
 
     &.online {
-      background-color: greenyellow;
-      box-shadow: 0 1px 3px 0 rgba(0, 64, 0, 0.45),
-        0 0 0 1px rgba(0, 64, 0, 0.1) inset, 0 2px 6px 0 rgba(0, 64, 0, 0.25) !important;
+      background-color: hsl(80, 80%, 50%);
+      box-shadow: 0 1px 3px 0 hsla(80, 80%, 15%, 0.5),
+        0 0 0 1px hsla(80, 80%, 15%, 0.1) inset,
+        0 2px 6px 0 hsla(80, 80%, 15%, 0.25) !important;
     }
 
     &.offline {
-      background-color: crimson;
-      box-shadow: 0 1px 3px 0 rgba(128, 0, 32, 0.45),
-        0 0 0 1px rgba(128, 0, 32, 0.1) inset,
-        0 2px 6px 0 rgba(128, 0, 32, 0.25) !important;
+      background-color: hsl(350, 80%, 50%);
+      box-shadow: 0 1px 3px 0 hsla(350, 80%, 15%, 0.5),
+        0 0 0 1px hsla(350, 80%, 15%, 0.1) inset,
+        0 2px 6px 0 hsla(350, 80%, 15%, 0.25) !important;
     }
   }
 
