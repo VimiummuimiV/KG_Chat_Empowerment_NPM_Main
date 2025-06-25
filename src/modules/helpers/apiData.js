@@ -1,5 +1,5 @@
 // Function to convert Unix timestamp to YYYY-MM-DD format
-function formatRegisteredDate(registered) {
+export function formatRegisteredDate(registered) {
   if (!registered || !registered.sec) {
     return null;
   }
@@ -8,7 +8,7 @@ function formatRegisteredDate(registered) {
 }
 
 // Function to convert sec and usec to the 'updated' timestamp
-function convertToUpdatedTimestamp(sec, usec) {
+export function convertToUpdatedTimestamp(sec, usec) {
   return sec != null && usec != null
     ? sec.toString() + Math.floor(usec / 1000).toString()
     : null;
