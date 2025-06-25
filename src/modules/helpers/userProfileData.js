@@ -8,13 +8,13 @@ function validateUserData(user) {
 function convertSecondsToDate(seconds) {
   const date = new Date(seconds * 1000);
   return date.toISOString().slice(0, 19).replace('T', ' '); // Converts to 'YYYY-MM-DD HH:mm:ss' format
-}
+} // Already used in apiData.js
 
 // Function to convert sec and usec to the 'updated' timestamp
 function convertToUpdatedTimestamp(sec, usec) {
   // Create the full timestamp by combining sec and usec (in microseconds)
   return sec.toString() + Math.floor(usec / 1000).toString();
-}
+} // Already used in apiData.js
 
 // Main function to get profile summary and registration data
 export async function getUserProfileData(userId, useLocalStorage = true) {

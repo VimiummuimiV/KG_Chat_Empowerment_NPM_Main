@@ -7,6 +7,13 @@ function formatRegisteredDate(registered) {
   return date.toISOString().split('T')[0];
 }
 
+// Function to convert sec and usec to the 'updated' timestamp
+function convertToUpdatedTimestamp(sec, usec) {
+  return sec != null && usec != null
+    ? sec.toString() + Math.floor(usec / 1000).toString()
+    : null;
+}
+
 // Helper to fetch JSON and validate response
 export async function fetchJSON(url) {
   const response = await fetch(url);
@@ -136,14 +143,21 @@ function extractData(data, dataType, apiType) {
         return userData.level || null;
       case 'status':
         return userData.status || null;
-      case 'title':
+      case 'title': // Rank
         return userData.title || (userData.status?.title ?? null);
-      case 'car':
+      case 'car': // Cars Count
         return userData.car || null;
       case 'isOnline':
         return userData.is_online ?? false;
-      case 'avatar':
+      case 'avatar': // sec and usec data
         return userData.avatar || null;
+      case 'avatarTimestamp': {
+        const avatar = userData.avatar;
+        if (avatar && typeof avatar.sec === 'number' && typeof avatar.usec === 'number') {
+          return convertToUpdatedTimestamp(avatar.sec, avatar.usec);
+        }
+        return null;
+      }
       case 'blocked':
         return userData.blocked ?? null;
       case 'isFriend':
