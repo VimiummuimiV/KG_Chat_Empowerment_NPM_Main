@@ -567,20 +567,20 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Set the inner HTML of the copy chat logs element with the clipboard SVG
   copyChatLogsUrl.innerHTML = clipboardSVG;
   createCustomTooltip(copyChatLogsUrl, {
-    en: [
-      '[Click] to copy Chat Logs Url',
-      '[Ctrl + Click] to save Chat Logs with title',
-      '[Shift + Click] to show/hide saved Chat Logs',
-      '[Alt + Click] to copy Chat Logs in BBCode, Markdown, or Plain format',
-      '[Alt + Shift + Click] to save Chat Logs in BBCode, Markdown, or Plain format'
-    ],
-    ru: [
-      '[Клик] скопировать ссылку на чат-логи',
-      '[Ctrl + Клик] сохранить чат-логи с заголовком',
-      '[Shift + Клик] показать/скрыть сохранённые чат-логи',
-      '[Alt + Клик] скопировать чат-логи в BBCode, Markdown или Plain',
-      '[Alt + Shift + Клик] сохранить чат-логи в BBCode, Markdown или Plain'
-    ]
+    en: ` 
+      [Click] to copy Chat Logs Url
+      [Ctrl + Click] to save Chat Logs with title
+      [Shift + Click] to show/hide saved Chat Logs
+      [Alt + Click] to copy Chat Logs in BBCode, Markdown, or Plain format
+      [Alt + Shift + Click] to save Chat Logs in BBCode, Markdown, or Plain format
+    `,
+    ru: ` 
+      [Клик] скопировать ссылку на чат-логи
+      [Ctrl + Клик] сохранить чат-логи с заголовком
+      [Shift + Клик] показать/скрыть сохранённые чат-логи
+      [Alt + Клик] скопировать чат-логи в BBCode, Markdown или Plain
+      [Alt + Shift + Клик] сохранить чат-логи в BBCode, Markdown или Plain
+    `
   });
 
   // Helper function to extract date from the URL
