@@ -4,10 +4,13 @@ import {
   isEncodedURL,
   isTrustedDomain,
   addBigImageEventListeners,
-  removeBigImageEventListeners,
-  triggerDimmingElement,
-  triggerTargetElement
+  removeBigImageEventListeners
 } from "../helpers";
+
+import {
+  triggerTargetElement,
+  triggerDimmingElement
+} from "../helpers/elementVisibility.js";
 
 // definitions
 import { state } from "../definitions";

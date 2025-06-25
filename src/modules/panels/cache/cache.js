@@ -5,15 +5,18 @@ import {
   // helpers
   removePreviousPanel,
   debounce,
-  triggerDimmingElement,
-  triggerTargetElement,
   getRandomEmojiAvatar,
-  adjustVisibility,
   getUserProfileData,
   refreshFetchedUsers,
   calculateTimeOnSite,
   getCurrentLanguage
 } from "../../helpers.js";
+
+import {
+  triggerTargetElement,
+  triggerDimmingElement,
+  adjustVisibility
+} from "../../helpers/elementVisibility.js";
 
 import { getAllUserIDsByName } from "../../helpers/apiData.js";
 import { createScrollButtons } from "../../helpers/scrollButtons.js";

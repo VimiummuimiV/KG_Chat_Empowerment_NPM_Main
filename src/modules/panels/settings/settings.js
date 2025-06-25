@@ -22,12 +22,15 @@ import {
   // helpers
   removePreviousPanel,
   debounce,
-  triggerDimmingElement,
-  triggerTargetElement,
   // helpers definitions
   isAltKeyPressed,
   isCtrlKeyPressed
 } from '../../helpers.js';
+
+import {
+  triggerTargetElement,
+  triggerDimmingElement
+} from "../../helpers/elementVisibility.js";
 
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
 

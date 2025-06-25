@@ -22,13 +22,16 @@ import {
 // helpers
 import {
   removePreviousPanel,
-  triggerDimmingElement,
-  triggerTargetElement,
   processEncodedLinks,
   highlightMentionWords,
   copyChatlogsUrlToClipboard,
   getCurrentLanguage
 } from '../../helpers.js';
+
+import {
+  triggerTargetElement,
+  triggerDimmingElement
+} from "../../helpers/elementVisibility.js";
 
 import { getExactUserIdByName } from "../../helpers/apiData.js";
 import { scrollToMiddle } from "../../helpers/scrollTo.js";

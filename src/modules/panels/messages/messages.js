@@ -18,13 +18,16 @@ import {
 import {
   // helpers
   removePreviousPanel,
-  triggerDimmingElement,
-  triggerTargetElement,
   processEncodedLinks,
   highlightMentionWords,
   copyChatlogsUrlToClipboard,
   getMessageTextWithImgTitles
 } from '../../helpers.js';
+
+import {
+  triggerTargetElement,
+  triggerDimmingElement
+} from "../../helpers/elementVisibility.js";
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
 import { showChatLogsPanel } from "../chatlogs/chatlogs.js"; // chatlogs

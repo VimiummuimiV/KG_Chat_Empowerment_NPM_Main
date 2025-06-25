@@ -1,4 +1,4 @@
-import { adjustVisibility } from "../helpers.js";
+import { adjustVisibility } from '../helpers/elementVisibility.js';
 
 /**
  * Creates and manages an iframe modal for profile content.
