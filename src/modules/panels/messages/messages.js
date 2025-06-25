@@ -729,49 +729,10 @@ async function showMessagesPanel() {
       timeElement.textContent = formattedTime;
       timeElement.style.color = timeColors[type] || 'slategray';
 
-      // Add click event listener for "mention" and "private" types
-      if (type === 'mention' || type === 'private') {
-        const hoverColor = type === 'mention' ? 'lightgreen' : 'peachpuff';
-        timeElement.addEventListener('mouseover', () => { timeElement.style.color = hoverColor; });
-        timeElement.addEventListener('mouseout', () => { timeElement.style.color = timeColors[type]; });
-        timeElement.addEventListener('click', (event) => {
-          if (event.shiftKey) {
-            event.preventDefault(); // Prevent default action if Shift is pressed
-            event.stopPropagation(); // Stop the event from bubbling up
-            // Copy chatlogs URL to clipboard
-            copyChatlogsUrlToClipboard(date, calibrateToMoscowTime(formattedTime), timeElement);
-            return;
-          }
-          if (event.ctrlKey) {
-            removeMessage(messageElement, 'from');
-            return; // Exit the function to prevent opening the chatlog
-          }
-          if (type === 'mention') {
-            const url = `https://klavogonki.ru/chatlogs/${date}.html#${calibrateToMoscowTime(formattedTime)}`;
-            window.open(url, '_blank', 'noopener,noreferrer');
-          }
-        });
-      }
-
       const usernameElement = document.createElement('span');
       usernameElement.className = 'message-username';
       usernameElement.textContent = username;
       usernameElement.style.color = usernameColor;
-
-      // Add click event listener for username element
-      usernameElement.addEventListener('click', (event) => {
-        // Remove all messages on Ctrl + LMB click for the same username
-        if (event.ctrlKey) {
-          removeMessage(messageElement, 'all');
-          return;
-        }
-        if (userId) { // Check if userId is defined
-          const url = `https://klavogonki.ru/u/#/${userId}/`; // Construct the user profile URL
-          window.open(url, '_blank', 'noopener,noreferrer'); // Open in a new tab
-        } else {
-          addShakeEffect(usernameElement); // Call the shake effect if userId is not defined
-        }
-      });
 
       const messageTextElement = document.createElement('span');
       messageTextElement.className = 'message-text';
@@ -786,55 +747,6 @@ async function showMessagesPanel() {
         .replace(/(https?:\/\/[^\s]+)/gi,
           (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
         );
-
-      // Add click event listener for the messageTextElement
-      messageTextElement.addEventListener('click', async function (event) {
-        // Remove single message on Ctrl + LMB click for the same username
-        if (event.ctrlKey) {
-          removeMessage(messageElement, 'single');
-          return;
-        }
-        // For private messages, only search in general chat
-        if (type === 'private') {
-          requestAnimationFrame(() => {
-            findGeneralChatMessage(time, username, message, true);
-          });
-          return;
-        }
-
-        // Use message text and username for search in general chat
-        const foundGeneralChatMessage = await findGeneralChatMessage(messageTextElement.textContent, username, true);
-        if (foundGeneralChatMessage) {
-          triggerTargetElement(cachedMessagesPanel, 'hide');
-          triggerDimmingElement('hide');
-        } else {
-          let previousElement = messageTextElement.parentElement.previousElementSibling;
-          while (previousElement && !previousElement.classList.contains('date-item')) {
-            previousElement = previousElement.previousElementSibling;
-          }
-          if (previousElement) {
-            await showChatLogsPanel(previousElement.dataset.date);
-            // Use username and message text for searching in chat logs
-            const messageTextForSearch = messageTextElement.textContent;
-            requestAnimationFrame(() => {
-              let tries = 0;
-              const maxTries = 10; // e.g., try up to 10 times (3 seconds total)
-              const interval = setInterval(async () => {
-                const foundChatLogsMessage = await findChatLogsMessage(messageTextForSearch, username, true);
-                if (foundChatLogsMessage) {
-                  clearInterval(interval);
-                  // Optionally handle found case (e.g., highlight)
-                } else if (++tries >= maxTries) {
-                  clearInterval(interval);
-                  const chatLogsPanel = document.querySelector('.chat-logs-panel');
-                  triggerTargetElement(chatLogsPanel, 'hide');
-                  showMessagesPanel();
-                }
-              }, 200);
-            });
-          }
-        }
-      });
 
       // Store elements for (pingable messages) colorization after all processing
       const messageData = {
@@ -1007,4 +919,122 @@ async function showMessagesPanel() {
       [Ctrl + Клик] Удалить только это сообщение
     `
   }), true);
+
+  // Delegated events for hover and click on message-time, message-username, message-text
+  messagesContainer.addEventListener('mouseover', function (event) {
+    const timeEl = event.target.closest('.message-time');
+    if (timeEl && messagesContainer.contains(timeEl)) {
+      const messageItem = timeEl.closest('.message-item');
+      if (!messageItem) return;
+      const username = messageItem.querySelector('.message-username')?.textContent;
+      const type = Object.values(messages).find(m => m.username === username && m.time.replace(/[\[\]]/g, '').trim() === timeEl.textContent.trim())?.type;
+      if (type === 'mention' || type === 'private') {
+        timeEl.style.color = type === 'mention' ? 'lightgreen' : 'peachpuff';
+      }
+    }
+  });
+  messagesContainer.addEventListener('mouseout', function (event) {
+    const timeEl = event.target.closest('.message-time');
+    if (timeEl && messagesContainer.contains(timeEl)) {
+      const messageItem = timeEl.closest('.message-item');
+      if (!messageItem) return;
+      const username = messageItem.querySelector('.message-username')?.textContent;
+      const type = Object.values(messages).find(m => m.username === username && m.time.replace(/[\[\]]/g, '').trim() === timeEl.textContent.trim())?.type;
+      if (type === 'mention' || type === 'private') {
+        timeEl.style.color = timeColors[type] || 'slategray';
+      }
+    }
+  });
+  messagesContainer.addEventListener('click', async function (event) {
+    const timeEl = event.target.closest('.message-time');
+    const usernameEl = event.target.closest('.message-username');
+    const messageTextEl = event.target.closest('.message-text');
+    const messageItem = event.target.closest('.message-item');
+    if (!messageItem) return;
+    // Time element click
+    if (timeEl && messageItem.contains(timeEl)) {
+      const username = messageItem.querySelector('.message-username')?.textContent;
+      const type = Object.values(messages).find(m => m.username === username && m.time.replace(/[\[\]]/g, '').trim() === timeEl.textContent.trim())?.type;
+      const date = messageItem.previousElementSibling?.dataset.date;
+      if (type === 'mention' || type === 'private') {
+        if (event.shiftKey) {
+          event.preventDefault();
+          event.stopPropagation();
+          copyChatlogsUrlToClipboard(date, calibrateToMoscowTime(timeEl.textContent), timeEl);
+          return;
+        }
+        if (event.ctrlKey) {
+          removeMessage(messageItem, 'from');
+          return;
+        }
+        if (type === 'mention') {
+          const url = `https://klavogonki.ru/chatlogs/${date}.html#${calibrateToMoscowTime(timeEl.textContent)}`;
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }
+      }
+    }
+    // Username element click
+    if (usernameEl && messageItem.contains(usernameEl)) {
+      if (event.ctrlKey) {
+        removeMessage(messageItem, 'all');
+        return;
+      }
+      const userId = Object.values(messages).find(m => m.username === usernameEl.textContent)?.userId;
+      if (userId) {
+        const url = `https://klavogonki.ru/u/#/${userId}/`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        addShakeEffect(usernameEl);
+      }
+    }
+    // Message text click
+    if (messageTextEl && messageItem.contains(messageTextEl)) {
+      if (event.ctrlKey) {
+        removeMessage(messageItem, 'single');
+        return;
+      }
+      const username = messageItem.querySelector('.message-username')?.textContent;
+      const type = Object.values(messages).find(m => m.username === username)?.type;
+      if (type === 'private') {
+        requestAnimationFrame(() => {
+          findGeneralChatMessage(
+            messageItem.querySelector('.message-time')?.textContent,
+            username,
+            messageTextEl.textContent,
+            true
+          );
+        });
+        return;
+      }
+      const foundGeneralChatMessage = await findGeneralChatMessage(messageTextEl.textContent, username, true);
+      if (foundGeneralChatMessage) {
+        triggerTargetElement(cachedMessagesPanel, 'hide');
+        triggerDimmingElement('hide');
+      } else {
+        let previousElement = messageTextEl.parentElement.previousElementSibling;
+        while (previousElement && !previousElement.classList.contains('date-item')) {
+          previousElement = previousElement.previousElementSibling;
+        }
+        if (previousElement) {
+          await showChatLogsPanel(previousElement.dataset.date);
+          const messageTextForSearch = messageTextEl.textContent;
+          requestAnimationFrame(() => {
+            let tries = 0;
+            const maxTries = 10;
+            const interval = setInterval(async () => {
+              const foundChatLogsMessage = await findChatLogsMessage(messageTextForSearch, username, true);
+              if (foundChatLogsMessage) {
+                clearInterval(interval);
+              } else if (++tries >= maxTries) {
+                clearInterval(interval);
+                const chatLogsPanel = document.querySelector('.chat-logs-panel');
+                triggerTargetElement(chatLogsPanel, 'hide');
+                showMessagesPanel();
+              }
+            }, 200);
+          });
+        }
+      }
+    }
+  });
 }
