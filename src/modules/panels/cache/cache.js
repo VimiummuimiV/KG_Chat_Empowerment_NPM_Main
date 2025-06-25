@@ -587,7 +587,7 @@ function showCachePanel() {
       element.innerHTML = `${icon}${value || 0}`;
       createCustomTooltip(element, title);
       element.style.cursor = 'pointer';
-      element.addEventListener('click', () => loadProfileIntoIframe(url));
+      element.dataset.url = url; // Store the URL for delegation
       return element;
     };
 
@@ -655,7 +655,15 @@ function showCachePanel() {
 
   setInterval(updateRemainingTime, 1000);
   updateRemainingTime();
-}
+
+  // Delegated event listener for user metrics
+  fetchedUsersContainer.addEventListener('click', (event) => {
+    const metric = event.target.closest('.best-speed, .rating-level, .cars-count, .friends-count');
+    if (!metric) return;
+    const url = metric.dataset.url;
+    if (url) loadProfileIntoIframe(url);
+  });
+} // showCachePanel END
 
 function hideCachePanel() {
   const cachedUsersPanel = document.querySelector('.cached-users-panel');

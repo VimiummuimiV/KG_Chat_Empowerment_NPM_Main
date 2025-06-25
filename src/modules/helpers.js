@@ -827,7 +827,6 @@ async function processMessages() {
   isReading = false;
 }
 
-
 /**
  * Copy a chatlogs URL to the clipboard and shake the time element.
  * @param {string} date - The date string (YYYY-MM-DD).
