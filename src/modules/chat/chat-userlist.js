@@ -20,11 +20,12 @@ const { usersToTrack, ignored, moderator } = settingsState
 
 import {
   // helpers
-  getUserProfileData,
   getRandomEmojiAvatar,
   // helpers definitions
   isCtrlKeyPressed
 } from "../helpers.js"; // helpers
+
+import { getUserProfileData } from "../helpers/userProfileData.js";
 
 import { createCustomTooltip } from "../tooltip.js"; // tooltip
 import { updateUserCountText } from "../panels/cache/cache.js"; // cache panel

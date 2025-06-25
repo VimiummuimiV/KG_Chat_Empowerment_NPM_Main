@@ -6,11 +6,12 @@ import {
   removePreviousPanel,
   debounce,
   getRandomEmojiAvatar,
-  getUserProfileData,
   refreshFetchedUsers,
   calculateTimeOnSite,
   getCurrentLanguage
 } from "../../helpers.js";
+
+import { getUserProfileData } from "../../helpers/userProfileData.js";
 
 import {
   triggerTargetElement,
