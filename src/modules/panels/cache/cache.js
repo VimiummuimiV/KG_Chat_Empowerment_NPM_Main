@@ -472,10 +472,6 @@ function showCachePanel() {
       visitsElement.className = `visits ${userData.tracked ? 'tracked' : 'untracked'}`;
       visitsElement.textContent = userData.visits;
       visitsElement.dataset.userId = userId;
-      createCustomTooltip(visitsElement, {
-        en: `View action log for ${userData.login}`,
-        ru: `Посмотреть журнал действий для ${userData.login}`
-      });
       updateVisitsEmoticon(visitsElement);
       loginContainer.appendChild(visitsElement);
     }
@@ -706,6 +702,17 @@ function showCachePanel() {
     en: 'Friends count',
     ru: 'Количество друзей'
   }), true);
+
+  // Delegated tooltip for visits elements
+  createCustomTooltip('.visits', fetchedUsersContainer, (el) => {
+    const userItem = el.closest('.user-item');
+    const loginElement = userItem?.querySelector('.login');
+    const loginText = loginElement?.textContent || '';
+    return {
+      en: `View action log for ${loginText}`,
+      ru: `Посмотреть журнал действий для ${loginText}`
+    };
+  }, true);
 
   // Delegated tooltip for login elements
   createCustomTooltip('.login', fetchedUsersContainer, (el) => ({
