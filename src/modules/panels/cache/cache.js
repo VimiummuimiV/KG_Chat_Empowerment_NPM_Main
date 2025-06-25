@@ -487,18 +487,6 @@ function showCachePanel() {
     const registeredElement = document.createElement('div');
     registeredElement.className = 'registered';
     registeredElement.textContent = userData.registered || 'N/A';
-    let hoverTimer;
-    const originalContent = registeredElement.textContent;
-    registeredElement.addEventListener('mouseover', () => {
-      clearTimeout(hoverTimer);
-      hoverTimer = setTimeout(() => {
-        registeredElement.textContent = calculateTimeOnSite(userData.registered);
-      }, 300);
-    });
-    registeredElement.addEventListener('mouseout', () => {
-      clearTimeout(hoverTimer);
-      registeredElement.textContent = originalContent;
-    });
     userDataElement.appendChild(registeredElement);
 
     const createMetricElement = (className, color, icon, value, title, url) => {
@@ -682,51 +670,82 @@ function showCachePanel() {
     }
   });
 
+  // Delegated mouseover/mouseout for .registered
+  fetchedUsersContainer.addEventListener('mouseover', (event) => {
+    const registered = event.target.closest('.registered');
+    if (registered && fetchedUsersContainer.contains(registered)) {
+      registered._originalContent = registered.textContent;
+      registered._hoverTimer = setTimeout(() => {
+        const userItem = registered.closest('.user-item');
+        const login = userItem?.querySelector('.login');
+        const userId = login?.href?.split('/').pop();
+        // Use the users object from closure, not localStorage
+        const userData = users[userId] || { registered: registered.textContent };
+        registered.textContent = calculateTimeOnSite(userData.registered);
+      }, 300);
+    }
+  });
+  fetchedUsersContainer.addEventListener('mouseout', (event) => {
+    const registered = event.target.closest('.registered');
+    if (registered && fetchedUsersContainer.contains(registered)) {
+      clearTimeout(registered._hoverTimer);
+      if (registered._originalContent) {
+        registered.textContent = registered._originalContent;
+      }
+    }
+  });
+
   // Delegated tooltips for user metrics
-  createCustomTooltip('.best-speed', fetchedUsersContainer, (el) => ({
-    en: 'Best speed',
-    ru: 'Лучшая скорость'
-  }), true);
+  createCustomTooltip(
+    '.login,' +
+    '.visits,' +
+    '.best-speed,' +
+    '.rating-level,' +
+    '.cars-count,' +
+    '.friends-count',
+    fetchedUsersContainer,
+    (el) => {
+      if (el.classList.contains('login')) {
+        return {
+          en: ` 
+          [Click] to open profile in iframe (summary)
+          [Ctrl + Click] to open profile in iframe (messages)
+          [Ctrl + Shift + Click] to open profile in a new tab (messages)
+          `,
+          ru: ` 
+          [Клик] открыть профиль в iframe (сводка)
+          [Ctrl + Клик] открыть профиль в iframe (сообщения)
+          [Ctrl + Shift + Клик] открыть профиль в новой вкладке (сообщения)
+          `
+        }
+      }
 
-  createCustomTooltip('.rating-level', fetchedUsersContainer, (el) => ({
-    en: 'Rating level',
-    ru: 'Уровень рейтинга'
-  }), true);
+      if (el.classList.contains('visits')) {
+        const userItem = el.closest('.user-item');
+        const loginElement = userItem?.querySelector('.login');
+        const loginText = loginElement?.textContent || '';
+        return {
+          en: `View action log for ${loginText}`,
+          ru: `Посмотреть журнал действий для ${loginText}`
+        }
+      }
 
-  createCustomTooltip('.cars-count', fetchedUsersContainer, (el) => ({
-    en: 'Cars count',
-    ru: 'Количество машин'
-  }), true);
-
-  createCustomTooltip('.friends-count', fetchedUsersContainer, (el) => ({
-    en: 'Friends count',
-    ru: 'Количество друзей'
-  }), true);
-
-  // Delegated tooltip for visits elements
-  createCustomTooltip('.visits', fetchedUsersContainer, (el) => {
-    const userItem = el.closest('.user-item');
-    const loginElement = userItem?.querySelector('.login');
-    const loginText = loginElement?.textContent || '';
-    return {
-      en: `View action log for ${loginText}`,
-      ru: `Посмотреть журнал действий для ${loginText}`
-    };
-  }, true);
-
-  // Delegated tooltip for login elements
-  createCustomTooltip('.login', fetchedUsersContainer, (el) => ({
-    en: ` 
-      [Click] to open profile in iframe (summary)
-      [Ctrl + Click] to open profile in iframe (messages)
-      [Ctrl + Shift + Click] to open profile in a new tab (messages)
-    `,
-    ru: ` 
-      [Клик] открыть профиль в iframe (сводка)
-      [Ctrl + Клик] открыть профиль в iframe (сообщения)
-      [Ctrl + Shift + Клик] открыть профиль в новой вкладке (сообщения)
-    `
-  }), true);
+      if (el.classList.contains('best-speed')) {
+        return { en: 'Best speed', ru: 'Лучшая скорость' };
+      }
+      if (el.classList.contains('rating-level')) {
+        return { en: 'Rating level', ru: 'Уровень рейтинга' };
+      }
+      if (el.classList.contains('cars-count')) {
+        return { en: 'Cars count', ru: 'Количество машин' };
+      }
+      if (el.classList.contains('friends-count')) {
+        return { en: 'Friends count', ru: 'Количество друзей' };
+      }
+      return { en: '', ru: '' };
+    },
+    true
+  );
 
 } // showCachePanel END
 
