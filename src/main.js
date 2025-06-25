@@ -3,7 +3,6 @@ import "./style.scss"; // general styles
 import {
   processEncodedLinks,
   refreshFetchedUsers,
-  scrollToBottom,
   highlightMentionWords,
   removeIgnoredUserMessages,
   locationHas,
@@ -20,6 +19,7 @@ import {
   applyDynamicBackgroundColor
 } from "./modules/chat/chat-workers.js"; //chat
 
+import { scrollToBottom } from "./modules/helpers/scrollTo.js";
 import { setupFonts } from "./modules/fonts.js"; // fonts
 import { refreshUserList } from "./modules/chat/chat-userlist.js"; // chat userlist
 import ChatMessagesRemover from "./modules/chat/chat-messages-remover/chat-messages-remover.js"; // chat messages remover

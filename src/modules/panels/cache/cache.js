@@ -4,18 +4,19 @@ import "./cache.scss" // cache styles
 import {
   // helpers
   removePreviousPanel,
-  createScrollButtons,
   debounce,
   triggerDimmingElement,
   triggerTargetElement,
   getRandomEmojiAvatar,
   adjustVisibility,
-  getAllUserIDsByName,
   getUserProfileData,
   refreshFetchedUsers,
   calculateTimeOnSite,
   getCurrentLanguage
 } from "../../helpers.js";
+
+import { getAllUserIDsByName } from "../../helpers/apiData.js";
+import { createScrollButtons } from "../../helpers/scrollButtons.js";
 
 // notifications
 import {

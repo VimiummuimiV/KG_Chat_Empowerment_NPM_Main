@@ -2,7 +2,6 @@
 import {
   decodeURL,
   isEncodedURL,
-  scrollToBottom,
   isTrustedDomain,
   addBigImageEventListeners,
   removeBigImageEventListeners,
@@ -13,6 +12,7 @@ import {
 // definitions
 import { state } from "../definitions";
 import { createCustomTooltip } from "../tooltip.js";
+import { scrollToBottom } from "../helpers/scrollTo.js";
 
 // Image constants
 const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];

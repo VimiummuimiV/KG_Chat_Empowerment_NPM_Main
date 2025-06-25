@@ -117,6 +117,25 @@
   }
 }
 
+.userlist,
+.user-item {
+  .avatar {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+
+    img {
+      border-radius: 0.2em !important;
+      transform-origin: left;
+      transition: transform 0.15s;
+
+      &:hover {
+        transform: scale(2);
+      }
+    }
+  }
+}
+
 // Nested anchor styles for chat panels
 .chat-logs-panel,
 .cached-messages-panel {
@@ -558,22 +577,6 @@
   [class^="user"] {
     display: inline-flex;
     margin: 2px 0;
-  }
-
-  .avatar {
-    width: 24px;
-    height: 24px;
-    display: inline-flex;
-
-    img {
-      border-radius: 0.2em !important;
-      transform-origin: left;
-      transition: transform 0.15s;
-
-      &:hover {
-        transform: scale(2);
-      }
-    }
   }
 
   .name {

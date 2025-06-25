@@ -21,7 +21,6 @@ import { createCustomTooltip } from "../../tooltip.js"; // tooltip
 import {
   // helpers
   removePreviousPanel,
-  createScrollButtons,
   debounce,
   triggerDimmingElement,
   triggerTargetElement,
@@ -29,6 +28,8 @@ import {
   isAltKeyPressed,
   isCtrlKeyPressed
 } from '../../helpers.js';
+
+import { createScrollButtons } from "../../helpers/scrollButtons.js";
 
 // definitions
 import {

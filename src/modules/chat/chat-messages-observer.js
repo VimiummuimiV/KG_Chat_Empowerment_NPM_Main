@@ -1,7 +1,6 @@
 import {
   addMessageToQueue,
   processEncodedLinks,
-  scrollToBottom,
   updatePersonalMessageCounts,
   normalizeAndResetUsernames,
   convertRussianUsernameToLatin,
@@ -18,6 +17,7 @@ import { isInitializedChat } from "../../main"; // main
 import { usualMessageFrequencies, mentionMessageFrequencies, playBeep, beepVolume } from "../voice-engine"; // voice engine definitions
 import { myNickname } from "../definitions.js"; // definitions
 import { settingsState } from "../panels/settings/settings.js"; // settings
+import { scrollToBottom } from "../helpers/scrollTo.js";
 
 const { ignored } = settingsState;
 

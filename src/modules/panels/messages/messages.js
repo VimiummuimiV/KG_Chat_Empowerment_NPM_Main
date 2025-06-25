@@ -18,12 +18,10 @@ import {
 import {
   // helpers
   removePreviousPanel,
-  createScrollButtons,
   triggerDimmingElement,
   triggerTargetElement,
   processEncodedLinks,
   highlightMentionWords,
-  scrollToMiddle,
   copyChatlogsUrlToClipboard,
   getMessageTextWithImgTitles
 } from '../../helpers.js';
@@ -31,6 +29,8 @@ import {
 import { addJumpEffect, addPulseEffect } from "../../animations.js"; // animations
 import { showChatLogsPanel } from "../chatlogs/chatlogs.js"; // chatlogs
 import { createCustomTooltip } from "../../tooltip.js"; // tooltip
+import { createScrollButtons } from "../../helpers/scrollButtons.js";
+import { scrollToMiddle } from "../../helpers/scrollTo.js";
 
 // definitions
 import {

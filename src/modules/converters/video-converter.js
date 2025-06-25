@@ -1,10 +1,11 @@
 import {
   decodeURL,
   isEncodedURL,
-  isTrustedDomain,
-  scrollToBottom
+  isTrustedDomain
 } from "../helpers";
+
 import { createCustomTooltip } from "../tooltip.js";
+import { scrollToBottom } from "../helpers/scrollTo.js";
 
 // Emoji icons for visual representation of video metadata
 const emojis = {

@@ -10,12 +10,12 @@ const { usersToTrack } = settingsState;
 import {
   getUserChatDuration,
   shouldEnable,
-  scrollToBottom,
   getCurrentTimeString
 } from "./helpers";
 
 // tooltip
 import { createCustomTooltip } from "./tooltip";
+import { scrollToBottom } from "./helpers/scrollTo.js";
 
 // Creates the action icon element
 function createActionIcon(iconType) {

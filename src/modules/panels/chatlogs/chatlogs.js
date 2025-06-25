@@ -22,16 +22,18 @@ import {
 // helpers
 import {
   removePreviousPanel,
-  createScrollButtons,
   triggerDimmingElement,
   triggerTargetElement,
   processEncodedLinks,
   highlightMentionWords,
-  scrollToMiddle,
-  getExactUserIdByName,
-  copyChatlogsUrlToClipboard
+  copyChatlogsUrlToClipboard,
+  getCurrentLanguage
 } from '../../helpers.js';
-import { getCurrentLanguage } from '../../helpers.js';
+
+import { getExactUserIdByName } from "../../helpers/apiData.js";
+import { scrollToMiddle } from "../../helpers/scrollTo.js";
+import { createScrollButtons } from "../../helpers/scrollButtons.js";
+
 import {
   saveChatlogToIndexedDB,
   readChatlogFromIndexedDB,
