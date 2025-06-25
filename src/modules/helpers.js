@@ -1047,9 +1047,6 @@ async function processMessages() {
   isReading = false;
 }
 
-export function isTextSelected() {
-  return window.getSelection().toString().length > 0;
-}
 
 /**
  * Copy a chatlogs URL to the clipboard and shake the time element.
@@ -1067,9 +1064,7 @@ export function copyChatlogsUrlToClipboard(date, time, timeElement) {
   }
 }
 
-/**
- * Clears any text selection in the document (cross-browser).
- */
+// Clears any text selection in the document (cross-browser).
 export function clearSelection() {
   if (window.getSelection) {
     const selection = window.getSelection();
@@ -1077,6 +1072,11 @@ export function clearSelection() {
       selection.removeAllRanges();
     }
   }
+}
+
+// Function to check if any text is selected in the document
+export function isTextSelected() {
+  return window.getSelection().toString().length > 0;
 }
 
 // Function to get message text with image titles
