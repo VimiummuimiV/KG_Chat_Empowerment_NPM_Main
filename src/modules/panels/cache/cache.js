@@ -14,7 +14,6 @@ import {
   getUserProfileData,
   refreshFetchedUsers,
   calculateTimeOnSite,
-  loadProfileIntoIframe,
   getCurrentLanguage
 } from "../../helpers.js";
 
@@ -44,6 +43,7 @@ import {
 
 import { addPulseEffect } from "../../animations.js"; // animations
 import { createCustomTooltip } from "../../tooltip.js";
+import { loadProfileIntoIframe } from "../../helpers/iframeProfileLoader.js";
 
 // --- Localization for cache panel interface ---
 const cacheMessages = {

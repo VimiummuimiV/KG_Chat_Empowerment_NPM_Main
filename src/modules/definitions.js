@@ -46,7 +46,6 @@ export const emojiFaces = [
 ];
 
 export let state = {
-  lastFocusedIframeTextarea: null,
   bigImageEvents: {},
   panelsEvents: {},
   // Remove the extra closing parenthesis after getItem('fetchedUsers')

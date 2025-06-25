@@ -22,7 +22,6 @@ import {
   // helpers
   getUserProfileData,
   getRandomEmojiAvatar,
-  loadProfileIntoIframe,
   // helpers definitions
   isCtrlKeyPressed
 } from "../helpers.js"; // helpers
@@ -32,6 +31,7 @@ import { updateUserCountText } from "../panels/cache/cache.js"; // cache panel
 import { isInitializedChat } from "../../main.js";
 import { addShakeEffect } from "../animations.js"; // animations
 import { insertPrivate } from "./chat-workers.js"; // chat workers
+import { loadProfileIntoIframe } from "../helpers/iframeProfileLoader.js"; // iframe profile loader
 
 // Function to get rank information (class, color, and icon) based on status title in English
 export function getRankInfo(mainTitle) {
