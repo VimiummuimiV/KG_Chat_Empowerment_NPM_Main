@@ -464,35 +464,8 @@ function showCachePanel() {
     loginElement.className = 'login';
     loginElement.textContent = userData.login;
     loginElement.href = `https://klavogonki.ru/profile/${userId}`;
-    createCustomTooltip(loginElement, {
-      en: ` 
-        [Click] to open profile in iframe (summary)
-        [Ctrl + Click] to open profile in iframe (messages)
-        [Ctrl + Shift + Click] to open profile in a new tab (messages)
-      `,
-      ru: ` 
-        [Клик] открыть профиль в iframe (сводка)
-        [Ctrl + Клик] открыть профиль в iframe (сообщения)
-        [Ctrl + Shift + Клик] открыть профиль в новой вкладке (сообщения)
-      `
-    });
 
     loginContainer.appendChild(loginElement);
-
-    const profileUrl = profileBaseUrl + userId;
-    const messageInProfile = `${profileBaseUrl}${myUserId}/messages/${userId}/`;
-
-    loginElement.addEventListener('click', (event) => {
-      event.preventDefault();
-      if (event.ctrlKey && event.shiftKey) {
-        const newTab = window.open(messageInProfile, '_blank');
-        if (newTab) newTab.focus();
-      } else if (event.ctrlKey) {
-        loadProfileIntoIframe(messageInProfile);
-      } else {
-        loadProfileIntoIframe(profileUrl);
-      }
-    });
 
     if (userData.visits !== undefined) {
       const visitsElement = document.createElement('span');
@@ -505,54 +478,6 @@ function showCachePanel() {
       });
       updateVisitsEmoticon(visitsElement);
       loginContainer.appendChild(visitsElement);
-
-      visitsElement.addEventListener('click', (event) => {
-        shouldProcessActionLog = true;
-        const userId = visitsElement.dataset.userId;
-        const users = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
-        const user = users ? users[userId] : null;
-        const actionLog = user?.actionLog;
-
-        if (user) {
-          let actionLogContainer = document.querySelector('.action-log');
-          if (!actionLogContainer) {
-            actionLogContainer = document.createElement('div');
-            actionLogContainer.className = 'action-log';
-            fetchedUsersContainer.appendChild(actionLogContainer);
-            adjustVisibility(actionLogContainer, 'show', 1);
-          } else {
-            actionLogContainer.replaceChildren();
-          }
-
-          if (actionLog && shouldProcessActionLog) {
-            actionLog.forEach((action, index) => {
-              if (!shouldProcessActionLog || typeof action !== 'object' || !action) return;
-              const { type, timestamp } = action;
-              const userAction = userData.login || 'Unknown User';
-              const actionIconType = type === 'enter' ? enterSVG : leaveSVG;
-              const userPresence = type === 'enter';
-              setTimeout(() => {
-                if (shouldProcessActionLog) {
-                  createStaticNotification(userAction, actionIconType, timestamp, userPresence, 'cachePanel');
-                }
-              }, 10 * (index + 1));
-            });
-          }
-
-          const closeActionLog = (e) => {
-            if (!actionLogContainer.contains(e.target) || e.code === 'Space') {
-              if (e.code === 'Space') e.preventDefault();
-              adjustVisibility(actionLogContainer, 'hide', 0);
-              shouldProcessActionLog = false;
-              ['click', 'keydown'].forEach(evt => document.removeEventListener(evt, closeActionLog));
-            }
-          };
-          ['click', 'keydown'].forEach(evt => document.addEventListener(evt, closeActionLog));
-          event.stopPropagation();
-        } else {
-          console.error('User data not found');
-        }
-      });
     }
 
     userDataElement.appendChild(loginContainer);
@@ -585,7 +510,6 @@ function showCachePanel() {
       element.className = className;
       element.style.color = color;
       element.innerHTML = `${icon}${value || 0}`;
-      createCustomTooltip(element, title);
       element.style.cursor = 'pointer';
       element.dataset.url = url; // Store the URL for delegation
       return element;
@@ -594,10 +518,41 @@ function showCachePanel() {
     const userMetrics = document.createElement('div');
     userMetrics.className = "user-metrics";
     userMetrics.append(
-      createMetricElement('best-speed', 'cyan', '🚀', userData.bestSpeed, 'Best speed', `https://klavogonki.ru/u/#/${userId}/stats/normal/`),
-      createMetricElement('rating-level', 'gold', '⭐', userData.ratingLevel, 'Rating level', `https://klavogonki.ru/top/rating/today?s=${userData.login}`),
-      createMetricElement('cars-count', 'lightblue', '🚖', userData.cars, 'Cars count', `https://klavogonki.ru/u/#/${userId}/car/`),
-      createMetricElement('friends-count', 'lightgreen', '🤝', userData.friends, 'Friends count', `https://klavogonki.ru/u/#/${userId}/friends/list/`)
+      createMetricElement(
+        'best-speed',
+        'cyan',
+        '🚀',
+        userData.bestSpeed,
+        'Best speed',
+        `https://klavogonki.ru/u/#/${userId}/stats/normal/`
+      ),
+
+      createMetricElement(
+        'rating-level',
+        'gold',
+        '⭐',
+        userData.ratingLevel,
+        'Rating level',
+        `https://klavogonki.ru/top/rating/today?s=${userData.login}`
+      ),
+
+      createMetricElement(
+        'cars-count',
+        'lightblue',
+        '🚖',
+        userData.cars,
+        'Cars count',
+        `https://klavogonki.ru/u/#/${userId}/car/`
+      ),
+
+      createMetricElement(
+        'friends-count',
+        'lightgreen',
+        '🤝',
+        userData.friends,
+        'Friends count',
+        `https://klavogonki.ru/u/#/${userId}/friends/list/`
+      )
     );
 
     userElement.append(avatarElement, userDataElement, userMetrics);
@@ -656,13 +611,116 @@ function showCachePanel() {
   setInterval(updateRemainingTime, 1000);
   updateRemainingTime();
 
-  // Delegated event listener for user metrics
+  // Delegated event listener for user metrics and login links
   fetchedUsersContainer.addEventListener('click', (event) => {
     const metric = event.target.closest('.best-speed, .rating-level, .cars-count, .friends-count');
-    if (!metric) return;
-    const url = metric.dataset.url;
-    if (url) loadProfileIntoIframe(url);
+    if (metric) {
+      const url = metric.dataset.url;
+      if (url) loadProfileIntoIframe(url);
+      return;
+    }
+
+    const login = event.target.closest('.login');
+    if (login) {
+      event.preventDefault();
+      const userId = login.href.split('/').pop();
+      const profileUrl = profileBaseUrl + userId;
+      const messageInProfile = `${profileBaseUrl}${myUserId}/messages/${userId}/`;
+      if (event.ctrlKey && event.shiftKey) {
+        const newTab = window.open(messageInProfile, '_blank');
+        if (newTab) newTab.focus();
+      } else if (event.ctrlKey) {
+        loadProfileIntoIframe(messageInProfile);
+      } else {
+        loadProfileIntoIframe(profileUrl);
+      }
+      return;
+    }
+
+    const visits = event.target.closest('.visits');
+    if (visits) {
+      event.stopPropagation();
+      let shouldProcessActionLog = true;
+      const userId = visits.dataset.userId;
+      const users = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
+      const user = users ? users[userId] : null;
+      const actionLog = user?.actionLog;
+
+      if (user) {
+        let actionLogContainer = document.querySelector('.action-log');
+        if (!actionLogContainer) {
+          actionLogContainer = document.createElement('div');
+          actionLogContainer.className = 'action-log';
+          fetchedUsersContainer.appendChild(actionLogContainer);
+          adjustVisibility(actionLogContainer, 'show', 1);
+        } else {
+          actionLogContainer.replaceChildren();
+        }
+
+        if (actionLog && shouldProcessActionLog) {
+          actionLog.forEach((action, index) => {
+            if (!shouldProcessActionLog || typeof action !== 'object' || !action) return;
+            const { type, timestamp } = action;
+            const userAction = visits.closest('.user-item').querySelector('.login').textContent || 'Unknown User';
+            const actionIconType = type === 'enter' ? enterSVG : leaveSVG;
+            const userPresence = type === 'enter';
+            setTimeout(() => {
+              if (shouldProcessActionLog) {
+                createStaticNotification(userAction, actionIconType, timestamp, userPresence, 'cachePanel');
+              }
+            }, 10 * (index + 1));
+          });
+        }
+        const closeActionLog = (e) => {
+          if (!actionLogContainer.contains(e.target) || e.code === 'Space') {
+            if (e.code === 'Space') e.preventDefault();
+            adjustVisibility(actionLogContainer, 'hide', 0);
+            shouldProcessActionLog = false;
+            ['click', 'keydown'].forEach(evt => document.removeEventListener(evt, closeActionLog));
+          }
+        };
+        ['click', 'keydown'].forEach(evt => document.addEventListener(evt, closeActionLog));
+      } else {
+        console.error('User data not found');
+      }
+    }
   });
+
+  // Delegated tooltips for user metrics
+  createCustomTooltip('.best-speed', fetchedUsersContainer, (el) => ({
+    en: 'Best speed',
+    ru: 'Лучшая скорость'
+  }), true);
+
+  createCustomTooltip('.rating-level', fetchedUsersContainer, (el) => ({
+    en: 'Rating level',
+    ru: 'Уровень рейтинга'
+  }), true);
+
+  createCustomTooltip('.cars-count', fetchedUsersContainer, (el) => ({
+    en: 'Cars count',
+    ru: 'Количество машин'
+  }), true);
+
+  createCustomTooltip('.friends-count', fetchedUsersContainer, (el) => ({
+    en: 'Friends count',
+    ru: 'Количество друзей'
+  }), true);
+
+  // Delegated tooltip for login elements
+  createCustomTooltip('.login', fetchedUsersContainer, (el) => ({
+    en: ` 
+      [Click] to open profile in iframe (summary)
+      [Ctrl + Click] to open profile in iframe (messages)
+      [Ctrl + Shift + Click] to open profile in a new tab (messages)
+    `,
+    ru: ` 
+      [Клик] открыть профиль в iframe (сводка)
+      [Ctrl + Клик] открыть профиль в iframe (сообщения)
+      [Ctrl + Shift + Клик] открыть профиль в новой вкладке (сообщения)
+    `
+  }), true);
+
 } // showCachePanel END
 
 function hideCachePanel() {
