@@ -736,9 +736,13 @@ export async function showChatLogsPanel(personalMessagesDate) {
         if (el.classList.contains('date-item')) {
           // Skip hidden date
           if (el.style.contentVisibility === 'hidden' || el.style.fontSize === '0') continue;
-          // Date header
-          const dateText = el.textContent.trim();
-          currentDateForMessages = dateText; // Update current date for following messages
+
+          // Get date text from .date-text span if available
+          const dateTextElement = el.querySelector('.date-text');
+          const dateText = dateTextElement
+            ? dateTextElement.textContent
+            : el.textContent.replace(/📅$/, '').trim();
+
           if (!isFirstLine) {
             if (format.toLowerCase() === 'bbcode') output += '\n';
             else if (format.toLowerCase() === 'markdown') output += '\n';

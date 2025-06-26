@@ -28,7 +28,19 @@ export function renderChatMessages(chatlogs, messagesContainer, usernameHueMap, 
   if (addDateHeader) {
     const header = document.createElement('div');
     header.className = 'date-item';
-    header.textContent = addDateHeader;
+    
+    // Create text span for copy operations
+    const dateTextSpan = document.createElement('span');
+    dateTextSpan.className = 'date-text';
+    dateTextSpan.textContent = addDateHeader;
+    
+    // Create emoji span for visual decoration only
+    const emojiSpan = document.createElement('span');
+    emojiSpan.className = 'date-emoji';
+    emojiSpan.textContent = ' 📅';  // Note: space before emoji for proper spacing
+    
+    header.appendChild(dateTextSpan);
+    header.appendChild(emojiSpan);
     messagesContainer.appendChild(header);
   }
 
