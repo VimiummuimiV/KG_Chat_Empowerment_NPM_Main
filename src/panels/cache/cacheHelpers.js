@@ -5,6 +5,9 @@ import { createCustomTooltip } from "../../components/tooltip.js";
 import { userlistCacheSVG } from "../../icons.js";
 import { addPulseEffect } from "../../animations.js";
 import { showCachePanel } from "./cache.js";
+import { getCurrentLanguage } from "../../helpers/helpers.js";
+
+const lang = getCurrentLanguage();
 
 // Global function to prepend an emoticon to the visits element in the cache panel.
 export function updateVisitsEmoticon(visitsElement) {
@@ -22,7 +25,11 @@ export function updateVisitsEmoticon(visitsElement) {
 export function setCacheRefreshTime() {
   let isValidInput = false;
   while (!isValidInput) {
-    const userInput = prompt('Enter a cache refresh time (e.g., HH, HH:mm, or HH:mm:ss):');
+    const userInput = prompt(
+      (lang === 'ru')
+        ? 'Введите время обновления кэша (например, HH, HH:mm или HH:mm:ss):'
+        : 'Enter a cache refresh time (e.g., HH, HH:mm, or HH:mm:ss):'
+    );
     const dropTimeThreshold = document.querySelector('.drop-time-threshold');
     const timeRegex = /^([0-9]+|[01][0-9]|2[0-4])(:([0-5]?[0-9])(:([0-5]?[0-9]))?)?$/;
     if (userInput === null) {
@@ -37,7 +44,11 @@ export function setCacheRefreshTime() {
       setTimeout(() => location.reload(), 1000);
       isValidInput = true;
     } else {
-      alert('Invalid time format. Please use HH, HH:mm, or HH:mm:ss.');
+      alert(
+        (lang === 'ru')
+          ? 'Неверный формат времени. Пожалуйста, используйте HH, HH:mm или HH:mm:ss.'
+          : 'Invalid time format. Please use HH, HH:mm, or HH:mm:ss.'
+      );
     }
   }
 }
