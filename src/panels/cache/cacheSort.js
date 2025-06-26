@@ -27,7 +27,14 @@ function getSortFunction(sortMode) {
   };
 }
 
-export function createSortButtons(userElements, oldUsersContainer, newUsersContainer, isNewUser) {
+export function createSortButtons(
+  userElements,
+  oldUsersContainer,
+  newUsersContainer,
+  isNewUser,
+  oldUsersDescription,
+  newUsersDescription
+) {
   let currentSortMode = 'rankSpeed';
   let currentSortButton = null;
 
@@ -59,6 +66,11 @@ export function createSortButtons(userElements, oldUsersContainer, newUsersConta
     userElements.sort(getSortFunction(currentSortMode));
     oldUsersContainer.replaceChildren();
     newUsersContainer.replaceChildren();
+
+    // Re-append descriptions before user elements
+    oldUsersContainer.appendChild(oldUsersDescription);
+    newUsersContainer.appendChild(newUsersDescription);
+
     userElements.forEach(({ userElement, registered }) => {
       (isNewUser(registered) ? newUsersContainer : oldUsersContainer).appendChild(userElement);
     });

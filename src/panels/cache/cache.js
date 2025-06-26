@@ -422,14 +422,20 @@ function showCachePanel() {
     description.textContent = text;
     return description;
   }
-  oldUsersContainer.appendChild(createDescription(currentLanguage === 'en'
-    ? 'Old Residents'
-    : 'Постояльцы',
-    'old-users-description'));
-  newUsersContainer.appendChild(createDescription(currentLanguage === 'en'
-    ? 'New Residents'
-    : 'Новобранцы',
-    'new-users-description'));
+
+  // Create and store description elements
+  const oldUsersDescription = createDescription(
+    currentLanguage === 'en' ? 'Old Residents' : 'Постояльцы',
+    'old-users-description'
+  );
+  oldUsersContainer.appendChild(oldUsersDescription);
+
+  const newUsersDescription = createDescription(
+    currentLanguage === 'en' ? 'New Residents' : 'Новобранцы',
+    'new-users-description'
+  );
+  newUsersContainer.appendChild(newUsersDescription);
+
   fetchedUsersContainer.append(oldUsersContainer, newUsersContainer);
 
   const userElements = [];
@@ -589,7 +595,15 @@ function showCachePanel() {
     });
   }
 
-  const sortButtonsContainer = createSortButtons(userElements, oldUsersContainer, newUsersContainer, isNewUser);
+  // Pass description elements to createSortButtons
+  const sortButtonsContainer = createSortButtons(
+    userElements,
+    oldUsersContainer,
+    newUsersContainer,
+    isNewUser,
+    oldUsersDescription,
+    newUsersDescription
+  );
 
   cachedUsersPanel.append(panelHeaderContainer, sortButtonsContainer, fetchedUsersContainer);
   const { scrollButtonsContainer } = createScrollButtons(fetchedUsersContainer);
