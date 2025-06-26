@@ -804,6 +804,15 @@ function showSettingsPanel() {
         }
       });
 
+      // If no language setting was found in the form, preserve the existing one
+      const hasLanguageSetting = currentValues.toggle.some(item => item.type === 'language');
+      if (!hasLanguageSetting) {
+        const existingLanguageSetting = previousValues.toggle?.find(item => item.type === 'language');
+        if (existingLanguageSetting) {
+          currentValues.toggle.push(existingLanguageSetting);
+        }
+      }
+
       // Check if any values have changed compared to previous state
       const valuesChanged = JSON.stringify(previousValues) !== JSON.stringify(currentValues);
 
