@@ -3,7 +3,7 @@ import { minimalChatlogsDate } from "../../definitions.js";
 import { fetchChatLogs } from './chatlogs.js';
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
-import { getCurrentLanguage } from "../../helpers.js";
+import { getCurrentLanguage } from "../../helpers/helpers.js";
 
 import {
   getExactUserIdByName,

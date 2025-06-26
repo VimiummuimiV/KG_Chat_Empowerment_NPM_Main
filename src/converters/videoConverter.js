@@ -1,4 +1,4 @@
-import { isTrustedDomain } from "../helpers.js";
+import { isTrustedDomain } from "../helpers/helpers.js";
 import { decodeURL, isEncodedURL } from "../helpers/urlUtils.js";
 import { createCustomTooltip } from "../components/tooltip.js";
 import { scrollToBottom } from "../helpers/scrollTo.js";

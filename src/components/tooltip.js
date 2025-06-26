@@ -1,4 +1,4 @@
-import { getCurrentLanguage } from "../helpers.js";
+import { getCurrentLanguage } from "../helpers/helpers.js";
 
 let tooltipEl = null, tooltipHideTimer = null, tooltipShowTimer = null;
 let tooltipIsVisible = false, tooltipIsShown = false, tooltipCurrentTarget = null;

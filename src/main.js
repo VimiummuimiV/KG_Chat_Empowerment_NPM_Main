@@ -3,7 +3,7 @@ import "./style.scss";
 import {
   locationHas,
   shouldEnable
-} from "./helpers.js";
+} from "./helpers/helpers.js";
 
 import { highlightMentionWords } from "./helpers/getLatestMessageData.js";
 import { processEncodedLinks } from "./helpers/urlUtils.js";
@@ -30,11 +30,11 @@ import { startChatUserObserver } from "./chat/chatUsersObserver.js";
 import { startChatMessagesObserver } from "./chat/chatMessagesObserver.js"
 import { initChatEvents } from "./components/popupLengthIndicator.js";
 
-import { convertImageLinksToImage } from "./converters/image-converter.js";
-import { convertVideoLinksToPlayer } from "./converters/video-converter.js";
+import { convertImageLinksToImage } from "./converters/imageConverter.js";
+import { convertVideoLinksToPlayer } from "./converters/videoConverter.js";
 
-import { createMessageModeButton } from "./components/mode/message-mode.js";
-import { createSoundSwitcherButton } from "./components/mode/sound-mode.js";
+import { createMessageModeButton } from "./components/mode/messageMode.js";
+import { createSoundSwitcherButton } from "./components/mode/soundMode.js";
 
 import { createCacheButton } from "./panels/cache/cache.js";
 import { createMessagesButton } from "./panels/messages/messages.js";

@@ -2,10 +2,10 @@ import {
   emojiFaces,
   trustedDomains,
   state
-} from "./definitions.js";
+} from "../definitions.js";
 
-import { normalizeUsernameColor } from "./helpers/colorUtils.js";
-import { addPulseEffect, addShakeEffect, addJumpEffect } from "./animations.js";
+import { normalizeUsernameColor } from "./colorUtils.js";
+import { addPulseEffect, addShakeEffect, addJumpEffect } from "../animations.js";
 
 let { panelsEvents, bigImageEvents, fetchedUsers } = state;
 

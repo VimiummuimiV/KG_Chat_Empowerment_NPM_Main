@@ -3,7 +3,7 @@ import {
   normalizeAndResetUsernames,
   isBanMessage,
   playSound
-} from "../helpers.js";
+} from "../helpers/helpers.js";
 
 import { convertRussianUsernameToLatin } from "./chatIgnore.js";
 
@@ -11,12 +11,12 @@ import { processEncodedLinks } from "../helpers/urlUtils.js";
 import { getLatestMessageData } from "../helpers/getLatestMessageData.js";
 import { addMessageToQueue } from "../helpers/messagesReader.js";
 
-import { convertImageLinksToImage } from "../converters/image-converter.js";
-import { convertVideoLinksToPlayer } from "../converters/video-converter.js";
+import { convertImageLinksToImage } from "../converters/imageConverter.js";
+import { convertVideoLinksToPlayer } from "../converters/videoConverter.js";
 import { showPopupMessage } from "../components/popupMessages.js";
 import { groupChatMessages } from "./chatWorkers.js";
 import { isInitializedChat } from "../main.js";
-import { usualMessageFrequencies, mentionMessageFrequencies, playBeep, beepVolume } from "../components/voice-engine.js";
+import { usualMessageFrequencies, mentionMessageFrequencies, playBeep, beepVolume } from "../components/voiceEngine.js";
 import { myNickname } from "../definitions.js";
 import { settingsState } from "../panels/settings/settings.js";
 import { scrollToBottom } from "../helpers/scrollTo.js";

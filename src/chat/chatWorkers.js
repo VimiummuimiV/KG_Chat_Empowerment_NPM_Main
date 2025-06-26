@@ -4,7 +4,7 @@ import { deniedSVG } from "../icons.js"; // icons
 import {
   debounce,
   locationHas
-} from "../helpers.js";
+} from "../helpers/helpers.js";
 
 import { getChatElements } from "./chatDomUtils.js";
 import { decodeURL, isEncodedURL } from "../helpers/urlUtils.js";

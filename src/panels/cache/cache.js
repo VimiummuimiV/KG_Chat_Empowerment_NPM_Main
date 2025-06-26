@@ -5,7 +5,7 @@ import {
   debounce,
   getRandomEmojiAvatar,
   getCurrentLanguage
-} from "../../helpers.js";
+} from "../../helpers/helpers.js";
 
 import { calculateTimeOnSite, refreshFetchedUsers } from "./cacheHelpers.js";
 

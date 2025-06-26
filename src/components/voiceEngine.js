@@ -1,5 +1,5 @@
-import { shouldEnable } from "../helpers.js";
-import { voiceSpeed, voicePitch } from "./mode/sound-mode.js";
+import { shouldEnable } from "../helpers/helpers.js";
+import { voiceSpeed, voicePitch } from "./mode/soundMode.js";
 
 import { settingsState } from "../panels/settings/settings.js";
 const { usersToTrack } = settingsState;

@@ -1,5 +1,5 @@
-import { textToSpeech } from '../components/voice-engine.js';
-import { voiceSpeed } from '../components/mode/sound-mode.js';
+import { textToSpeech } from '../components/voiceEngine.js';
+import { voiceSpeed } from '../components/mode/soundMode.js';
 
 let isReading = false;
 const newMessages = new Set();

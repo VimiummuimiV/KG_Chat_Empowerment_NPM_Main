@@ -1,4 +1,4 @@
-import { locationHas } from "../helpers.js";
+import { locationHas } from "../helpers/helpers.js";
 import { getChatElements } from "../chat/chatDomUtils.js";
 
 // Select the input element and length popup container using the helper function

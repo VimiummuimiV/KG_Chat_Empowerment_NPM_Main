@@ -7,7 +7,7 @@ const { usersToTrack } = settingsState;
 import {
   shouldEnable,
   getCurrentTimeString
-} from "../../helpers.js";
+} from "../../helpers/helpers.js";
 
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { scrollToBottom } from "../../helpers/scrollTo.js";

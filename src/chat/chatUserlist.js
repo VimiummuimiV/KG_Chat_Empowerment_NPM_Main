@@ -18,7 +18,7 @@ let {
 import { settingsState } from "../panels/settings/settings.js"
 const { usersToTrack, ignored, moderator } = settingsState
 
-import { getRandomEmojiAvatar } from "../helpers.js";
+import { getRandomEmojiAvatar } from "../helpers/helpers.js";
 import { isCtrlKeyPressed } from "../helpers/hotkeyState.js";
 import { getUserProfileData } from "../helpers/userProfileData.js";
 

@@ -4,7 +4,7 @@ import { KG_Chat_Empowerment } from '../../panels/settings/settings.js';
 import { isCtrlKeyPressed, isAltKeyPressed } from '../../helpers/hotkeyState.js';
 
 import { addPulseEffect } from '../../animations.js';
-import { createCustomTooltip } from '../../components/tooltip.js';
+import { createCustomTooltip } from '../tooltip.js';
 
 let messageMode, messageModeIcon;
 

@@ -3,7 +3,7 @@ import {
   isTrustedDomain,
   addBigImageEventListeners,
   removeBigImageEventListeners
-} from "../helpers";
+} from "../helpers/helpers.js";
 
 import { decodeURL, isEncodedURL } from "../helpers/urlUtils.js";
 
@@ -13,7 +13,7 @@ import {
 } from "../helpers/elementVisibility.js";
 
 // definitions
-import { state } from "../definitions";
+import { state } from "../definitions.js";
 import { createCustomTooltip } from "../components/tooltip.js";
 import { scrollToBottom } from "../helpers/scrollTo.js";
 

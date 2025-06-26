@@ -3,7 +3,7 @@ import { enterSVG, leaveSVG } from "../icons.js";
 import {
   debounce,
   logUserAction
-} from "../helpers.js";
+} from "../helpers/helpers.js";
 
 import { getChatElements } from "./chatDomUtils.js";
 import { debounceTimeout } from "../definitions.js";
@@ -11,7 +11,7 @@ import { isInitializedChat } from "../main.js";
 import { addJumpEffect, addPulseEffect } from "../animations.js";
 import { showUserAction } from "../components/notifications/notifications.js";
 import { refreshUserList } from "./chatUserlist.js";
-import { userAction } from "../components/voice-engine.js";
+import { userAction } from "../components/voiceEngine.js";
 import { settingsState } from "../panels/settings/settings.js";
 const { usersToTrack } = settingsState;
 

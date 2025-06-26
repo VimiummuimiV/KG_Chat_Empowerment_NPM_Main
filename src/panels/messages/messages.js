@@ -1,7 +1,7 @@
 import "./messages.scss"
 
-import { convertImageLinksToImage } from "../../converters/image-converter.js";
-import { convertVideoLinksToPlayer } from "../../converters/video-converter.js";
+import { convertImageLinksToImage } from "../../converters/imageConverter.js";
+import { convertVideoLinksToPlayer } from "../../converters/videoConverter.js";
 
 // icons
 import {
@@ -20,7 +20,7 @@ import {
   removePreviousPanel,
   copyChatlogsUrlToClipboard,
   getMessageTextWithImgTitles
-} from '../../helpers.js';
+} from '../../helpers/helpers.js';
 
 import { processEncodedLinks } from "../../helpers/urlUtils.js";
 

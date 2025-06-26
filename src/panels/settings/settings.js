@@ -1,5 +1,5 @@
 import "./settings.scss"
-import { getCurrentLanguage } from "../../helpers.js";
+import { getCurrentLanguage } from "../../helpers/helpers.js";
 
 // icons
 import {
@@ -21,7 +21,7 @@ import { createCustomTooltip } from "../../components/tooltip.js";
 import {
   removePreviousPanel,
   debounce
-} from '../../helpers.js';
+} from '../../helpers/helpers.js';
 
 import { isAltKeyPressed, isCtrlKeyPressed } from "../../helpers/hotkeyState.js";
 

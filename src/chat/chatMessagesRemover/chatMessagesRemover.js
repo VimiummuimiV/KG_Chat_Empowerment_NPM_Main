@@ -1,5 +1,5 @@
 import "./chatMessagesRemover.css"
-import { isTextSelected } from "../../helpers.js";
+import { isTextSelected } from "../../helpers/helpers.js";
 
 export default class ChatMessagesRemover {
   constructor() {

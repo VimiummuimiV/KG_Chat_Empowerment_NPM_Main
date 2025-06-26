@@ -1,5 +1,5 @@
 // helpers
-import { convertToSingleHours } from "./helpers.js";
+import { convertToSingleHours } from "./helpers/helpers.js";
 
 export const debounceTimeout = 300;
 // Define the base URL for user profiles
