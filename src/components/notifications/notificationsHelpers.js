@@ -1,25 +1,50 @@
+import { getCurrentLanguage } from "../../helpers/helpers.js";
+
+let lang = getCurrentLanguage();
+
+const icons = {
+  'first': '🙌',
+  'crossed': '❌',
+  'check': '✅',
+  'stop': '🛑'
+};
+
 export function getUserChatDuration(username, actionTime) {
   // Retrieve stored user data and find the target user by login
   const user = Object.values(JSON.parse(localStorage.getItem('fetchedUsers') || '[]'))
     .find(u => u?.login === username);
-  if (!user) return `❌ User "${username}" not found`;
+  if (!user) return
+  (lang === 'en')
+    ? `${icons.crossed} User "${username}" not found`
+    : `${icons.crossed} Пользователь "${username}" не найден`;
 
   const actionLog = user.actionLog || [];
   const current = actionLog.find(entry => entry.timestamp === actionTime);
-  if (!current) return `Action not found at ${actionTime}`;
+  if (!current) return
+  (lang === 'en')
+    ? `${icons.crossed} Action not found at ${actionTime}`
+    : `${icons.crossed} Действие не найдено в ${actionTime}`; 
 
   const actionIndex = actionLog.indexOf(current);
-  if (actionIndex === 0) return `🙌 ${username}'s first action`;
+  if (actionIndex === 0) return (lang === 'en')
+    ? `${icons.first} ${username}'s first action`
+    : `${icons.first} ${username} зашёл впервые`;
 
   // Find the most recent action before the current one that has a different type
   const prev = actionLog.slice(0, actionIndex).reverse().find(a => a.type !== current.type);
-  if (!prev) return `❌ No valid previous action found for ${actionTime}`;
+  if (!prev) return (lang === 'en')
+    ? `${icons.crossed} No valid previous action found for ${actionTime}`
+    : `${icons.crossed} Не найдено предыдущего действия для ${actionTime}`;
 
   // Calculate the duration between the two timestamps
   const duration = calculateDuration(prev.timestamp, current.timestamp);
   return current.type === 'leave'
-    ? `🛑 ${username} stayed in chat for ${duration}`
-    : `✅ ${username} was absent for ${duration}`;
+    ? (lang === 'en')
+      ? `${icons.stop} ${username} left the chat after ${duration}`
+      : `${icons.stop} ${username} покинул чат спустя ${duration}`
+    : (lang === 'en')
+      ? `${icons.check} ${username} stayed in chat for ${duration}`
+      : `${icons.check} ${username} остался в чате на ${duration}`;
 }
 
 function calculateDuration(start, end) {
