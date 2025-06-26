@@ -419,9 +419,14 @@ function showCachePanel() {
     description.textContent = text;
     return description;
   }
-
-  oldUsersContainer.appendChild(createDescription('Active Users', 'old-users-description'));
-  newUsersContainer.appendChild(createDescription('New Registrations', 'new-users-description'));
+  oldUsersContainer.appendChild(createDescription(currentLanguage === 'en'
+    ? 'Old Residents'
+    : 'Постояльцы',
+    'old-users-description'));
+  newUsersContainer.appendChild(createDescription(currentLanguage === 'en'
+    ? 'New Residents'
+    : 'Новобранцы',
+    'new-users-description'));
   fetchedUsersContainer.append(oldUsersContainer, newUsersContainer);
 
   const userElements = [];
