@@ -11,6 +11,7 @@ import { calculateTimeOnSite, refreshFetchedUsers } from "./cacheHelpers.js";
 
 import { getUserProfileData } from "../../helpers/userProfileData.js";
 import { getDataById } from "../../helpers/apiData.js";
+import { createSortButtons } from "./cacheSort.js"
 
 import {
   triggerTargetElement,
@@ -258,7 +259,9 @@ function showCachePanel() {
           if (userElementData) userElements.push(userElementData);
         }));
 
-        userElements.sort((a, b) => a.order !== b.order ? a.order - b.order : b.bestSpeed - a.bestSpeed);
+        userElements.sort((a, b) => a.sortData.order !== b.sortData.order
+          ? a.sortData.order - b.sortData.order
+          : b.sortData.bestSpeed - a.sortData.bestSpeed);
         userElements.forEach(({ userElement }) => searchResultsContainer.appendChild(userElement));
         const searchDescription = createDescription(`Search Results for: ${username}`, 'search-results-description');
         searchResultsContainer.prepend(searchDescription);
@@ -440,7 +443,7 @@ function showCachePanel() {
 
     const avatarElement = document.createElement('div');
     avatarElement.className = 'avatar';
-    const avatarTimestamp = userData.avatarTimestamp; // Changed from fetchedUsers[userId]?.avatarTimestamp
+    const avatarTimestamp = userData.avatarTimestamp;
     const bigAvatarUrl = `/storage/avatars/${userId}_big.png`;
     if ((avatarTimestamp && avatarTimestamp !== '00') || (userData.avatar && Object.keys(userData.avatar).length)) {
       const imgElement = document.createElement('img');
@@ -462,13 +465,25 @@ function showCachePanel() {
     // Define marker first as gray
     presentMarker.className = 'present-marker waiting';
 
-    // Real-time update for online status using efficient API helper
+    const sortData = {
+      isOnline: null,
+      ratingLevel: userData.ratingLevel,
+      cars: userData.cars,
+      friends: userData.friends,
+      bestSpeed: userData.bestSpeed || 0,
+      order: rankOrder[userData.rank] || 10
+    };
+
     if (typeof getDataById === 'function') {
       getDataById(userId, 'isOnline').then(isOnline => {
         presentMarker.classList.remove('waiting');
         presentMarker.className = `present-marker ${isOnline ? 'online' : 'offline'}`;
+        sortData.isOnline = isOnline;
       }).catch(() => {
         console.error(`Failed to fetch online status for user ${userId}`);
+        presentMarker.classList.remove('waiting');
+        presentMarker.className = 'present-marker offline';
+        sortData.isOnline = false;
       });
     }
 
@@ -509,7 +524,7 @@ function showCachePanel() {
       element.style.color = color;
       element.innerHTML = `${icon}${value || 0}`;
       element.style.cursor = 'pointer';
-      element.dataset.url = url; // Store the URL for delegation
+      element.dataset.url = url;
       return element;
     };
 
@@ -557,8 +572,7 @@ function showCachePanel() {
 
     return {
       userElement,
-      order: rankOrder[userData.rank] || 10,
-      bestSpeed: userData.bestSpeed || 0,
+      sortData,
       registered: userData.registered
     };
   };
@@ -568,15 +582,19 @@ function showCachePanel() {
       const userData = users[userId];
       userElements.push(createCachePanelUserElement(userId, userData));
     });
-    userElements.sort((a, b) => a.order !== b.order ? a.order - b.order : b.bestSpeed - a.bestSpeed);
+    userElements.sort((a, b) => a.sortData.order !== b.sortData.order
+      ? a.sortData.order - b.sortData.order
+      : b.sortData.bestSpeed - a.sortData.bestSpeed);
     userElements.forEach(({ userElement, registered }) => {
       (isNewUser(registered) ? newUsersContainer : oldUsersContainer).appendChild(userElement);
     });
   }
 
+  const sortButtonsContainer = createSortButtons(userElements, oldUsersContainer, newUsersContainer, isNewUser);
+
   document.body.appendChild(cachedUsersPanel);
 
-  cachedUsersPanel.append(panelHeaderContainer, fetchedUsersContainer);
+  cachedUsersPanel.append(panelHeaderContainer, sortButtonsContainer, fetchedUsersContainer);
   const { scrollButtonsContainer } = createScrollButtons(fetchedUsersContainer);
   cachedUsersPanel.appendChild(scrollButtonsContainer);
 
@@ -708,6 +726,49 @@ function showCachePanel() {
       }
     }
   });
+
+  // Delegated tooltips for sort buttons
+  createCustomTooltip(
+    '.sort-button',
+    sortButtonsContainer,
+    (el) => {
+      if (el.classList.contains('online')) {
+        return {
+          en: 'Sort by online status',
+          ru: 'Сортировать по статусу онлайн'
+        };
+      }
+      if (el.classList.contains('offline')) {
+        return {
+          en: 'Sort by offline status',
+          ru: 'Сортировать по статусу оффлайн'
+        };
+      }
+      if (el.classList.contains('rankSpeed')) {
+        return {
+          en: 'Sort by rank and speed',
+          ru: 'Сортировать по рангу и скорости'
+        };
+      }
+      if (el.classList.contains('ratingLevel')) {
+        return {
+          en: 'Sort by rating level',
+          ru: 'Сортировать по уровню рейтинга'
+        };
+      }
+      if (el.classList.contains('carsCount')) {
+        return {
+          en: 'Sort by cars count',
+          ru: 'Сортировать по количеству машин'
+        };
+      }
+      if (el.classList.contains('friendsCount')) {
+        return {
+          en: 'Sort by friends count',
+          ru: 'Сортировать по количеству друзей'
+        };
+      }
+    });
 
   // Delegated tooltips for user metrics
   createCustomTooltip(
