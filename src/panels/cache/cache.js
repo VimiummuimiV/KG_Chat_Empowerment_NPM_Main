@@ -433,7 +433,6 @@ function showCachePanel() {
   fetchedUsersContainer.append(oldUsersContainer, newUsersContainer);
 
   const userElements = [];
-  let shouldProcessActionLog = true;
   const currentDate = new Date();
   const isNewUser = registered => (currentDate - new Date(registered)) <= 24 * 60 * 60 * 1000;
 
@@ -592,11 +591,11 @@ function showCachePanel() {
 
   const sortButtonsContainer = createSortButtons(userElements, oldUsersContainer, newUsersContainer, isNewUser);
 
-  document.body.appendChild(cachedUsersPanel);
-
   cachedUsersPanel.append(panelHeaderContainer, sortButtonsContainer, fetchedUsersContainer);
   const { scrollButtonsContainer } = createScrollButtons(fetchedUsersContainer);
   cachedUsersPanel.appendChild(scrollButtonsContainer);
+
+  document.body.appendChild(cachedUsersPanel);
 
   triggerTargetElement(cachedUsersPanel, 'show');
   triggerDimmingElement('show');
