@@ -525,12 +525,107 @@ async function showMessagesPanel() {
   // Set the inner HTML of the copy personal messages button element with the clipboard SVG
   copyPersonalMessagesButton.innerHTML = clipboardSVG;
   createCustomTooltip(copyPersonalMessagesButton, {
-    en: 'Copy Personal Messages',
-    ru: 'Скопировать личные сообщения'
+    en: ` 
+    [Click] to copy Personal Messages as plain text
+    [Alt + Click] to copy in BBCode, Markdown, or Plain format
+    [Alt + Shift + Click] to save in BBCode, Markdown, or Plain format
+  `,
+    ru: ` 
+    [Клик] скопировать личные сообщения как обычный текст
+    [Alt + Клик] скопировать в BBCode, Markdown или Plain формате
+    [Alt + Shift + Клик] сохранить в BBCode, Markdown или Plain формате
+  `
   });
 
-  // Event listener to copy the text content of the messages container
-  copyPersonalMessagesButton.addEventListener('click', () => {
+  // Event listener to handle copy actions
+  copyPersonalMessagesButton.addEventListener('click', (event) => {
+    // Alt+Click: Export messages in BBCode, Markdown, or Plain format
+    if (event.altKey) {
+      // Prompt for format synchronously
+      const formatMap = { '1': 'bbcode', '2': 'markdown', '3': 'plain' };
+      let formatNum = prompt('Export format? (1 = BBCode, 2 = Markdown, 3 = Plain)', '1');
+      if (!formatNum) formatNum = '1';
+      let format = formatMap[formatNum.trim()];
+      if (!format) format = 'bbcode';
+
+      // Gather visible messages and date headers
+      const messageElements = Array.from(
+        document.querySelectorAll(
+          '.messages-container > .date-item, ' +
+          '.messages-container > .message-item'
+        )
+      ).filter(el => {
+        const style = window.getComputedStyle(el);
+        return style.contentVisibility !== 'hidden' && style.display !== 'none';
+      });
+
+      let output = '';
+      let isFirstLine = true;
+      if (format.toLowerCase() === 'bbcode') output = '[hide]\n';
+
+      // Track current date for grouping
+      let currentDate = null;
+
+      messageElements.forEach(el => {
+        if (el.classList.contains('date-item')) {
+          // Date header
+          const dateText = el.textContent.trim();
+          currentDate = dateText;
+          if (!isFirstLine) output += '\n';
+          if (format.toLowerCase() === 'bbcode') {
+            output += `[b][color=gray]${dateText}[/color][/b]\n`;
+          } else if (format.toLowerCase() === 'markdown') {
+            output += `**${dateText}**\n`;
+          } else {
+            output += `${dateText}\n`;
+          }
+          isFirstLine = false;
+        }
+        else if (el.classList.contains('message-item')) {
+          // Message item
+          const time = el.querySelector('.message-time')?.textContent || '';
+          const username = el.querySelector('.message-username')?.textContent || '';
+          const messageTextElement = el.querySelector('.message-text');
+          const message = messageTextElement ? getMessageTextWithImgTitles(messageTextElement) : '';
+
+          // Create message URL based on date and time
+          const date = currentDate || today;
+          const url = `https://klavogonki.ru/chatlogs/${date}.html#${time.replace(/[\[\]]/g, '')}`;
+
+          if (format.toLowerCase() === 'bbcode') {
+            output += `[url=${url}]${time}[/url] [color=slategray]${username}[/color] ${message}\n`;
+          } else if (format.toLowerCase() === 'markdown') {
+            output += `[${time}](${url}) **${username}** ${message}\n`;
+          } else {
+            output += `[${time}] (${username}) ${message}\n`;
+          }
+          isFirstLine = false;
+        }
+      });
+
+      if (format.toLowerCase() === 'bbcode') output += '[/hide]\n';
+      if (!output) return;
+
+      // Save as file: Alt+Shift, Copy to clipboard: Alt only
+      if (event.altKey && event.shiftKey) {
+        // Save as file
+        const blob = new Blob([output], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `personal_messages_${new Date().toISOString().slice(0, 10)}_${format}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); }, 100);
+      } else if (event.altKey) {
+        // Copy to clipboard
+        navigator.clipboard.writeText(output).catch(() => {
+          alert('Failed to copy messages.');
+        });
+      }
+      return;
+    }
+
+    // Default behavior - copy as plain text
     let firstDateFound = false;
     const textContent = Array.from(document.querySelector('.messages-container').children)
       .filter(node => {
