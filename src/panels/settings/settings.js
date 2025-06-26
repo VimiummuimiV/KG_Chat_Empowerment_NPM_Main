@@ -786,16 +786,17 @@ function showSettingsPanel() {
 
       // In your save logic where you process toggle items
       container.querySelectorAll('.settings-toggle-container .toggle-item').forEach(item => {
-        const descriptionElement = item.querySelector('.toggle-description');
         const selectElement = item.querySelector('select');
-        if (descriptionElement && descriptionElement.textContent.includes('Interface language')) {
+
+        if (selectElement.classList.contains('language-toggle-select')) {
           currentValues.toggle.push({
             category: 'ui',
             type: 'language',
             option: selectElement.value
           });
-        } else {
-          const selectedValue = selectElement?.value.trim() || 'no';
+        } else if (selectElement.classList.contains('toggle-select')) {
+          const descriptionElement = item.querySelector('.toggle-description');
+          const selectedValue = selectElement.value.trim() || 'no';
           currentValues.toggle.push({
             category: descriptionElement.dataset.category,
             type: descriptionElement.dataset.type,
