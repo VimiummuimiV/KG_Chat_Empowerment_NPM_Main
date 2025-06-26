@@ -522,7 +522,6 @@ async function showMessagesPanel() {
   // Create a copy personal messages button element
   const copyPersonalMessagesButton = document.createElement('div');
   copyPersonalMessagesButton.className = "large-button panel-header-copy-button";
-  // Set the inner HTML of the copy personal messages button element with the clipboard SVG
   copyPersonalMessagesButton.innerHTML = clipboardSVG;
   createCustomTooltip(copyPersonalMessagesButton, {
     en: ` 
@@ -568,9 +567,11 @@ async function showMessagesPanel() {
 
       messageElements.forEach(el => {
         if (el.classList.contains('date-item')) {
-          // Date header
-          const dateText = el.textContent.trim();
+          // Get the date text without the emoji icon
+          const dateTextElement = el.querySelector('.date-text');
+          const dateText = dateTextElement ? dateTextElement.textContent : el.textContent;
           currentDate = dateText;
+
           if (!isFirstLine) output += '\n';
           if (format.toLowerCase() === 'bbcode') {
             output += `[b][color=gray]${dateText}[/color][/b]\n`;
@@ -635,7 +636,10 @@ async function showMessagesPanel() {
       })
       .map(node => {
         if (node.classList.contains('date-item')) {
-          const dateText = node.textContent.trim();
+          // Get the date text without the emoji icon
+          const dateTextElement = node.querySelector('.date-text');
+          const dateText = dateTextElement ? dateTextElement.textContent : node.textContent;
+
           if (!firstDateFound) {
             firstDateFound = true;
             return dateText;
@@ -799,11 +803,24 @@ async function showMessagesPanel() {
       if (lastDate !== date) {
         const dateItem = document.createElement('div');
         dateItem.className = 'date-item';
-        // show "Today" if date matches
-        dateItem.textContent = date === today ? 'Today ⏳' : `${date} 📅`;
-        dateItem.dataset.date = date; // Store the date in a data attribute
-        messagesContainer.appendChild(dateItem); // Append the date-item to the container
-        lastDate = date; // Update the last processed date
+
+        // Create main date text
+        const dateTextSpan = document.createElement('span');
+        dateTextSpan.className = 'date-text';
+        dateTextSpan.textContent = date === today ? 'Today' : date;
+
+        // Create emoji icon separately
+        const emojiSpan = document.createElement('span');
+        emojiSpan.className = 'date-emoji';
+        emojiSpan.textContent = date === today ? ' ⏳' : ' 📅';
+
+        // Append both to date item
+        dateItem.appendChild(dateTextSpan);
+        dateItem.appendChild(emojiSpan);
+
+        dateItem.dataset.date = date;
+        messagesContainer.appendChild(dateItem);
+        lastDate = date;
       }
 
       // Create a message-item for the current message
