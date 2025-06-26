@@ -950,28 +950,22 @@ function showSettingsPanel() {
     const data = getSettingsData(); // Retrieves the settings data
     const settingsContainer = document.querySelector('.settings-content-container'); // Main parent container (adjust if different)
 
+    // Clear all existing spoiler containers first
+    settingsContainer.innerHTML = '';
+
     settingsConfig.forEach(config => {
-      const { key, selector, creator, type, emoji } = config;
-      const container = document.querySelector(selector);
-      if (!container) return;
+      const { key, creator, type } = config;
 
+      // Create a fresh container for each type
+      const container = document.createElement('div');
+      container.className = `settings-${type}-container`;
       container.classList.add('settings-container');
-
-      // Clear existing items, preserving the add button if it exists
-      const existingAddButton = container.querySelector('.add-settings-button');
-      while (container.firstChild) {
-        if (container.firstChild !== existingAddButton) {
-          container.removeChild(container.firstChild);
-        } else {
-          break;
-        }
-      }
 
       if (type !== 'toggle') {
         // For non-toggle settings, populate from stored data
         const items = data[key] || [];
         items.forEach(item => container.appendChild(creator(item)));
-        const addButton = createAddButton(selector, creator);
+        const addButton = createAddButton(`.settings-${type}-container`, creator);
         container.appendChild(addButton);
       } else {
         // Inside your initialization logic (where you process toggle settings)
