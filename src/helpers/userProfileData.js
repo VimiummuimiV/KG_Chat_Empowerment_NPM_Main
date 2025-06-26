@@ -72,6 +72,7 @@ export async function getUserProfileData(userId, useLocalStorage = true) {
             };
             localStorage.setItem('fetchedUsers', JSON.stringify(cachedUserInfo));
           }
+
           resolve({
             rank,
             login,
@@ -84,11 +85,7 @@ export async function getUserProfileData(userId, useLocalStorage = true) {
             avatarTimestamp
           });
         } else {
-          throw new Error(
-            (lang === 'ru')
-              ? 'Пользователь не найден.'
-              : 'User not found.'
-          );
+          throw new Error('Invalid data format received from the API.');
         }
       } catch (error) {
         console.error(`Error fetching user profile data for ${userId}:`, error);
