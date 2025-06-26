@@ -1,13 +1,14 @@
-import "./style.scss"; // general styles
+import "./style.scss";
 
 import {
-  processEncodedLinks,
-  refreshFetchedUsers,
-  highlightMentionWords,
-  removeIgnoredUserMessages,
   locationHas,
   shouldEnable
-} from "./modules/helpers.js"; // helpers
+} from "./helpers.js";
+
+import { highlightMentionWords } from "./helpers/getLatestMessageData.js";
+import { processEncodedLinks } from "./helpers/urlUtils.js";
+import { refreshFetchedUsers } from "./panels/cache/cacheHelpers.js";
+import { removeIgnoredUserMessages } from "./chat/chatIgnore.js";
 
 import {
   restoreChatTab,
@@ -17,33 +18,33 @@ import {
   restoreChatState,
   groupChatMessages,
   applyDynamicBackgroundColor
-} from "./modules/chat/chat-workers.js"; //chat
+} from "./chat/chatWorkers.js";
 
-import { scrollToBottom } from "./modules/helpers/scrollTo.js";
-import { setupFonts } from "./modules/fonts.js"; // fonts
-import { refreshUserList } from "./modules/chat/chat-userlist.js"; // chat userlist
-import ChatMessagesRemover from "./modules/chat/chat-messages-remover/chat-messages-remover.js"; // chat messages remover
-import { pruneDeletedMessages } from "./modules/chat/chat-messages-remover/chat-messages-remover.js";
-import { createChatUserCounter } from "./modules/participant-count.js"; // counter
-import { startChatUserObserver } from "./modules/chat/chat-users-observer.js"; // users observer
-import { startChatMessagesObserver } from "./modules/chat/chat-messages-observer.js" // messages observer
-import { initChatEvents } from "./modules/popup-length-indicator.js"; // popup length indicator
+import { scrollToBottom } from "./helpers/scrollTo.js";
+import { setupFonts } from "./components/fonts.js";
+import { refreshUserList } from "./chat/chatUserlist.js";
+import ChatMessagesRemover from "./chat/chatMessagesRemover/chatMessagesRemover.js";
+import { pruneDeletedMessages } from "./chat/chatMessagesRemover/chatMessagesRemover.js";
+import { createChatUserCounter } from "./components/participantCount.js";
+import { startChatUserObserver } from "./chat/chatUsersObserver.js";
+import { startChatMessagesObserver } from "./chat/chatMessagesObserver.js"
+import { initChatEvents } from "./components/popupLengthIndicator.js";
 
-import { convertImageLinksToImage } from "./modules/converters/image-converter.js"; // image converter
-import { convertVideoLinksToPlayer } from "./modules/converters/video-converter.js"; // video converter
+import { convertImageLinksToImage } from "./converters/image-converter.js";
+import { convertVideoLinksToPlayer } from "./converters/video-converter.js";
 
-import { createMessageModeButton } from "./modules/message-mode.js"; // message mode button
-import { createSoundSwitcherButton } from "./modules/sound-mode.js"; // sound switcher button
+import { createMessageModeButton } from "./components/mode/message-mode.js";
+import { createSoundSwitcherButton } from "./components/mode/sound-mode.js";
 
-import { createCacheButton } from "./modules/panels/cache/cache.js"; // cache panel
-import { createMessagesButton } from "./modules/panels/messages/messages.js"; // messages panel
-import { createChatLogsButton } from "./modules/panels/chatlogs/chatlogs.js"; // chatlogs panel
-import { createSettingsButton } from "./modules/panels/settings/settings.js"; // settings panel
+import { createCacheButton } from "./panels/cache/cache.js";
+import { createMessagesButton } from "./panels/messages/messages.js";
+import { createChatLogsButton } from "./panels/chatlogs/chatlogs.js";
+import { createSettingsButton } from "./panels/settings/settings.js";
 
 // definitions
 import {
   cacheRefreshThresholdHours
-} from "./modules/definitions.js";
+} from "./definitions.js";
 
 // Skip reading the messages on page load to read them normally when the user is present and the page is stable
 export let isInitializedChat = false;
