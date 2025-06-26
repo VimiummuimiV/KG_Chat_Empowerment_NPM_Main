@@ -36,7 +36,7 @@ import { convertVideoLinksToPlayer } from "./converters/videoConverter.js";
 import { createMessageModeButton } from "./components/mode/messageMode.js";
 import { createSoundSwitcherButton } from "./components/mode/soundMode.js";
 
-import { createCacheButton } from "./panels/cache/cache.js";
+import { createCacheButton } from "./panels/cache/cacheHelpers.js";
 import { createMessagesButton } from "./panels/messages/messages.js";
 import { createChatLogsButton } from "./panels/chatlogs/chatlogs.js";
 import { createSettingsButton } from "./panels/settings/settings.js";

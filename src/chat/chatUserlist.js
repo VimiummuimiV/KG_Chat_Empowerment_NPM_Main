@@ -23,7 +23,7 @@ import { isCtrlKeyPressed } from "../helpers/hotkeyState.js";
 import { getUserProfileData } from "../helpers/userProfileData.js";
 
 import { createCustomTooltip } from "../components/tooltip.js";
-import { updateUserCountText } from "../panels/cache/cache.js";
+import { updateUserCountText } from "../panels/cache/cacheHelpers.js";
 import { isInitializedChat } from "../main.js";
 import { addShakeEffect } from "../animations.js";
 import { insertPrivate } from "./chatWorkers.js";
