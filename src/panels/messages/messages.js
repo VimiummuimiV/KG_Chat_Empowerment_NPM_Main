@@ -1001,7 +1001,15 @@ async function showMessagesPanel() {
         return;
       }
       const username = messageItem.querySelector('.message-username')?.textContent;
-      const type = Object.values(messages).find(m => m.username === username)?.type;
+      const time = messageItem.querySelector('.message-time')?.textContent;
+
+      // Find the specific message by matching both username and time
+      const specificMessage = Object.values(messages).find(m =>
+        m.username === username &&
+        m.time.replace(/[\[\]]/g, '').trim() === time.trim()
+      );
+      const type = specificMessage?.type;
+
       if (type === 'private') {
         requestAnimationFrame(() => {
           findGeneralChatMessage(
