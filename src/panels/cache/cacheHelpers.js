@@ -2,6 +2,9 @@ import { state } from "../../definitions.js";
 let { fetchedUsers } = state;
 
 import { createCustomTooltip } from "../../components/tooltip.js";
+import { userlistCacheSVG } from "../../icons.js";
+import { addPulseEffect } from "../../animations.js";
+import { showCachePanel } from "./cache.js";
 
 // Global function to prepend an emoticon to the visits element in the cache panel.
 export function updateVisitsEmoticon(visitsElement) {

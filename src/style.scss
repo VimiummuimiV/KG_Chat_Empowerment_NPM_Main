@@ -31,15 +31,19 @@
 }
 
 .popup-panel .search-messages-info,
+.popup-panel .search-results-info,
 .popup-panel .search-messages-date,
-.popup-panel .no-messages-info {
+.popup-panel .no-messages-info,
+.popup-panel .error-message-info {
   padding: 0.5em;
   border-radius: 0.4em !important;
   width: fit-content;
   margin: 0.5em;
+  grid-column: 1 / -1;
 }
 
-.popup-panel .search-messages-info {
+.popup-panel .search-messages-info,
+.popup-panel .search-results-info {
   color: hsl(80, 60%, 70%);
   background: hsla(80, 60%, 70%, 0.1);
 }
@@ -49,7 +53,8 @@
   background: hsla(40, 60%, 70%, 0.1);
 }
 
-.popup-panel .no-messages-info {
+.popup-panel .no-messages-info,
+.popup-panel .error-message-info {
   color: hsl(0, 60%, 70%);
   background: hsla(0, 60%, 70%, 0.1);
 }

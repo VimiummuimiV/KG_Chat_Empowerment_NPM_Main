@@ -3,6 +3,9 @@ import {
   formatRegisteredDate,
   convertToUpdatedTimestamp
 } from './apiData.js';
+import { getCurrentLanguage } from './helpers.js';
+
+const lang = getCurrentLanguage();
 
 // Function to validate required user data
 function validateUserData(user) {
@@ -81,7 +84,11 @@ export async function getUserProfileData(userId, useLocalStorage = true) {
             avatarTimestamp
           });
         } else {
-          throw new Error('Invalid data format received from the API.');
+          throw new Error(
+            (lang === 'ru')
+              ? 'Пользователь не найден.'
+              : 'User not found.'
+          );
         }
       } catch (error) {
         console.error(`Error fetching user profile data for ${userId}:`, error);

@@ -12,7 +12,7 @@
   z-index: 1000;
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: min-content;
+  grid-template-rows: auto auto 1fr;
   grid-template-areas:
     "header header"
     "sort sort"
@@ -110,17 +110,11 @@
     }
   }
 
-  .error-message {
-    width: fit-content;
-    white-space: nowrap;
-    font-family: "Montserrat";
-    color: lightcoral;
-  }
-
   .fetched-users {
     display: grid;
     grid-template-rows: 1fr 1fr;
-    height: calc(100% - 0.5em);
+    height: fit-content;
+    max-height: calc(100% - 0.5em);
     overflow-y: auto;
     grid-area: cache;
   }

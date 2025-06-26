@@ -3,20 +3,16 @@ import "./cache.scss"
 import {
   removePreviousPanel,
   debounce,
-  getRandomEmojiAvatar,
   getCurrentLanguage
 } from "../../helpers/helpers.js";
 
 import {
-  updateVisitsEmoticon,
   setCacheRefreshTime,
   calculateTimeOnSite,
   refreshFetchedUsers,
   updateRemainingTime
 } from "./cacheHelpers.js";
 
-import { getUserProfileData } from "../../helpers/userProfileData.js";
-import { getDataById } from "../../helpers/apiData.js";
 import { createSortButtons } from "./cacheSort.js"
 
 import {
@@ -25,7 +21,6 @@ import {
   adjustVisibility
 } from "../../helpers/elementVisibility.js";
 
-import { getAllUserIDsByName } from "../../helpers/apiData.js";
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
 import { createStaticNotification } from "../../components/notifications/notifications.js";
 
@@ -34,8 +29,7 @@ import {
   trashSVG,
   closeSVG,
   enterSVG,
-  leaveSVG,
-  userlistCacheSVG
+  leaveSVG
 } from "../../icons.js";
 
 import {
@@ -43,14 +37,14 @@ import {
   debounceTimeout,
   profileBaseUrl,
   myUserId,
-  rankOrder,
-  rankColors,
   state
 } from "../../definitions.js";
 
-import { addPulseEffect } from "../../animations.js";
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { loadProfileIntoIframe } from "../../helpers/iframeProfileLoader.js";
+
+import { handleSearch, createUserContainer, createDescription } from "./cacheSearch.js";
+import { createCachePanelUserElement } from "./cacheUserElement.js";
 
 // --- Localization for cache panel interface ---
 const cacheMessages = {
@@ -68,7 +62,7 @@ const cacheMessages = {
 const currentLanguage = getCurrentLanguage();
 
 // Function to display the cached user list panel
-function showCachePanel() {
+export function showCachePanel() {
   const existingPanel = document.querySelector('.cached-users-panel');
   if (existingPanel) {
     existingPanel.remove();
@@ -172,61 +166,12 @@ function showCachePanel() {
     }
   });
 
-  const handleSearch = async (username) => {
-    const oldUsersContainer = document.querySelector('.old-users');
-    const newUsersContainer = document.querySelector('.new-users');
-    const fetchedUsersContainer = document.querySelector('.fetched-users');
-
-    if (username) {
-      oldUsersContainer.style.display = 'none';
-      newUsersContainer.style.display = 'none';
-
-      let searchResultsContainer = document.querySelector('.search-results') || createUserContainer('search');
-      if (!searchResultsContainer.parentElement) fetchedUsersContainer.appendChild(searchResultsContainer);
-      searchResultsContainer.replaceChildren();
-
-      const userElements = [];
-
-      try {
-        const userIds = await getAllUserIDsByName(username);
-        await Promise.all(userIds.map(async (userId) => {
-          const profileData = await getUserProfileData(userId, false);
-          const userData = {
-            rank: profileData.rank,
-            login: profileData.login,
-            registered: profileData.registeredDate,
-            bestSpeed: profileData.bestSpeed,
-            ratingLevel: profileData.ratingLevel,
-            friends: profileData.friends,
-            cars: profileData.cars,
-            avatarTimestamp: profileData.avatarTimestamp,
-            avatar: profileData.avatar
-          };
-          const userElementData = createCachePanelUserElement(userId, userData);
-          if (userElementData) userElements.push(userElementData);
-        }));
-
-        userElements.sort((a, b) => a.sortData.order !== b.sortData.order
-          ? a.sortData.order - b.sortData.order
-          : b.sortData.bestSpeed - a.sortData.bestSpeed);
-        userElements.forEach(({ userElement }) => searchResultsContainer.appendChild(userElement));
-        const searchDescription = createDescription(`Search Results for: ${username}`, 'search-results-description');
-        searchResultsContainer.prepend(searchDescription);
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-        const errorMessage = document.createElement('div');
-        errorMessage.className = 'error-message';
-        errorMessage.textContent = `Error: ${error.message}`;
-        searchResultsContainer.appendChild(errorMessage);
-      }
-    }
-  };
-
+  // Use the imported handleSearch function
   cacheSearchInput.addEventListener('input', debounce((event) => {
     const inputValue = event.target.value.trim();
     const searchMode = localStorage.getItem('cachePanelSearchMode');
     const username = inputValue.startsWith('user ') ? inputValue.substring(5).trim() : (searchMode === 'fetch' ? inputValue : '');
-    if (username) handleSearch(username);
+    if (username) handleSearch(username, createCachePanelUserElement);
   }, debounceTimeout));
 
   panelHeaderContainer.appendChild(cacheSearchContainer);
@@ -348,29 +293,11 @@ function showCachePanel() {
   const fetchedUsersContainer = document.createElement('div');
   fetchedUsersContainer.className = 'fetched-users';
 
-  function createUserContainer(type) {
-    const userContainer = document.createElement('div');
-    if (type === 'old') {
-      userContainer.className = 'users-container old-users';
-    } else if (type === 'new') {
-      userContainer.className = 'users-container new-users';
-    } else if (type === 'search') {
-      userContainer.className = 'users-container search-results';
-    }
-    return userContainer;
-  }
-
+  // Use the imported createUserContainer function
   const oldUsersContainer = createUserContainer('old');
   const newUsersContainer = createUserContainer('new');
 
-  function createDescription(text, className) {
-    const description = document.createElement('span');
-    description.className = `description ${className}`;
-    description.textContent = text;
-    return description;
-  }
-
-  // Create and store description elements
+  // Create and store description elements using imported createDescription function
   const oldUsersDescription = createDescription(
     currentLanguage === 'en' ? 'Old Residents' : 'Постояльцы',
     'old-users-description'
@@ -388,146 +315,6 @@ function showCachePanel() {
   const userElements = [];
   const currentDate = new Date();
   const isNewUser = registered => (currentDate - new Date(registered)) <= 24 * 60 * 60 * 1000;
-
-  const createCachePanelUserElement = (userId, userData) => {
-    const userElement = document.createElement('div');
-    userElement.className = 'user-item';
-
-    const avatarElement = document.createElement('div');
-    avatarElement.className = 'avatar';
-    const avatarTimestamp = userData.avatarTimestamp;
-    const bigAvatarUrl = `/storage/avatars/${userId}_big.png`;
-    if ((avatarTimestamp && avatarTimestamp !== '00') || (userData.avatar && Object.keys(userData.avatar).length)) {
-      const imgElement = document.createElement('img');
-      imgElement.src = `${bigAvatarUrl}?updated=${avatarTimestamp}`;
-      imgElement.alt = `${userData.login}'s avatar`;
-      imgElement.style.objectFit = 'cover';
-      avatarElement.appendChild(imgElement);
-    } else {
-      avatarElement.innerHTML = getRandomEmojiAvatar();
-    }
-
-    const userDataElement = document.createElement('div');
-    userDataElement.className = 'user-data';
-
-    const loginContainer = document.createElement('div');
-    loginContainer.className = 'login-container';
-
-    const presentMarker = document.createElement('span');
-    // Define marker first as gray
-    presentMarker.className = 'present-marker waiting';
-
-    const sortData = {
-      isOnline: null,
-      ratingLevel: userData.ratingLevel,
-      cars: userData.cars,
-      friends: userData.friends,
-      bestSpeed: userData.bestSpeed || 0,
-      order: rankOrder[userData.rank] || 10
-    };
-
-    if (typeof getDataById === 'function') {
-      getDataById(userId, 'isOnline').then(isOnline => {
-        presentMarker.classList.remove('waiting');
-        presentMarker.className = `present-marker ${isOnline ? 'online' : 'offline'}`;
-        sortData.isOnline = isOnline;
-      }).catch(() => {
-        console.error(`Failed to fetch online status for user ${userId}`);
-        presentMarker.classList.remove('waiting');
-        presentMarker.className = 'present-marker offline';
-        sortData.isOnline = false;
-      });
-    }
-
-    loginContainer.appendChild(presentMarker);
-
-    const loginElement = document.createElement('a');
-    loginElement.className = 'login';
-    loginElement.textContent = userData.login;
-    loginElement.href = `https://klavogonki.ru/profile/${userId}`;
-
-    loginContainer.appendChild(loginElement);
-
-    if (userData.visits !== undefined) {
-      const visitsElement = document.createElement('span');
-      visitsElement.className = `visits ${userData.tracked ? 'tracked' : 'untracked'}`;
-      visitsElement.textContent = userData.visits;
-      visitsElement.dataset.userId = userId;
-      updateVisitsEmoticon(visitsElement);
-      loginContainer.appendChild(visitsElement);
-    }
-
-    userDataElement.appendChild(loginContainer);
-
-    const rankElement = document.createElement('div');
-    rankElement.className = 'rank';
-    rankElement.textContent = userData.rank || 'N/A';
-    rankElement.style.color = rankColors[userData.rank] || 'white';
-    userDataElement.appendChild(rankElement);
-
-    const registeredElement = document.createElement('div');
-    registeredElement.className = 'registered';
-    registeredElement.textContent = userData.registered || 'N/A';
-    userDataElement.appendChild(registeredElement);
-
-    const createMetricElement = (className, color, icon, value, title, url) => {
-      const element = document.createElement('span');
-      element.className = className;
-      element.style.color = color;
-      element.innerHTML = `${icon}${value || 0}`;
-      element.style.cursor = 'pointer';
-      element.dataset.url = url;
-      return element;
-    };
-
-    const userMetrics = document.createElement('div');
-    userMetrics.className = "user-metrics";
-    userMetrics.append(
-      createMetricElement(
-        'best-speed',
-        'cyan',
-        '🚀',
-        userData.bestSpeed,
-        'Best speed',
-        `https://klavogonki.ru/u/#/${userId}/stats/normal/`
-      ),
-
-      createMetricElement(
-        'rating-level',
-        'gold',
-        '⭐',
-        userData.ratingLevel,
-        'Rating level',
-        `https://klavogonki.ru/top/rating/today?s=${userData.login}`
-      ),
-
-      createMetricElement(
-        'cars-count',
-        'lightblue',
-        '🚖',
-        userData.cars,
-        'Cars count',
-        `https://klavogonki.ru/u/#/${userId}/car/`
-      ),
-
-      createMetricElement(
-        'friends-count',
-        'lightgreen',
-        '🤝',
-        userData.friends,
-        'Friends count',
-        `https://klavogonki.ru/u/#/${userId}/friends/list/`
-      )
-    );
-
-    userElement.append(avatarElement, userDataElement, userMetrics);
-
-    return {
-      userElement,
-      sortData,
-      registered: userData.registered
-    };
-  };
 
   if (localStorage.getItem('cachePanelSearchMode') === 'cache') {
     Object.keys(users).forEach(userId => {
