@@ -74,3 +74,29 @@ export const trustedDomains = [
   'freepik.com',
   'fastpic.org'
 ];
+
+// Rank order mapping
+export const rankOrder = {
+  'Экстракибер': 1,
+  'Кибергонщик': 2,
+  'Супермен': 3,
+  'Маньяк': 4,
+  'Гонщик': 5,
+  'Профи': 6,
+  'Таксист': 7,
+  'Любитель': 8,
+  'Новичок': 9
+};
+
+// Rank color mapping
+export const rankColors = {
+  'Экстракибер': '#06B4E9', // Light Blue
+  'Кибергонщик': '#5681ff', // Medium Blue
+  'Супермен': '#B543F5', // Purple
+  'Маньяк': '#DA0543', // Red
+  'Гонщик': '#FF8C00', // Orange
+  'Профи': '#C1AA00', // Yellow
+  'Таксист': '#2DAB4F', // Green
+  'Любитель': '#61B5B3', // Light Cyan
+  'Новичок': '#AFAFAF' // Grey
+};

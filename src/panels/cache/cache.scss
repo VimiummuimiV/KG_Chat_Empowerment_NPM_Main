@@ -92,6 +92,7 @@
     display: flex;
     gap: 5px;
     margin: 0 0.6em 0.6em;
+    height: fit-content;
 
     grid-area: sort;
 
@@ -101,6 +102,7 @@
       border: none !important;
       cursor: pointer;
       border-radius: 3px !important;
+      height: fit-content;
 
       &.active {
         background-color: #555;
