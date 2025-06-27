@@ -8,7 +8,6 @@ import {
 
 import {
   setCacheRefreshTime,
-  calculateTimeOnSite,
   refreshFetchedUsers,
   updateRemainingTime
 } from "./cacheHelpers.js";
@@ -17,34 +16,29 @@ import { createSortButtons } from "./cacheSort.js"
 
 import {
   triggerTargetElement,
-  triggerDimmingElement,
-  adjustVisibility
+  triggerDimmingElement
 } from "../../helpers/elementVisibility.js";
 
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
-import { createStaticNotification } from "../../components/notifications/notifications.js";
 
 import {
   usersSVG,
   trashSVG,
-  closeSVG,
-  enterSVG,
-  leaveSVG
+  closeSVG
 } from "../../icons.js";
 
 import {
   cacheRefreshThresholdHours,
   debounceTimeout,
-  profileBaseUrl,
-  myUserId,
   state
 } from "../../definitions.js";
 
 import { createCustomTooltip } from "../../components/tooltip.js";
-import { loadProfileIntoIframe } from "../../helpers/iframeProfileLoader.js";
 
 import { handleSearch, createUserContainer, createDescription } from "./cacheSearch.js";
 import { createCachePanelUserElement } from "./cacheUserElement.js";
+import { setupCacheTooltips } from "./cacheDelegatedTooltips.js";
+import { setupCacheDelegatedEvents } from "./cacheDelegatedEvents.js";
 
 // --- Localization for cache panel interface ---
 const cacheMessages = {
@@ -166,7 +160,6 @@ export function showCachePanel() {
     }
   });
 
-  // Use the imported handleSearch function
   cacheSearchInput.addEventListener('input', debounce((event) => {
     const inputValue = event.target.value.trim();
     const searchMode = localStorage.getItem('cachePanelSearchMode');
@@ -276,7 +269,6 @@ export function showCachePanel() {
     const userCountElement = document.querySelector('.cache-panel-load-button .cache-user-count');
     if (userCountElement) userCountElement.textContent = '0';
   });
-  panelControlButtons.appendChild(clearCacheButton);
 
   const closePanelButton = document.createElement('div');
   closePanelButton.className = 'large-button panel-header-close-button';
@@ -286,14 +278,14 @@ export function showCachePanel() {
   });
   closePanelButton.innerHTML = closeSVG;
   closePanelButton.addEventListener('click', hideCachePanel);
-  panelControlButtons.appendChild(closePanelButton);
+
+  panelControlButtons.append(clearCacheButton, closePanelButton);
 
   panelHeaderContainer.appendChild(panelControlButtons);
 
   const fetchedUsersContainer = document.createElement('div');
   fetchedUsersContainer.className = 'fetched-users';
 
-  // Use the imported createUserContainer function
   const oldUsersContainer = createUserContainer('old');
   const newUsersContainer = createUserContainer('new');
 
@@ -329,7 +321,6 @@ export function showCachePanel() {
     });
   }
 
-  // Pass description elements to createSortButtons
   const sortButtonsContainer = createSortButtons(
     userElements,
     oldUsersContainer,
@@ -351,224 +342,10 @@ export function showCachePanel() {
   setInterval(updateRemainingTime, 1000);
   updateRemainingTime();
 
-  // Delegated event listener for user metrics and login links
-  fetchedUsersContainer.addEventListener('click', (event) => {
-    const metric = event.target.closest('.best-speed, .rating-level, .cars-count, .friends-count');
-    if (metric) {
-      const url = metric.dataset.url;
-      if (url) loadProfileIntoIframe(url);
-      return;
-    }
-
-    const login = event.target.closest('.login');
-    if (login) {
-      event.preventDefault();
-      const userId = login.href.split('/').pop();
-      const profileUrl = profileBaseUrl + userId;
-      const messageInProfile = `${profileBaseUrl}${myUserId}/messages/${userId}/`;
-      if (event.ctrlKey && event.shiftKey) {
-        const newTab = window.open(messageInProfile, '_blank');
-        if (newTab) newTab.focus();
-      } else if (event.ctrlKey) {
-        loadProfileIntoIframe(messageInProfile);
-      } else {
-        loadProfileIntoIframe(profileUrl);
-      }
-      return;
-    }
-
-    const visits = event.target.closest('.visits');
-    if (visits) {
-      event.stopPropagation();
-      let shouldProcessActionLog = true;
-      const userId = visits.dataset.userId;
-      const users = JSON.parse(localStorage.getItem('fetchedUsers')) || {};
-      const user = users ? users[userId] : null;
-      const actionLog = user?.actionLog;
-
-      if (user) {
-        let actionLogContainer = document.querySelector('.action-log');
-        if (!actionLogContainer) {
-          actionLogContainer = document.createElement('div');
-          actionLogContainer.className = 'action-log';
-          fetchedUsersContainer.appendChild(actionLogContainer);
-          adjustVisibility(actionLogContainer, 'show', 1);
-        } else {
-          actionLogContainer.replaceChildren();
-        }
-
-        if (actionLog && shouldProcessActionLog) {
-          actionLog.forEach((action, index) => {
-            if (!shouldProcessActionLog || typeof action !== 'object' || !action) return;
-            const { type, timestamp } = action;
-            const userAction = visits.closest('.user-item').querySelector('.login').textContent || 'Unknown User';
-            const actionIconType = type === 'enter' ? enterSVG : leaveSVG;
-            const userPresence = type === 'enter';
-            setTimeout(() => {
-              if (shouldProcessActionLog) {
-                createStaticNotification(userAction, actionIconType, timestamp, userPresence, 'cachePanel');
-              }
-            }, 10 * (index + 1));
-          });
-        }
-        const closeActionLog = (e) => {
-          if (!actionLogContainer.contains(e.target) || e.code === 'Space') {
-            if (e.code === 'Space') e.preventDefault();
-            adjustVisibility(actionLogContainer, 'hide', 0);
-            shouldProcessActionLog = false;
-            ['click', 'keydown'].forEach(evt => document.removeEventListener(evt, closeActionLog));
-          }
-        };
-        ['click', 'keydown'].forEach(evt => document.addEventListener(evt, closeActionLog));
-      } else {
-        console.error('User data not found');
-      }
-    }
-  });
-
-  // Delegated mouseover/mouseout for .registered
-  fetchedUsersContainer.addEventListener('mouseover', (event) => {
-    const registered = event.target.closest('.registered');
-    if (registered && fetchedUsersContainer.contains(registered)) {
-      registered._originalContent = registered.textContent;
-      registered._hoverTimer = setTimeout(() => {
-        const userItem = registered.closest('.user-item');
-        const login = userItem?.querySelector('.login');
-        const userId = login?.href?.split('/').pop();
-        // Use the users object from closure, not localStorage
-        const userData = users[userId] || { registered: registered.textContent };
-        registered.textContent = calculateTimeOnSite(userData.registered);
-      }, 300);
-    }
-  });
-  fetchedUsersContainer.addEventListener('mouseout', (event) => {
-    const registered = event.target.closest('.registered');
-    if (registered && fetchedUsersContainer.contains(registered)) {
-      clearTimeout(registered._hoverTimer);
-      if (registered._originalContent) {
-        registered.textContent = registered._originalContent;
-      }
-    }
-  });
-
-  // Delegated tooltips for sort buttons
-  createCustomTooltip(
-    '.sort-button',
-    sortButtonsContainer,
-    (el) => {
-      if (el.classList.contains('online')) {
-        return {
-          en: 'Sort by online status',
-          ru: 'Сортировать по статусу онлайн'
-        };
-      }
-      if (el.classList.contains('offline')) {
-        return {
-          en: 'Sort by offline status',
-          ru: 'Сортировать по статусу оффлайн'
-        };
-      }
-      if (el.classList.contains('rankSpeed')) {
-        return {
-          en: 'Sort by rank and speed',
-          ru: 'Сортировать по рангу и скорости'
-        };
-      }
-      if (el.classList.contains('ratingLevel')) {
-        return {
-          en: 'Sort by rating level',
-          ru: 'Сортировать по уровню рейтинга'
-        };
-      }
-      if (el.classList.contains('carsCount')) {
-        return {
-          en: 'Sort by cars count',
-          ru: 'Сортировать по количеству машин'
-        };
-      }
-      if (el.classList.contains('friendsCount')) {
-        return {
-          en: 'Sort by friends count',
-          ru: 'Сортировать по количеству друзей'
-        };
-      }
-    });
-
-  // Delegated tooltips for user metrics
-  createCustomTooltip(
-    '.waiting,' +
-    '.online,' +
-    '.offline,' +
-    '.login,' +
-    '.visits,' +
-    '.best-speed,' +
-    '.rating-level,' +
-    '.cars-count,' +
-    '.friends-count',
-    fetchedUsersContainer,
-    (el) => {
-      if (el.classList.contains('waiting')) {
-        return {
-          en: 'Waiting for presence status',
-          ru: 'Ожидание статуса присутствия'
-        };
-      }
-      if (el.classList.contains('online')) {
-        return {
-          en: 'Online',
-          ru: 'Онлайн'
-        };
-      }
-      if (el.classList.contains('offline')) {
-        return {
-          en: 'Offline',
-          ru: 'Оффлайн'
-        };
-      }
-
-      if (el.classList.contains('login')) {
-        return {
-          en: ` 
-          [Click] to open profile in iframe (summary)
-          [Ctrl + Click] to open profile in iframe (messages)
-          [Ctrl + Shift + Click] to open profile in a new tab (messages)
-          `,
-          ru: ` 
-          [Клик] открыть профиль в iframe (сводка)
-          [Ctrl + Клик] открыть профиль в iframe (сообщения)
-          [Ctrl + Shift + Клик] открыть профиль в новой вкладке (сообщения)
-          `
-        }
-      }
-
-      if (el.classList.contains('visits')) {
-        const userItem = el.closest('.user-item');
-        const loginElement = userItem?.querySelector('.login');
-        const loginText = loginElement?.textContent || '';
-        return {
-          en: `View action log for ${loginText}`,
-          ru: `Посмотреть журнал действий для ${loginText}`
-        }
-      }
-
-      if (el.classList.contains('best-speed')) {
-        return { en: 'Best speed', ru: 'Лучшая скорость' };
-      }
-      if (el.classList.contains('rating-level')) {
-        return { en: 'Rating level', ru: 'Уровень рейтинга' };
-      }
-      if (el.classList.contains('cars-count')) {
-        return { en: 'Cars count', ru: 'Количество машин' };
-      }
-      if (el.classList.contains('friends-count')) {
-        return { en: 'Friends count', ru: 'Количество друзей' };
-      }
-      return { en: '', ru: '' };
-    },
-    true
-  );
-
-} // showCachePanel END
+  // Setup delegated tooltips and events
+  setupCacheTooltips(sortButtonsContainer, fetchedUsersContainer);
+  setupCacheDelegatedEvents(fetchedUsersContainer);
+}
 
 function hideCachePanel() {
   const cachedUsersPanel = document.querySelector('.cached-users-panel');
