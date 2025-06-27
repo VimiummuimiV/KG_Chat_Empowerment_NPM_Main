@@ -19,12 +19,13 @@ import {
   playSVG
 } from "../../icons.js";
 
+import { handleExportClick } from "../../helpers/messagesFormatter.js";
+
 // helpers
 import {
   removePreviousPanel,
   copyChatlogsUrlToClipboard,
-  getCurrentLanguage,
-  getMessageTextWithImgTitles
+  getCurrentLanguage
 } from '../../helpers/helpers.js';
 
 import { processEncodedLinks } from "../../helpers/urlUtils.js";
@@ -62,6 +63,9 @@ import { renderActiveUsers } from './chatlogsUserlist.js';
 const { ignored } = settingsState;
 
 const lang = getCurrentLanguage();
+
+// Generate a random 20-digit number
+const randomParam = Math.floor(Math.random() * 10 ** 20);
 
 // --- Chatlog HTML size limit (shared constant) ---
 const CHATLOG_SIZE_LIMIT_KB = 1000;
@@ -109,8 +113,6 @@ export const fetchChatLogs = async (date, messagesContainer) => {
     placeholder: lang === 'ru' ? 'Пропущено: слишком большой лог.' : 'Skipped: chatlog too large.'
   };
 
-  // Generate a random 20-digit number
-  const randomParam = Math.floor(Math.random() * 10 ** 20);
   const fetchUrl = `${url}?rand=${randomParam}`;
 
   // Try to use IndexedDB if available
@@ -642,133 +644,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
     let savedChatlogs = JSON.parse(localStorage.getItem('savedChatlogs')) || [];
 
-    // Alt+Click: Export chatlogs in BBCode, Markdown, or Plain format
+    // Handle export with Alt and Alt+Shift to copy or save chat logs
     if (event.altKey) {
-      // Prompt for format synchronously (now using numbers 1=BBCode, 2=Markdown, 3=Plain)
-      const formatMap = { '1': 'bbcode', '2': 'markdown', '3': 'plain' };
-      let formatNum = prompt('Export format? (1 = BBCode, 2 = Markdown, 3 = Plain)', '1');
-      if (!formatNum) formatNum = '1';
-      let format = formatMap[formatNum.trim()];
-      if (!format) format = 'bbcode';
-
-      // Gather visible messages and date headers synchronously
-      const chatLogElements = Array.from(
-        document.querySelectorAll(
-          '.chat-logs-container > .date-item, ' +
-          '.chat-logs-container > .message-item'
-        )
-      );
-
-      // Helper to get username color (BBCode/Markdown)
-      const getUsernameColor = (username) => {
-        let hue = usernameHueMap[username];
-        if (!hue) {
-          hue = Math.floor(Math.random() * (210 / hueStep)) * hueStep;
-          usernameHueMap[username] = hue;
-        }
-
-        // Convert HSL to RGB, then RGB to HEX
-        function hslToRgb(h, s, l) {
-          s /= 100;
-          l /= 100;
-          let c = (1 - Math.abs(2 * l - 1)) * s;
-          let x = c * (1 - Math.abs((h / 60) % 2 - 1));
-          let m = l - c / 2;
-          let r = 0, g = 0, b = 0;
-          if (0 <= h && h < 60) { r = c; g = x; b = 0; }
-          else if (60 <= h && h < 120) { r = x; g = c; b = 0; }
-          else if (120 <= h && h < 180) { r = 0; g = c; b = x; }
-          else if (180 <= h && h < 240) { r = 0; g = x; b = c; }
-          else if (240 <= h && h < 300) { r = x; g = 0; b = c; }
-          else if (300 <= h && h < 360) { r = c; g = 0; b = x; }
-          r = Math.round((r + m) * 255);
-          g = Math.round((g + m) * 255);
-          b = Math.round((b + m) * 255);
-          return [r, g, b];
-        }
-
-        function rgbToHex(r, g, b) {
-          return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
-        }
-
-        const h = hue, s = 80, l = 50;
-        const [r, g, b] = hslToRgb(h, s, l);
-        const hex = rgbToHex(r, g, b);
-        return { bb: hex, hex };
-      };
-
-      // Format messages and date headers synchronously
-      let output = '';
-      let isFirstLine = true;
-      if (format.toLowerCase() === 'bbcode') output = '[hide]\n';
-      // --- Track the current date for each message ---
-      let currentDateForMessages = '';
-      for (const el of chatLogElements) {
-        if (el.classList.contains('date-item')) {
-          // Skip hidden date
-          if (el.style.contentVisibility === 'hidden' || el.style.fontSize === '0') continue;
-
-          // Get date text from .date-text span if available
-          const dateTextElement = el.querySelector('.date-text');
-          const dateText = dateTextElement
-            ? dateTextElement.textContent
-            : el.textContent.replace(/📅$/, '').trim();
-
-          if (!isFirstLine) {
-            if (format.toLowerCase() === 'bbcode') output += '\n';
-            else if (format.toLowerCase() === 'markdown') output += '\n';
-            else output += '\n';
-          }
-          if (format.toLowerCase() === 'bbcode') {
-            output += `[b][color=gray]${dateText}[/color][/b]\n`;
-          } else if (format.toLowerCase() === 'markdown') {
-            output += `**${dateText}**\n`;
-          } else {
-            output += `${dateText}\n`;
-          }
-          isFirstLine = false;
-        } else if (el.classList.contains('message-item')) {
-          // Skip hidden messages
-          if (el.style.contentVisibility === 'hidden' || el.style.fontSize === '0') continue;
-          const time = el.querySelector('.message-time')?.textContent || '';
-          const username = el.querySelector('.message-username')?.textContent || '';
-          const messageElement = el.querySelector('.message-text');
-          const message = getMessageTextWithImgTitles(messageElement) || '';
-          const color = getUsernameColor(username);
-          // Use the closest previous date header for this message
-          const date = currentDateForMessages || dateInput.value || today;
-          const url = `https://klavogonki.ru/chatlogs/${date}.html#${time}`;
-          if (format.toLowerCase() === 'bbcode') {
-            let bbMessage = message;
-            bbMessage = bbMessage.replace(/(^|\s|\():(\w+):(?=\s|\.|,|!|\?|$)/g, (m, pre, word) => `${pre}[img]https://klavogonki.ru/img/smilies/${word}.gif[/img]`);
-            output += `[url=${url}]${time}[/url] [color=${color.hex}]${username}[/color] ${bbMessage}\n`;
-          } else if (format.toLowerCase() === 'markdown') {
-            output += `[${time}](${url}) **${username}** ${message}\n`;
-          } else {
-            output += `[${time}] (${username}) ${message}\n`;
-          }
-          isFirstLine = false;
-        }
-      }
-      if (format.toLowerCase() === 'bbcode') output += '[/hide]\n';
-      if (!output) return;
-
-      // Save as file: Alt+Shift, Copy to clipboard: Alt only
-      if (event.altKey && event.shiftKey) {
-        // Save as file (synchronous)
-        const blob = new Blob([output], { type: 'text/plain' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `chatlogs_${dateInput.value || today}_${format}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { document.body.removeChild(a); }, 100);
-      } else if (event.altKey) {
-        // Copy to clipboard (synchronous, still may fail if browser blocks)
-        navigator.clipboard.writeText(output).catch(() => {
-          alert('Failed to copy chatlogs.');
-        });
-      }
+      handleExportClick(event, chatLogsContainer, {
+        date: dateInput.value || today,
+        includeDateHeaders: true,
+        includeMessageLinks: true,
+        hueStep: 15
+      });
       return;
     }
 
@@ -1034,7 +917,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
     chatlogsSearchInput.placeholder = placeholder;
 
     // Assign the fetched URL to the chatLogsUrlForCopy variable
-    chatLogsUrlForCopy = url;
+    chatLogsUrlForCopy = `${url}?rand=${randomParam}`
 
     // Clear previous counts
     usernameMessageCountMap.clear();

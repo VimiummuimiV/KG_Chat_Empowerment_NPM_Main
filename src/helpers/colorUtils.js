@@ -48,6 +48,31 @@ export function hslToRgb(h, s, l) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
+/**
+ * Convert HSL to HEX
+ * @param {number} h - Hue degree between 0 and 360
+ * @param {number} s - Saturation percentage between 0 and 100
+ * @param {number} l - Lightness percentage between 0 and 100
+ * @returns {string} Hex color string in the form "#rrggbb"
+ */
+export function hslToHex(h, s, l) {
+  // normalize s, l to [0,1]
+  s /= 100;
+  l /= 100;
+
+  const a = s * Math.min(l, 1 - l);
+
+  const f = (n) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(color * 255)
+      .toString(16)
+      .padStart(2, '0');
+  };
+
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
 export function normalizeUsernameColor(initialColor) {
   const [r, g, b] = initialColor.match(/\d+/g).map(Number);
   const { h, s, l } = rgbToHsl(r, g, b);
@@ -58,4 +83,27 @@ export function normalizeUsernameColor(initialColor) {
 
   // Round the RGB values in one go
   return finalColor;
+}
+
+/**
+ * Generates consistent hue for username using step-based hashing
+ * @param {string} username - Username to generate hue for
+ * @param {number} hueStep - Hue increment step (default 15)
+ * @param {Object} hueMap - Cache object for storing hues
+ * @returns {number} - Hue value between 0-360
+ */
+export function getUsernameHue(username, hueStep = 15, hueMap = {}) {
+  if (hueMap[username]) return hueMap[username];
+  
+  // Simple hash function
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = (hash << 5) - hash + username.charCodeAt(i);
+    hash |= 0;
+  }
+  
+  // Generate hue in 0-210 range with step increments
+  const hue = Math.abs(hash) % (210 / hueStep) * hueStep;
+  hueMap[username] = hue;
+  return hue;
 }

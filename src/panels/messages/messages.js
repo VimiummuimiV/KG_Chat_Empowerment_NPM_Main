@@ -23,6 +23,7 @@ import {
 } from '../../helpers/helpers.js';
 
 import { processEncodedLinks } from "../../helpers/urlUtils.js";
+import { handleExportClick } from "../../helpers/messagesFormatter.js";
 
 import {
   triggerTargetElement,
@@ -524,152 +525,33 @@ async function showMessagesPanel() {
   copyPersonalMessagesButton.className = "large-button panel-header-copy-button";
   copyPersonalMessagesButton.innerHTML = clipboardSVG;
   createCustomTooltip(copyPersonalMessagesButton, {
-    en: ` 
-    [Click] to copy Personal Messages as plain text
-    [Alt + Click] to copy in BBCode, Markdown, or Plain format
-    [Alt + Shift + Click] to save in BBCode, Markdown, or Plain format
-  `,
-    ru: ` 
-    [Клик] скопировать личные сообщения как обычный текст
-    [Alt + Клик] скопировать в BBCode, Markdown или Plain формате
-    [Alt + Shift + Клик] сохранить в BBCode, Markdown или Plain формате
-  `
+    en: `
+      [Click] copy messages in BBCode, Markdown, or Plain format
+      [Shift + Click] save messages in BBCode, Markdown, or Plain format
+    `,
+    ru: `
+      [Клик] скопировать сообщения в BBCode, Markdown или Plain формате
+      [Shift + Клик] сохранить сообщения в BBCode, Markdown или Plain формате
+    `
   });
 
   // Event listener to handle copy actions
   copyPersonalMessagesButton.addEventListener('click', (event) => {
-    // Alt+Click: Export messages in BBCode, Markdown, or Plain format
-    if (event.altKey) {
-      // Prompt for format synchronously
-      const formatMap = { '1': 'bbcode', '2': 'markdown', '3': 'plain' };
-      let formatNum = prompt('Export format? (1 = BBCode, 2 = Markdown, 3 = Plain)', '1');
-      if (!formatNum) formatNum = '1';
-      let format = formatMap[formatNum.trim()];
-      if (!format) format = 'bbcode';
+    // Create a new event object to simulate the desired behavior
+    const modifiedEvent = new MouseEvent('click', {
+      altKey: true, // Always set altKey to true to trigger format prompt
+      shiftKey: event.shiftKey, // Preserve Shift key state (true for Shift+Click, false otherwise)
+      bubbles: true,
+      cancelable: true
+    });
 
-      // Gather visible messages and date headers
-      const messageElements = Array.from(
-        document.querySelectorAll(
-          '.messages-container > .date-item, ' +
-          '.messages-container > .message-item'
-        )
-      ).filter(el => {
-        const style = window.getComputedStyle(el);
-        return style.contentVisibility !== 'hidden' && style.display !== 'none';
-      });
-
-      let output = '';
-      let isFirstLine = true;
-      if (format.toLowerCase() === 'bbcode') output = '[hide]\n';
-
-      // Track current date for grouping
-      let currentDate = null;
-
-      messageElements.forEach(el => {
-        if (el.classList.contains('date-item')) {
-          // Get the date text without the emoji icon
-          const dateTextElement = el.querySelector('.date-text');
-          const dateText = dateTextElement ? dateTextElement.textContent : el.textContent;
-          currentDate = dateText;
-
-          if (!isFirstLine) output += '\n';
-          if (format.toLowerCase() === 'bbcode') {
-            output += `[b][color=gray]${dateText}[/color][/b]\n`;
-          } else if (format.toLowerCase() === 'markdown') {
-            output += `**${dateText}**\n`;
-          } else {
-            output += `${dateText}\n`;
-          }
-          isFirstLine = false;
-        }
-        else if (el.classList.contains('message-item')) {
-          // Message item
-          const time = el.querySelector('.message-time')?.textContent || '';
-          const username = el.querySelector('.message-username')?.textContent || '';
-          const messageTextElement = el.querySelector('.message-text');
-          const message = messageTextElement ? getMessageTextWithImgTitles(messageTextElement) : '';
-
-          // Create message URL based on date and time
-          const date = currentDate || today;
-          const url = `https://klavogonki.ru/chatlogs/${date}.html#${time.replace(/[\[\]]/g, '')}`;
-
-          if (format.toLowerCase() === 'bbcode') {
-            output += `[url=${url}]${time}[/url] [color=slategray]${username}[/color] ${message}\n`;
-          } else if (format.toLowerCase() === 'markdown') {
-            output += `[${time}](${url}) **${username}** ${message}\n`;
-          } else {
-            output += `[${time}] (${username}) ${message}\n`;
-          }
-          isFirstLine = false;
-        }
-      });
-
-      if (format.toLowerCase() === 'bbcode') output += '[/hide]\n';
-      if (!output) return;
-
-      // Save as file: Alt+Shift, Copy to clipboard: Alt only
-      if (event.altKey && event.shiftKey) {
-        // Save as file
-        const blob = new Blob([output], { type: 'text/plain' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `personal_messages_${new Date().toISOString().slice(0, 10)}_${format}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { document.body.removeChild(a); }, 100);
-      } else if (event.altKey) {
-        // Copy to clipboard
-        navigator.clipboard.writeText(output).catch(() => {
-          alert('Failed to copy messages.');
-        });
-      }
-      return;
-    }
-
-    // Default behavior - copy as plain text
-    let firstDateFound = false;
-    const textContent = Array.from(document.querySelector('.messages-container').children)
-      .filter(node => {
-        const style = window.getComputedStyle(node);
-        // Ignore hidden messages with contentVisibility 'hidden' or display 'none'
-        return style.contentVisibility !== 'hidden' && style.display !== 'none';
-      })
-      .map(node => {
-        if (node.classList.contains('date-item')) {
-          // Get the date text without the emoji icon
-          const dateTextElement = node.querySelector('.date-text');
-          const dateText = dateTextElement ? dateTextElement.textContent : node.textContent;
-
-          if (!firstDateFound) {
-            firstDateFound = true;
-            return dateText;
-          } else {
-            return '\n' + dateText;
-          }
-        } else {
-          const time = node.querySelector('.message-time')?.textContent.trim();
-          const username = node.querySelector('.message-username')?.textContent.trim();
-          const messageTextElement = node.querySelector('.message-text');
-          const message = messageTextElement ? getMessageTextWithImgTitles(messageTextElement) : '';
-          return [
-            time ? `[${time}]` : '',
-            username ? `(${username})` : '',
-            message || ''
-          ].filter(Boolean).join(' ');
-        }
-      })
-      .filter(Boolean)
-      .join('\n');
-
-    // Check if there's content to copy
-    if (textContent.trim()) {
-      // Only add the jump effect if there is content to copy
-      addJumpEffect(copyPersonalMessagesButton, 0, 0);
-      navigator.clipboard.writeText(textContent)
-        .catch(console.error);
-    } else {
-      alert('No messages to copy.');
-    }
+    // Handle export with the modified event
+    handleExportClick(modifiedEvent, messagesContainer, {
+      isMessagesPanel: true,
+      includeDateHeaders: true,
+      includeMessageLinks: true,
+      hueStep: 15
+    });
   });
 
   // Create a clear cache button with the provided SVG icon
