@@ -125,7 +125,9 @@ export function handleExportClick(event, container, options = {}) {
     'Export format? (1 = BBCode, 2 = Markdown, 3 = Plain)';
   
   let formatNum = prompt(promptText, '1');
-  if (!formatNum) formatNum = '1';
+  // Exit if user cancels the prompt
+  if (formatNum === null) return;
+
   let format = formatMap[formatNum.trim()];
   if (!format) format = 'bbcode';
 
