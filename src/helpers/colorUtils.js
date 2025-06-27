@@ -73,6 +73,23 @@ export function hslToHex(h, s, l) {
   return `#${f(0)}${f(8)}${f(4)}`;
 }
 
+/**
+ * Converts an RGB color string to HEX
+ * @param {string} rgb - RGB color string (e.g., "rgb(128, 128, 128)")
+ * @returns {string} - HEX color string (e.g., "#808080")
+ */
+export function rgbToHex(rgb) {
+  if (!rgb || typeof rgb !== 'string') return '#808080'; // Fallback to gray
+  const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/i);
+  if (!match) return '#808080'; // Fallback to gray if invalid
+  const [, r, g, b] = match.map(Number);
+  // Ensure values are within valid range (0-255)
+  const validR = Math.max(0, Math.min(255, r));
+  const validG = Math.max(0, Math.min(255, g));
+  const validB = Math.max(0, Math.min(255, b));
+  return `#${((1 << 24) + (validR << 16) + (validG << 8) + validB).toString(16).slice(1).padStart(6, '0')}`;
+}
+
 export function normalizeUsernameColor(initialColor) {
   const [r, g, b] = initialColor.match(/\d+/g).map(Number);
   const { h, s, l } = rgbToHsl(r, g, b);

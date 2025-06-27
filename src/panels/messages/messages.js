@@ -551,7 +551,8 @@ async function showMessagesPanel() {
       includeDateHeaders: true,
       includeMessageLinks: true,
       hueStep: 15,
-      prefix: 'messages'
+      prefix: 'messages',
+      messages
     });
 
     addJumpEffect(copyPersonalMessagesButton); // Add jump effect on click

@@ -1,5 +1,5 @@
+import { getUsernameHue, hslToHex, rgbToHex } from "./colorUtils.js";
 import { getCurrentLanguage, getMessageTextWithImgTitles } from "../helpers/helpers.js";
-import { getUsernameHue, hslToHex } from "./colorUtils.js";
 
 const lang = getCurrentLanguage();
 
@@ -13,10 +13,12 @@ const lang = getCurrentLanguage();
 export function formatMessages(container, format, options = {}) {
   const {
     date = null,
+    isMessagesPanel = false,
     includeDateHeaders = true,
     includeMessageLinks = true,
     hueStep = 15,
-    prefix = ''
+    prefix = '',
+    messages = {}
   } = options;
 
   // Hue map for consistent username colors
@@ -66,8 +68,8 @@ export function formatMessages(container, format, options = {}) {
     }
     else if (el.classList.contains('message-item')) {
       // Message item
-      const time = el.querySelector('.message-time')?.textContent || '';
-      const username = el.querySelector('.message-username')?.textContent || '';
+      const time = el.querySelector('.message-time')?.textContent?.trim() || '';
+      const username = el.querySelector('.message-username')?.textContent?.trim() || '';
       const messageTextElement = el.querySelector('.message-text');
       const message = messageTextElement ? 
         getMessageTextWithImgTitles(messageTextElement) : '';
@@ -78,8 +80,20 @@ export function formatMessages(container, format, options = {}) {
         `https://klavogonki.ru/chatlogs/${effectiveDate}.html#${time.replace(/[\[\]]/g, '')}` : '';
       
       // Get username color
-      const hue = getUsernameHue(username, hueStep, usernameHueMap);
-      const color = hslToHex(hue, 80, 50);
+      let color;
+      if (isMessagesPanel) {
+        // Use stored usernameColor from messages
+        const formattedTime = `[${time}]`; // Add square brackets to match personalMessages key
+        const messageKey = `${formattedTime}_${username}`;
+        const storedMessage = messages[messageKey];
+        color = storedMessage && storedMessage.usernameColor ? 
+          rgbToHex(storedMessage.usernameColor) : 
+          rgbToHex('rgb(128, 128, 128)'); // Fallback to gray
+      } else {
+        // Use hue-based color for non-personal messages (e.g., chat logs)
+        const hue = getUsernameHue(username, hueStep, usernameHueMap);
+        color = hslToHex(hue, 80, 50);
+      }
       
       if (format === 'bbcode') {
         const bbMessage = message
