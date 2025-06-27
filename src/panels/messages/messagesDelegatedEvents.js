@@ -94,11 +94,13 @@ export function setupMessagesEvents(messagesContainer, showMessagesPanel) {
         return;
       }
 
+      // For mention messages: search in general chat first, then chat logs if not found
       const foundGeneralChatMessage = await findGeneralChatMessage(messageTextEl.textContent, username, true);
       if (foundGeneralChatMessage) {
         triggerTargetElement(messagesContainer.closest('.cached-messages-panel'), 'hide');
         triggerDimmingElement('hide');
       } else {
+        // If message not found in general chat, try chat logs (only for mention messages)
         let previousElement = messageTextEl.parentElement.previousElementSibling;
         while (previousElement && !previousElement.classList.contains('date-item')) {
           previousElement = previousElement.previousElementSibling;
