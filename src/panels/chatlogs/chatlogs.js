@@ -648,6 +648,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
     if (event.altKey) {
       handleExportClick(event, chatLogsContainer, {
         date: dateInput.value || today,
+        isMessagesPanel: false,
         includeDateHeaders: true,
         includeMessageLinks: true,
         hueStep: 15,

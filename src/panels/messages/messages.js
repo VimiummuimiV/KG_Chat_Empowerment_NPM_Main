@@ -547,6 +547,7 @@ async function showMessagesPanel() {
 
     // Handle export with the modified event
     handleExportClick(modifiedEvent, messagesContainer, {
+      date: today,
       isMessagesPanel: true,
       includeDateHeaders: true,
       includeMessageLinks: true,
