@@ -100,3 +100,15 @@ export const rankColors = {
   'Любитель': '#61B5B3', // Light Cyan
   'Новичок': '#AFAFAF' // Grey
 };
+
+// Define messageColors and timeColors inside the loop (for messages panel)
+export const timeColors = {
+  private: 'coral',
+  mention: 'darkseagreen'
+};
+
+export const messageColors = {
+  private: 'coral',
+  mention: 'lightsteelblue',
+  default: 'slategray'
+};

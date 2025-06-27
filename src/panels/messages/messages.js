@@ -16,17 +16,12 @@ import {
 
 // helpers && helpers definitions
 import {
-  // helpers
   removePreviousPanel,
-  copyChatlogsUrlToClipboard,
   getMessageTextWithImgTitles
 } from '../../helpers/helpers.js';
 
 import {
-  findChatLogsMessage,
   findGeneralChatMessage,
-  calibrateToMoscowTime,
-  removeMessage,
   updateMessageCount,
   getMessages
 } from "./messagesHelpers.js";
@@ -40,15 +35,18 @@ import {
 } from "../../helpers/elementVisibility.js";
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js";
-import { showChatLogsPanel } from "../chatlogs/chatlogs.js";
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
 import { highlightMentionWords } from "../../helpers/getLatestMessageData.js";
+import { setupMessagesTooltips } from "./messagesDelegatedTooltips.js";
+import { setupMessagesEvents } from "./messagesDelegatedEvents.js";
 
 // definitions
 import {
   today,
-  state
+  state,
+  timeColors,
+  messageColors
 } from '../../definitions.js';
 
 // Define dynamic variables
@@ -58,10 +56,9 @@ let {
 
 // Function to create the button for opening personal messages
 export function createMessagesButton(panel) {
-  // Create a new element with class 'personal-messages-button'
   const showPersonalMessagesButton = document.createElement('div');
   showPersonalMessagesButton.classList.add("empowerment-button", "personal-messages-button");
-  showPersonalMessagesButton.innerHTML = personalMessagesSVG; // Add icon
+  showPersonalMessagesButton.innerHTML = personalMessagesSVG;
 
   // Create the small indicator for all message count
   const allMessageIndicator = document.createElement('div');
@@ -78,10 +75,7 @@ export function createMessagesButton(panel) {
   let newMessagesCount = Number(localStorage.getItem('newMessagesCount')) || (localStorage.setItem('newMessagesCount', '0'), 0);
 
   newMessageIndicator.textContent = newMessagesCount;
-
-  // Check the newMessagesCount value and set visibility
-  newMessageIndicator.style.visibility = newMessagesCount > 0 ? 'visible' : 'hidden'; // Set visibility based on count
-
+  newMessageIndicator.style.visibility = newMessagesCount > 0 ? 'visible' : 'hidden';
   showPersonalMessagesButton.appendChild(newMessageIndicator);
 
   createCustomTooltip(showPersonalMessagesButton, {
@@ -89,32 +83,27 @@ export function createMessagesButton(panel) {
     ru: 'Открыть сообщения'
   });
 
-  // Add a click event listener to the button
   showPersonalMessagesButton.addEventListener('click', function () {
-    addPulseEffect(showPersonalMessagesButton); // Add pulse effect
-    showMessagesPanel(); // Show the personal messages panel
+    addPulseEffect(showPersonalMessagesButton);
+    showMessagesPanel();
     const personalMessagesCount = Object.keys(JSON.parse(localStorage.getItem('personalMessages')) || {}).length;
-    // Open the personal messages panel only when there are messages present.
     if (personalMessagesCount > 0) {
-      // Reset newMessagesCount in localStorage to 0 when opening the panel
       localStorage.setItem('newMessagesCount', '0');
-      newMessagesCount = 0; // Reset the local variable
-      newMessageIndicator.textContent = newMessagesCount; // Update the displayed count
+      newMessagesCount = 0;
+      newMessageIndicator.textContent = newMessagesCount;
     }
   });
 
-  // Append the button to the existing panel
   panel.appendChild(showPersonalMessagesButton);
 } // createMessagesButton END
 
 // Function to display the personal messages panel
-async function showMessagesPanel() {
-  // Check if the panel already exists
+export async function showMessagesPanel() {
   const existingPanel = document.querySelector('.cached-messages-panel');
   if (existingPanel) {
-    existingPanel.remove(); // Remove the settings panel
+    existingPanel.remove();
     triggerDimmingElement('hide');
-    return; // Return immediately to prevent further execution
+    return;
   }
 
   // Flag to track if this is the first time the panel is being run
@@ -158,14 +147,11 @@ async function showMessagesPanel() {
     ru: '[Ctrl + Click] чтобы очистить поиск и показать все личные сообщения'
   });
 
-  // Append the search input to the search container
   messagesSearchContainer.appendChild(messagesSearchInput);
 
-  // Create a container div with class 'panel-control-buttons'
   const panelControlButtons = document.createElement('div');
   panelControlButtons.className = 'panel-control-buttons';
 
-  // Create a save button with the provided SVG icon
   const saveMessagesButton = document.createElement('div');
   saveMessagesButton.className = 'large-button panel-header-save-button';
   saveMessagesButton.innerHTML = saveSVG;
@@ -175,24 +161,18 @@ async function showMessagesPanel() {
   });
   saveMessagesButton.style.opacity = "0";
 
-  // Handle the save button click to restore the backup
   saveMessagesButton.addEventListener('click', () => {
-    // Retrieve the backup and original data from localStorage
     const backupData = localStorage.getItem('personalMessagesBackup');
     const originalData = localStorage.getItem('personalMessages');
 
-    // Check if both backup and original data exist and if they are different
     const bothDataExist = backupData && originalData;
     const hasDataChanged = bothDataExist && originalData !== backupData;
 
-    // If no backup or original data exists, do nothing
     if (!bothDataExist) return;
 
-    // Ask user for confirmation if data has changed and it's not the first run
     if (hasDataChanged && !isFirstPanelRun) {
       const userConfirmed = window.confirm("Do you want to apply changes?");
 
-      // If user confirms, restore the backup data
       if (userConfirmed) {
         localStorage.setItem('personalMessages', backupData);
         localStorage.removeItem('personalMessagesBackup');
@@ -200,14 +180,12 @@ async function showMessagesPanel() {
         saveMessagesButton.style.opacity = '0'; // Hide the save button after saving
         // Wait for the opacity transition to finish before hiding the element
         saveMessagesButton.addEventListener('transitionend', function () {
-          // After the transition, hide the button by setting display to 'none'
-          saveMessagesButton.style.display = 'none'; // Now you can safely hide the element
+          saveMessagesButton.style.display = 'none';
         });
       }
     }
   });
 
-  // Create an import button for messages with the provided SVG icon
   const importMessagesButton = document.createElement('div');
   importMessagesButton.className = "large-button panel-header-import-button";
   importMessagesButton.innerHTML = importSVG;
@@ -231,13 +209,7 @@ async function showMessagesPanel() {
             const importedMessages = JSON.parse(reader.result);
             const existingMessages = JSON.parse(localStorage.getItem('personalMessages') || '{}');
 
-            // Merge existing and imported messages, ensuring no duplicates by date key
-            const mergedMessages = {
-              ...existingMessages,
-              ...importedMessages
-            };
-
-            // Sort the merged messages with cleaned time for sorting but without modifying the original time
+            const mergedMessages = { ...existingMessages, ...importedMessages };
             const cleanedMergedMessages = Object.fromEntries(
               Object.entries(mergedMessages)
                 .sort(([, valueA], [, valueB]) => {
@@ -273,7 +245,6 @@ async function showMessagesPanel() {
     input.click();
   });
 
-  // Create an export button for messages with the provided SVG icon
   const exportMessagesButton = document.createElement('div');
   exportMessagesButton.className = "large-button panel-header-export-button";
   exportMessagesButton.innerHTML = exportSVG;
@@ -282,29 +253,22 @@ async function showMessagesPanel() {
     ru: 'Экспортировать сообщения'
   });
 
-  // Add event listener for exporting messages
   exportMessagesButton.addEventListener('click', () => {
     const messages = localStorage.getItem('personalMessages');
     if (messages && messages !== '{}') {
-      const currentDate = new Intl.DateTimeFormat('en-CA').format(new Date()); // Get the current date in YYYY-MM-DD format
-
-      // Parse the JSON string to an object for formatting
+      const currentDate = new Intl.DateTimeFormat('en-CA').format(new Date());
       const messagesObject = JSON.parse(messages);
-
-      // Convert the object back to a formatted JSON string with indentation
-      const formattedMessages = JSON.stringify(messagesObject, null, 2); // Indented JSON
-
+      const formattedMessages = JSON.stringify(messagesObject, null, 2);
       const blob = new Blob([formattedMessages], { type: 'application/json' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `Personal_Messages_${currentDate}.json`; // Use currentDate for file name
+      link.download = `Personal_Messages_${currentDate}.json`;
       link.click();
     } else {
       alert('No messages to export.');
     }
   });
 
-  // Create a copy personal messages button element
   const copyPersonalMessagesButton = document.createElement('div');
   copyPersonalMessagesButton.className = "large-button panel-header-copy-button";
   copyPersonalMessagesButton.innerHTML = clipboardSVG;
@@ -339,11 +303,9 @@ async function showMessagesPanel() {
       prefix: 'messages',
       messages
     });
-
-    addJumpEffect(copyPersonalMessagesButton); // Add jump effect on click
+    addJumpEffect(copyPersonalMessagesButton);
   });
 
-  // Create a clear cache button with the provided SVG icon
   const clearCacheButton = document.createElement('div');
   clearCacheButton.className = "large-button panel-header-clear-button";
   createCustomTooltip(clearCacheButton, {
@@ -352,7 +314,6 @@ async function showMessagesPanel() {
   });
   clearCacheButton.innerHTML = trashSVG;
 
-  // Add a click event listener to the clear cache button
   clearCacheButton.addEventListener('click', () => {
     // Set the flag to true when clear messages is initiated
     isMessagesImport = true;
@@ -360,7 +321,7 @@ async function showMessagesPanel() {
     const messages = JSON.parse(localStorage.getItem('personalMessages') || '{}');
     if (Object.keys(messages).length === 0) {
       alert('No messages to delete.');
-      return; // Exit the function if no messages exist
+      return;
     }
     // Clear the messages container
     messagesContainer.innerHTML = null;
@@ -377,7 +338,6 @@ async function showMessagesPanel() {
     if (messagesCountElement) messagesCountElement.textContent = '0';
   });
 
-  // Create a close button with the provided SVG icon
   const closePanelButton = document.createElement('div');
   closePanelButton.className = "large-button panel-header-close-button";
   createCustomTooltip(closePanelButton, {
@@ -386,17 +346,13 @@ async function showMessagesPanel() {
   });
   closePanelButton.innerHTML = closeSVG;
 
-  // Add a click event listener to the close panel button
   closePanelButton.addEventListener('click', () => {
-    // Fade out the cached messages panel when the close button is clicked
     triggerTargetElement(cachedMessagesPanel, 'hide');
     triggerDimmingElement('hide');
   });
 
-  // Append the search container to the panel header container
   panelHeaderContainer.appendChild(messagesSearchContainer);
 
-  // Append buttons to the panel header container
   panelControlButtons.appendChild(saveMessagesButton);
   panelControlButtons.appendChild(importMessagesButton);
   panelControlButtons.appendChild(exportMessagesButton);
@@ -404,13 +360,10 @@ async function showMessagesPanel() {
   panelControlButtons.appendChild(clearCacheButton);
   panelControlButtons.appendChild(closePanelButton);
 
-  // Append the panel control buttons element inside the panel header container
   panelHeaderContainer.appendChild(panelControlButtons);
 
-  // Append the header to the cached messages panel
   cachedMessagesPanel.appendChild(panelHeaderContainer);
 
-  // Create a container for the messages
   const messagesContainer = document.createElement('div');
   messagesContainer.className = 'messages-container';
 
@@ -433,15 +386,10 @@ async function showMessagesPanel() {
 
         // Apply opacity to fade the button in
         saveMessagesButton.style.opacity = '1';
-        saveMessagesButton.style.transition = 'opacity 0.5s ease'; // Apply smooth fade-in transition
+        saveMessagesButton.style.transition = 'opacity 0.5s ease';
       }
     });
-
-    // Configure the observer to watch for child node removals
-    observer.observe(messagesContainer, {
-      childList: true, // Watch for changes to the children
-      subtree: true // Also monitor all descendants of the messagesContainer
-    });
+    observer.observe(messagesContainer, { childList: true, subtree: true });
   }
 
   let lastDate = null; // Store the last processed date
@@ -452,17 +400,6 @@ async function showMessagesPanel() {
   // Create an array to store message elements for later appending
   const messageElements = [];
 
-  // Define messageColors and timeColors inside the loop
-  const timeColors = {
-    private: 'coral',
-    mention: 'darkseagreen'
-  };
-
-  const messageColors = {
-    private: 'coral',
-    mention: 'lightsteelblue',
-    default: 'slategray' // Default color if type is not private or mention
-  };
 
   // Load messages on initial panel open
   async function loadMessages(messages) {
@@ -494,20 +431,19 @@ async function showMessagesPanel() {
         lastDate = date;
       }
 
-      // Create a message-item for the current message
       const messageElement = document.createElement('div');
       messageElement.className = 'message-item';
+      messageElement.dataset.type = type;
 
       // Add margin-top if this is the first message of a new username group
       if (username !== lastUsername) {
         messageElement.style.marginTop = '0.6em';
-        lastUsername = username; // Update the lastUsername
+        lastUsername = username;
       }
 
       // Remove square brackets from the time string
       const formattedTime = time.replace(/[\[\]]/g, '').trim();
 
-      // Create time, username, and message elements
       const timeElement = document.createElement('span');
       timeElement.className = 'message-time';
       timeElement.textContent = formattedTime;
@@ -517,6 +453,7 @@ async function showMessagesPanel() {
       usernameElement.className = 'message-username';
       usernameElement.textContent = username;
       usernameElement.style.color = usernameColor;
+      usernameElement.dataset.userId = userId;
 
       const messageTextElement = document.createElement('span');
       messageTextElement.className = 'message-text';
@@ -555,9 +492,9 @@ async function showMessagesPanel() {
     requestAnimationFrame(() => {
       convertImageLinksToImage('personalMessages');
       convertVideoLinksToPlayer('personalMessages');
-      processEncodedLinks('personalMessages'); // Decodes links within the personal messages section.
+      processEncodedLinks('personalMessages');
       highlightMentionWords('personalMessages');
-      messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll after next repaint
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
       attachMutationObserver();
       setTimeout(() => { isMessagesImport = false; }, 500);
     });
@@ -574,10 +511,8 @@ async function showMessagesPanel() {
         try {
           // Check if this message exists in general chat
           const foundMessage = await findGeneralChatMessage(messageText, username, false);
-          isPingableMessage = Boolean(foundMessage); // Convert to boolean
-
-          pingCheckCounter++; // Increment the counter
-
+          isPingableMessage = Boolean(foundMessage);
+          pingCheckCounter++;
           if (pingCheckCounter >= maxPingChecks) {
             console.log("Reached maximum ping checks limit.");
           }
@@ -595,22 +530,17 @@ async function showMessagesPanel() {
     });
   }
 
-  // Assuming this code is within an async function
   await loadMessages(messages);
 
-  // Append the messages container to the cached messages panel
   cachedMessagesPanel.appendChild(messagesContainer);
 
-  // Append the cached messages panel to the body
   document.body.appendChild(cachedMessagesPanel);
 
   // Create and append scroll buttons
   const { scrollButtonsContainer } = createScrollButtons(messagesContainer);
   cachedMessagesPanel.appendChild(scrollButtonsContainer);
 
-  // Fade in the cached messages panel
   triggerTargetElement(cachedMessagesPanel, 'show');
-  // Show the dimming background
   triggerDimmingElement('show');
 
   // Add click event listener to clear the search input by LMB click with Ctrl key pressed
@@ -643,195 +573,26 @@ async function showMessagesPanel() {
         nextEl.style.contentVisibility = match ? 'visible' : 'hidden';
         // Set font size to 0 for hidden messages to maintain layout or remove the font size property
         nextEl.style.fontSize = match ? '' : '0';
-
-        showDateForGroup = showDateForGroup || match; // Show date if any match found in the group
-
+        showDateForGroup = showDateForGroup || match;
         nextEl = nextEl.nextElementSibling;
       }
-
-      dateEl.style.display = showDateForGroup ? '' : 'none'; // Show or hide the date based on the match results in the group
+      dateEl.style.display = showDateForGroup ? '' : 'none';
     });
   });
 
   // Focus on the search input using requestAnimationFrame
   function focusOnSearchField() { requestAnimationFrame(function () { messagesSearchInput.focus(); }); } focusOnSearchField();
 
-  // Define the event handler function for personal messages panel
-  panelsEvents.handlePersonalMessagesKeydown = (event) => { // Assign the function to the object
+  panelsEvents.handlePersonalMessagesKeydown = (event) => {
     if (event.key === 'Escape') {
       triggerTargetElement(cachedMessagesPanel, 'hide');
       triggerDimmingElement('hide');
-      document.removeEventListener('keydown', panelsEvents.handlePersonalMessagesKeydown); // Remove the event listener
+      document.removeEventListener('keydown', panelsEvents.handlePersonalMessagesKeydown);
     }
   };
-
-  // Attach the event listener
   document.addEventListener('keydown', panelsEvents.handlePersonalMessagesKeydown);
 
-  // Create custom tooltips for various message elements (time, username, text)
-  createCustomTooltip('.message-time', cachedMessagesPanel, (el) => ({
-    en: `
-      [Click] Open chatlog at ${calibrateToMoscowTime(el.textContent)}
-      [Shift + Click] Copy chatlogs URL to clipboard
-      [Ctrl + Click] Remove all messages starting from ${calibrateToMoscowTime(el.textContent)}
-    `,
-    ru: `
-      [Клик] Открыть чатлог в ${calibrateToMoscowTime(el.textContent)}
-      [Shift + Клик] Скопировать ссылку на чатлог
-      [Ctrl + Клик] Удалить все сообщения начиная с ${calibrateToMoscowTime(el.textContent)}
-    `
-  }), true);
-
-  createCustomTooltip('.message-username', cachedMessagesPanel, (el) => ({
-    en: `
-      [Click] Open ${el.textContent} profile
-      [Ctrl + Click] Remove all messages from ${el.textContent} user
-    `,
-    ru: `
-      [Клик] Открыть профиль ${el.textContent}
-      [Ctrl + Клик] Удалить все сообщения пользователя ${el.textContent}
-    `
-  }), true);
-
-  createCustomTooltip('.message-text', cachedMessagesPanel, (el) => ({
-    en: `
-      [Click] Search for this message
-      [Ctrl + Click] Remove only this message
-    `,
-    ru: `
-      [Клик] Найти это сообщение
-      [Ctrl + Клик] Удалить только это сообщение
-    `
-  }), true);
-
-  // Delegated events for hover and click on message-time, message-username, message-text
-  messagesContainer.addEventListener('mouseover', function (event) {
-    const timeEl = event.target.closest('.message-time');
-    if (timeEl && messagesContainer.contains(timeEl)) {
-      const messageItem = timeEl.closest('.message-item');
-      if (!messageItem) return;
-      const username = messageItem.querySelector('.message-username')?.textContent;
-      const type = Object.values(messages).find(m => m.username === username && m.time.replace(/[\[\]]/g, '').trim() === timeEl.textContent.trim())?.type;
-      if (type === 'mention' || type === 'private') {
-        timeEl.style.color = type === 'mention' ? 'lightgreen' : 'peachpuff';
-      }
-    }
-  });
-  messagesContainer.addEventListener('mouseout', function (event) {
-    const timeEl = event.target.closest('.message-time');
-    if (timeEl && messagesContainer.contains(timeEl)) {
-      const messageItem = timeEl.closest('.message-item');
-      if (!messageItem) return;
-      const username = messageItem.querySelector('.message-username')?.textContent;
-      const type = Object.values(messages).find(m => m.username === username && m.time.replace(/[\[\]]/g, '').trim() === timeEl.textContent.trim())?.type;
-      if (type === 'mention' || type === 'private') {
-        timeEl.style.color = timeColors[type] || 'slategray';
-      }
-    }
-  });
-  messagesContainer.addEventListener('click', async function (event) {
-    const timeEl = event.target.closest('.message-time');
-    const usernameEl = event.target.closest('.message-username');
-    const messageTextEl = event.target.closest('.message-text');
-    const messageItem = event.target.closest('.message-item');
-    if (!messageItem) return;
-    // Time element click
-    if (timeEl && messageItem.contains(timeEl)) {
-      const username = messageItem.querySelector('.message-username')?.textContent;
-      const type = Object.values(messages).find(m => m.username === username && m.time.replace(/\[|\]/g, '').trim() === timeEl.textContent.trim())?.type;
-      // Find the closest previous .date-item
-      let date;
-      let prev = messageItem.previousElementSibling;
-      while (prev && !prev.classList.contains('date-item')) {
-        prev = prev.previousElementSibling;
-      }
-      if (prev) date = prev.dataset.date;
-      if (type === 'mention' || type === 'private') {
-        if (event.shiftKey) {
-          event.preventDefault();
-          event.stopPropagation();
-          copyChatlogsUrlToClipboard(date, calibrateToMoscowTime(timeEl.textContent), timeEl);
-          return;
-        }
-        if (event.ctrlKey) {
-          removeMessage(messageItem, 'from');
-          return;
-        }
-        if (type === 'mention') {
-          const url = `https://klavogonki.ru/chatlogs/${date}.html#${calibrateToMoscowTime(timeEl.textContent)}`;
-          window.open(url, '_blank', 'noopener,noreferrer');
-        }
-      }
-    }
-    // Username element click
-    if (usernameEl && messageItem.contains(usernameEl)) {
-      if (event.ctrlKey) {
-        removeMessage(messageItem, 'all');
-        return;
-      }
-      const userId = Object.values(messages).find(m => m.username === usernameEl.textContent)?.userId;
-      if (userId) {
-        const url = `https://klavogonki.ru/u/#/${userId}/`;
-        window.open(url, '_blank', 'noopener,noreferrer');
-      } else {
-        addShakeEffect(usernameEl);
-      }
-    }
-    // Message text click
-    if (messageTextEl && messageItem.contains(messageTextEl)) {
-      if (event.ctrlKey) {
-        removeMessage(messageItem, 'single');
-        return;
-      }
-      const username = messageItem.querySelector('.message-username')?.textContent;
-      const time = messageItem.querySelector('.message-time')?.textContent;
-
-      // Find the specific message by matching both username and time
-      const specificMessage = Object.values(messages).find(m =>
-        m.username === username &&
-        m.time.replace(/[\[\]]/g, '').trim() === time.trim()
-      );
-      const type = specificMessage?.type;
-
-      if (type === 'private') {
-        requestAnimationFrame(() => {
-          findGeneralChatMessage(
-            messageTextEl.textContent, // message text
-            username, // username
-            true // allowScroll
-          );
-        });
-        return;
-      }
-      const foundGeneralChatMessage = await findGeneralChatMessage(messageTextEl.textContent, username, true);
-      if (foundGeneralChatMessage) {
-        triggerTargetElement(cachedMessagesPanel, 'hide');
-        triggerDimmingElement('hide');
-      } else {
-        let previousElement = messageTextEl.parentElement.previousElementSibling;
-        while (previousElement && !previousElement.classList.contains('date-item')) {
-          previousElement = previousElement.previousElementSibling;
-        }
-        if (previousElement) {
-          await showChatLogsPanel(previousElement.dataset.date);
-          const messageTextForSearch = messageTextEl.textContent;
-          requestAnimationFrame(() => {
-            let tries = 0;
-            const maxTries = 10;
-            const interval = setInterval(async () => {
-              const foundChatLogsMessage = await findChatLogsMessage(messageTextForSearch, username, true);
-              if (foundChatLogsMessage) {
-                clearInterval(interval);
-              } else if (++tries >= maxTries) {
-                clearInterval(interval);
-                const chatLogsPanel = document.querySelector('.chat-logs-panel');
-                triggerTargetElement(chatLogsPanel, 'hide');
-                showMessagesPanel();
-              }
-            }, 200);
-          });
-        }
-      }
-    }
-  });
-} // showMessagesPanel END
+  // Setup delegated tooltips and events
+  setupMessagesTooltips(cachedMessagesPanel);
+  setupMessagesEvents(messagesContainer, showMessagesPanel);
+}
