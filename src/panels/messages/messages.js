@@ -550,7 +550,8 @@ async function showMessagesPanel() {
       isMessagesPanel: true,
       includeDateHeaders: true,
       includeMessageLinks: true,
-      hueStep: 15
+      hueStep: 15,
+      prefix: 'messages'
     });
   });
 

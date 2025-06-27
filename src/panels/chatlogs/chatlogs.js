@@ -650,7 +650,8 @@ export async function showChatLogsPanel(personalMessagesDate) {
         date: dateInput.value || today,
         includeDateHeaders: true,
         includeMessageLinks: true,
-        hueStep: 15
+        hueStep: 15,
+        prefix: 'chatlogs',
       });
       return;
     }

@@ -15,7 +15,8 @@ export function formatMessages(container, format, options = {}) {
     date = null,
     includeDateHeaders = true,
     includeMessageLinks = true,
-    hueStep = 15
+    hueStep = 15,
+    prefix = ''
   } = options;
 
   // Hue map for consistent username colors
@@ -60,6 +61,8 @@ export function formatMessages(container, format, options = {}) {
         output += `${dateText}\n`;
       }
       isFirstLine = false;
+
+      output += `${prefix}: `;
     }
     else if (el.classList.contains('message-item')) {
       // Message item
@@ -142,8 +145,9 @@ export function handleExportClick(event, container, options = {}) {
     a.href = URL.createObjectURL(blob);
     
     // Generate filename
+    const prefix = options.prefix;
     const datePart = options.date ? `_${options.date}` : '';
-    a.download = `messages_${datePart}_${format}.txt`;
+    a.download = `${prefix}_${datePart}_${format}.txt`;
     
     document.body.appendChild(a);
     a.click();
