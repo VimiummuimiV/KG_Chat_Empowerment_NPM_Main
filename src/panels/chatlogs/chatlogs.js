@@ -570,7 +570,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Create a copy chatlogs button element
   const copyChatLogsUrl = document.createElement('div');
   copyChatLogsUrl.className = "large-button panel-header-copy-button";
-  // Set the inner HTML of the copy chat logs element with the clipboard SVG
   copyChatLogsUrl.innerHTML = clipboardSVG;
   createCustomTooltip(copyChatLogsUrl, {
     en: ` 
