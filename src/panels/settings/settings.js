@@ -9,8 +9,6 @@ import {
   importSVG,
   saveSVG,
   exportSVG,
-  removeSVG,
-  snowflakeSVG,
   addSVG
 } from '../../icons.js';
 
@@ -31,6 +29,16 @@ import {
 } from "../../helpers/elementVisibility.js";
 
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
+
+// Import creator functions
+import {
+  createTrackedItem,
+  createMentionItem,
+  createReplacementItem,
+  createModeratorItem,
+  createIgnoredItem,
+  createToggleItem
+} from './settingsCreators.js';
 
 // definitions
 import {
@@ -56,69 +64,6 @@ export const KG_Chat_Empowerment = stored
 
 if (!stored) {
   localStorage.setItem('KG_Chat_Empowerment', JSON.stringify(KG_Chat_Empowerment));
-}
-
-// Common function to attach click event for removing an item
-function attachRemoveListener(removeButton, item) {
-  removeButton.addEventListener('click', () => {
-    item.remove();
-  });
-}
-
-// Function to attach click event for toggling snowflake states
-function attachSnowflakeListener(snowflakeButton, username) {
-  snowflakeButton.addEventListener('click', () => {
-    const isFrozen = snowflakeButton.classList.toggle('assigned-frozen-config');
-    snowflakeButton.classList.toggle('assigned-thawed-config');
-    snowflakeButton.style.opacity = isFrozen ? '1' : '0.3';
-    updateUserState(username, isFrozen ? 'frozen' : 'thawed');
-  });
-}
-
-// Helper function to create a container element
-function createContainer(type) {
-  const item = document.createElement('div');
-  item.className = `${type}-item`;
-  return item;
-}
-
-// Helper function to create an input element
-function createInput(type, value = '', placeholder = '') {
-  const input = document.createElement('input');
-  input.className = `settings-field ${type}-field`;
-  input.value = value;
-  input.placeholder = placeholder;
-  return input;
-}
-
-// Helper function to create a remove button
-function createRemoveButton(type, item) {
-  const removeButton = document.createElement('div');
-  removeButton.className = `settings-button remove-settings-button remove-${type}-word`;
-  removeButton.innerHTML = removeSVG;
-  attachRemoveListener(removeButton, item);
-  return removeButton;
-}
-
-// Helper function to create a snowflake button
-function createSnowflakeButton(state = 'thawed', username) {
-  const snowflakeButton = document.createElement('div');
-  snowflakeButton.className = `settings-button assigned-settings-button assigned-${state}-config`;
-  snowflakeButton.style.opacity = state === 'thawed' ? '0.3' : '1';
-  snowflakeButton.innerHTML = snowflakeSVG;
-  attachSnowflakeListener(snowflakeButton, username);
-  return snowflakeButton;
-}
-
-// Function to update user state in localStorage
-function updateUserState(username, state) {
-  const usersData = localStorage.getItem("usersToTrack");
-  if (usersData) {
-    const updatedUsers = JSON.parse(usersData).map(user =>
-      user.name === username ? { ...user, state } : user
-    );
-    localStorage.setItem("usersToTrack", JSON.stringify(updatedUsers));
-  }
 }
 
 const settingsMessages = {
@@ -204,176 +149,6 @@ function createSpoilerContainer(contentElement, options = {}) {
   return container;
 }
 
-// Creator functions for settingsConfig
-function createTrackedItem(user) {
-  const item = createContainer('tracked', 'flex');
-  const usernameInput = createInput('tracked-username', user.name, 'Username');
-  const pronunciationInput = createInput('tracked-pronunciation', user.pronunciation, 'Pronunciation');
-  const removeButton = createRemoveButton('tracked', item);
-  const initialState = (user.state === 'frozen') ? 'frozen' : 'thawed';
-  const snowflakeButton = createSnowflakeButton(initialState, user.name);
-
-  const genderSelect = document.createElement('select');
-  genderSelect.className = 'tracked-gender-select';
-  const genders = [
-    { value: 'Male', emoji: '👨' },
-    { value: 'Female', emoji: '👩' },
-  ];
-  genders.forEach(({ value, emoji }) => {
-    const option = document.createElement('option');
-    option.value = value;
-    option.textContent = `${emoji} ${value}`;
-    if (user.gender === value) option.selected = true;
-    genderSelect.appendChild(option);
-  });
-
-  item.appendChild(usernameInput);
-  item.appendChild(genderSelect);
-  item.appendChild(pronunciationInput);
-  item.appendChild(removeButton);
-  item.appendChild(snowflakeButton);
-  return item;
-}
-
-function createMentionItem(keyword) {
-  const item = createContainer('mention');
-  const mentionInput = createInput('mention', keyword, 'Mention Keyword');
-  const removeButton = createRemoveButton('mention', item);
-  item.appendChild(mentionInput);
-  item.appendChild(removeButton);
-  return item;
-}
-
-function createReplacementItem(replacement = { original: '', replacement: '' }) {
-  const item = createContainer('replacement');
-  const originalInput = createInput('replacement-original', replacement.original, 'Original username');
-  const replacementInput = createInput('replacement', replacement.replacement, 'Replacement name');
-  const removeButton = createRemoveButton('replacement', item);
-  item.appendChild(originalInput);
-  item.appendChild(replacementInput);
-  item.appendChild(removeButton);
-  return item;
-}
-
-function createModeratorItem(moderator) {
-  const item = createContainer('moderator');
-  const moderatorInput = createInput('moderator', moderator, 'Moderator Name');
-  const removeButton = createRemoveButton('moderator', item);
-  item.appendChild(moderatorInput);
-  item.appendChild(removeButton);
-  return item;
-}
-
-function createIgnoredItem(user) {
-  const item = createContainer('ignored');
-  const ignoredInput = createInput('ignored', user, 'Ignored User');
-  const removeButton = createRemoveButton('ignored', item);
-  item.appendChild(ignoredInput);
-  item.appendChild(removeButton);
-  return item;
-}
-
-function createToggleItem(toggleConfig, optionValue) {
-  const item = createContainer('toggle');
-  const lang = getCurrentLanguage();
-  if (toggleConfig.type === 'language') {
-    const select = document.createElement('select');
-    select.className = 'language-toggle-select';
-    (toggleConfig.languages || []).forEach(langOpt => {
-      const option = document.createElement('option');
-      option.value = langOpt.value;
-      option.textContent = langOpt.label;
-      select.appendChild(option);
-    });
-    select.value = optionValue;
-    const label = document.createElement('span');
-    label.className = 'toggle-description';
-    label.textContent = `${toggleConfig.emoji} ${settingsMessages.toggleDescriptions.language[lang]}`;
-    item.appendChild(select);
-    item.appendChild(label);
-    return item;
-  }
-
-  const select = document.createElement('select');
-  select.className = 'toggle-select';
-
-  const description = document.createElement('span');
-  description.className = 'toggle-description';
-  // Store category and type in data attributes
-  description.dataset.category = toggleConfig.category;
-  description.dataset.type = toggleConfig.type;
-  description.textContent = `${toggleConfig.emoji} ${settingsMessages.toggleDescriptions[toggleConfig.type][lang]}`;
-
-  description.style.cursor = 'pointer';
-  description.style.transition = 'color 0.15s ease-in-out';
-
-  description.addEventListener('click', () => {
-    if (toggleConfig.image) window.open(toggleConfig.image, '_blank');
-  });
-
-  const options = [
-    { value: 'yes', emoji: '✔️' },
-    { value: 'no', emoji: '❌' }
-  ];
-  options.forEach(({ value, emoji }) => {
-    const option = document.createElement('option');
-    option.value = value;
-    option.textContent = `${emoji} ${value}`;
-    select.appendChild(option);
-  });
-  select.value = optionValue;
-
-  item.appendChild(select);
-  item.appendChild(description);
-  return item;
-}
-
-// 1. Define all settings keys in camelCase format
-const settingsConfig = [
-  {
-    type: 'tracked',
-    emoji: '👀',
-    key: 'usersToTrack',
-    selector: '.settings-tracked-container',
-    creator: createTrackedItem
-  },
-  {
-    type: 'mention',
-    emoji: '📢',
-    key: 'mentionKeywords',
-    selector: '.settings-mention-container',
-    creator: createMentionItem
-  },
-  {
-    type: 'replacement',
-    emoji: '♻️',
-    key: 'usernameReplacements',
-    selector: '.settings-replacement-container',
-    creator: createReplacementItem
-  },
-  {
-    type: 'moderator',
-    emoji: '⚔️',
-    key: 'moderator',
-    selector: '.settings-moderator-container',
-    creator: createModeratorItem
-  },
-  {
-    type: 'ignored',
-    emoji: '🛑',
-    key: 'ignored',
-    selector: '.settings-ignored-container',
-    creator: createIgnoredItem
-  },
-  {
-    type: 'toggle',
-    emoji: '🔘',
-    key: 'toggle',
-    selector: '.settings-toggle-container',
-    creator: createToggleItem
-  }
-];
-
 // Process toggle settings separately with categorization and defaults
 export const toggleSettingsConfig = [
   {
@@ -421,6 +196,52 @@ export const toggleSettingsConfig = [
       { value: 'en', label: '🇬🇧 English' },
       { value: 'ru', label: '🇷🇺 Русский' }
     ]
+  }
+];
+
+// 1. Define all settings keys in camelCase format
+const settingsConfig = [
+  {
+    type: 'tracked',
+    emoji: '👀',
+    key: 'usersToTrack',
+    selector: '.settings-tracked-container',
+    creator: createTrackedItem
+  },
+  {
+    type: 'mention',
+    emoji: '📢',
+    key: 'mentionKeywords',
+    selector: '.settings-mention-container',
+    creator: createMentionItem
+  },
+  {
+    type: 'replacement',
+    emoji: '♻️',
+    key: 'usernameReplacements',
+    selector: '.settings-replacement-container',
+    creator: createReplacementItem
+  },
+  {
+    type: 'moderator',
+    emoji: '⚔️',
+    key: 'moderator',
+    selector: '.settings-moderator-container',
+    creator: createModeratorItem
+  },
+  {
+    type: 'ignored',
+    emoji: '🛑',
+    key: 'ignored',
+    selector: '.settings-ignored-container',
+    creator: createIgnoredItem
+  },
+  {
+    type: 'toggle',
+    emoji: '🔘',
+    key: 'toggle',
+    selector: '.settings-toggle-container',
+    creator: createToggleItem
   }
 ];
 
@@ -980,6 +801,7 @@ function showSettingsPanel() {
       } else {
         // Inside your initialization logic (where you process toggle settings)
         const storedToggleSettings = JSON.parse(localStorage.getItem(key)) || [];
+        const lang = getCurrentLanguage();
         toggleSettingsConfig.forEach(toggle => {
           // Find stored setting by category + type (not name)
           const storedSetting = storedToggleSettings.find(
@@ -992,7 +814,9 @@ function showSettingsPanel() {
           } else {
             optionValue = storedSetting ? storedSetting.option : 'yes';
           }
-          const toggleItem = createToggleItem(toggle, optionValue);
+          // Get localized description
+          const localizedDescription = settingsMessages.toggleDescriptions[toggle.type][lang];
+          const toggleItem = creator(toggle, optionValue, localizedDescription);
           container.appendChild(toggleItem);
         });
       }
