@@ -23,7 +23,8 @@ import {
 import {
   removePreviousPanel,
   copyChatlogsUrlToClipboard,
-  getCurrentLanguage
+  getCurrentLanguage,
+  getMessageTextWithImgTitles
 } from '../../helpers/helpers.js';
 
 import { processEncodedLinks } from "../../helpers/urlUtils.js";
@@ -696,35 +697,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
         return { bb: hex, hex };
       };
 
-      // Helper to extract message text including image alt/title text and handle search-match underline
-      function getMessageWithAllElementsText(messageElement, format) {
-        if (!messageElement) return '';
-        let result = '';
-        for (const node of messageElement.childNodes) {
-          if (node.nodeType === Node.TEXT_NODE) {
-            result += node.textContent;
-          } else if (node.nodeType === Node.ELEMENT_NODE) {
-            if (node.classList.contains && node.classList.contains('search-match')) {
-              // Underline for highlighted search terms
-              if (format === 'bbcode') {
-                result += `[u]${getMessageWithAllElementsText(node, format)}[/u]`;
-              } else if (format === 'markdown') {
-                result += `*${getMessageWithAllElementsText(node, format)}*`;
-              } else {
-                result += getMessageWithAllElementsText(node, format);
-              }
-            } else if (node.tagName === 'IMG') {
-              result += node.getAttribute('alt') || node.getAttribute('title') || '';
-            } else if (node.tagName === 'A') {
-              result += node.textContent;
-            } else {
-              result += getMessageWithAllElementsText(node, format);
-            }
-          }
-        }
-        return result;
-      }
-
       // Format messages and date headers synchronously
       let output = '';
       let isFirstLine = true;
@@ -761,7 +733,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
           const time = el.querySelector('.message-time')?.textContent || '';
           const username = el.querySelector('.message-username')?.textContent || '';
           const messageElement = el.querySelector('.message-text');
-          const message = getMessageWithAllElementsText(messageElement, format) || '';
+          const message = getMessageTextWithImgTitles(messageElement) || '';
           const color = getUsernameColor(username);
           // Use the closest previous date header for this message
           const date = currentDateForMessages || dateInput.value || today;
