@@ -553,6 +553,8 @@ async function showMessagesPanel() {
       hueStep: 15,
       prefix: 'messages'
     });
+
+    addJumpEffect(copyPersonalMessagesButton); // Add jump effect on click
   });
 
   // Create a clear cache button with the provided SVG icon
