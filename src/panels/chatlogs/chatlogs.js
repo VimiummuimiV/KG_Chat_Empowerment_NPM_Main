@@ -1175,7 +1175,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
   // Create custom tooltips for message text elements
   createCustomTooltip('.message-text', chatLogsPanel, (el) => ({
     en: `[Click] Scroll message to the middle of the chat logs`,
-    ru: `[Клик] прокрутить сообщение к центру чата`
+    ru: `[Клик] прокрутить сообщение к центру чатлога`
   }), true);
 
   // Delegated event listeners for active users
