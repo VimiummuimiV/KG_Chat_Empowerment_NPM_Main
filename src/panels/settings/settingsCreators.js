@@ -1,6 +1,6 @@
 import { addSVG, removeSVG, snowflakeSVG } from "../../icons.js";
 import { settingsTitles } from "./settingsTitles.js";
-import { getCurrentLanguage } from "../../helpers/helpers.js";
+import { getCurrentLanguage, localizedMessage } from "../../helpers/helpers.js";
 import { settingsConfig } from "./settingsConfig.js";
 
 // Helper function to get localized placeholder text
@@ -280,12 +280,10 @@ export function createAddButton(containerSelector, itemCreator) {
       }
     } else {
       // Localized alert if the last item is not filled
-      const lang = getCurrentLanguage();
-      const msg = {
-        en: 'Please fill in the previous item before adding a new one.',
-        ru: 'Пожалуйста, заполните предыдущий элемент перед добавлением нового.'
-      };
-      alert(msg[lang] || msg.en);
+      localizedMessage({
+        en: 'Please fill in the previous field before adding a new one.',
+        ru: 'Пожалуйста, заполните предыдущее поле перед добавлением нового.'
+      }, 'alert');
     }
   });
 

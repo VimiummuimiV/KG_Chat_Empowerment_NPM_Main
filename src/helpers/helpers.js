@@ -272,3 +272,13 @@ export function getCurrentLanguage() {
     return 'en';
   }
 }
+
+// Optimized helper for localized dialogs (alert, prompt, confirm) (en/ru)
+export function localizedMessage(msgs, type = 'alert', ...args) {
+  const lang = getCurrentLanguage();
+  const message = msgs[lang] || msgs.en;
+  if (type === 'alert') return alert(message);
+  if (type === 'confirm') return confirm(message);
+  if (type === 'prompt') return prompt(message, ...args);
+  return alert(message);
+}

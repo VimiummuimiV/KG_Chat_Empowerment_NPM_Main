@@ -35,6 +35,8 @@ import {
 } from "../../helpers/elementVisibility.js";
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js";
+import { localizedMessage } from "../../helpers/helpers.js";
+
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
 import { highlightMentionWords } from "../../helpers/getLatestMessageData.js";
@@ -235,7 +237,10 @@ export async function showMessagesPanel() {
             const messages = getMessages();
             await loadMessages(messages);
           } catch (error) {
-            alert('Failed to import messages. The file may be corrupted.');
+            localizedMessage({
+              en: 'Failed to import messages. The file may be corrupted.',
+              ru: 'Не удалось импортировать сообщения. Возможно, файл поврежден.'
+            }, 'alert');
           }
         };
         reader.readAsText(file);
@@ -265,7 +270,10 @@ export async function showMessagesPanel() {
       link.download = `Personal_Messages_${currentDate}.json`;
       link.click();
     } else {
-      alert('No messages to export.');
+      localizedMessage({
+        en: 'No messages to export.',
+        ru: 'Нет сообщений для экспорта.'
+      }, 'alert');
     }
   });
 
@@ -320,7 +328,10 @@ export async function showMessagesPanel() {
     // Check if there are any messages before attempting to clear
     const messages = JSON.parse(localStorage.getItem('personalMessages') || '{}');
     if (Object.keys(messages).length === 0) {
-      alert('No messages to delete.');
+      localizedMessage({
+        en: 'No messages to delete.',
+        ru: 'Нет сообщений для удаления.'
+      }, 'alert');
       return;
     }
     // Clear the messages container

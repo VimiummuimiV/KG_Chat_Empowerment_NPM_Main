@@ -1,6 +1,6 @@
 import { settingsState } from "./settings.js";
 import { settingsConfig } from "./settingsConfig.js";
-import { getCurrentLanguage } from "../../helpers/helpers.js";
+import { localizedMessage } from "../../helpers/helpers.js";
 
 // Global function to handle file input and process uploaded settings
 export async function handleUploadSettings(event) {
@@ -21,14 +21,10 @@ export async function handleUploadSettings(event) {
           console.error('Error parsing JSON data:', error.message); // Log the error message
           console.error('Invalid JSON:', jsonData); // Log the raw JSON string for debugging
           // Optional: Notify the user about the error
-          {
-            const lang = getCurrentLanguage();
-            const msg = {
-              en: 'Failed to parse JSON data. Please check the format and try again.',
-              ru: 'Не удалось разобрать данные JSON. Пожалуйста, проверьте формат и попробуйте снова.'
-            };
-            alert(msg[lang] || msg.en);
-          }
+          localizedMessage({
+            en: 'Failed to parse JSON data. Please check the format and try again.',
+            ru: 'Не удалось разобрать данные JSON. Пожалуйста, проверьте формат и попробуйте снова.'
+          }, 'alert');
           reject(error); // Reject the promise on error
         }
       };
@@ -46,14 +42,10 @@ export async function handleUploadSettings(event) {
 export function handleDownloadSettings(settingsData) {
   if (!settingsData || typeof settingsData !== 'object') {
     console.error('Invalid settings data for download.');
-    {
-      const lang = getCurrentLanguage();
-      const msg = {
-        en: 'Cannot import settings. Please try again.',
-        ru: 'Не удалось импортировать настройки. Пожалуйста, попробуйте снова.'
-      };
-      alert(msg[lang] || msg.en);
-    }
+    localizedMessage({
+      en: 'Cannot import settings. Please try again.',
+      ru: 'Не удалось импортировать настройки. Пожалуйста, попробуйте снова.'
+    }, 'alert');
     return;
   }
 
@@ -105,14 +97,10 @@ export function handleDownloadSettings(settingsData) {
     URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting settings:', error);
-    {
-      const lang = getCurrentLanguage();
-      const msg = {
-        en: 'Failed to export settings. Please try again.',
-        ru: 'Не удалось экспортировать настройки. Пожалуйста, попробуйте снова.'
-      };
-      alert(msg[lang] || msg.en);
-    }
+    localizedMessage({
+      en: 'Failed to export settings. Please try again.',
+      ru: 'Не удалось экспортировать настройки. Пожалуйста, попробуйте снова.'
+    }, 'alert');
   }
 }
 
