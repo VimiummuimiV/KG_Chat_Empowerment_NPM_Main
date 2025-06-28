@@ -1,22 +1,23 @@
-import { removeSVG, snowflakeSVG } from '../../icons.js';
-import { settingsTitles } from './settingsTitles.js';
-import { getCurrentLanguage } from '../../helpers/helpers.js';
+import { removeSVG, snowflakeSVG } from "../../icons.js";
+import { settingsTitles } from "./settingsTitles.js";
+import { getCurrentLanguage } from "../../helpers/helpers.js";
+import { settingsConfig } from "./settingsConfig.js";
 
 // Helper function to get localized placeholder text
 function getPlaceholder(type, field = null) {
   const lang = getCurrentLanguage();
   const placeholders = settingsTitles.placeholderTitles[type];
-  
+
   if (!placeholders) return '';
-  
+
   if (field && typeof placeholders === 'object' && placeholders[field]) {
     return placeholders[field][lang] || placeholders[field]['en'] || '';
   }
-  
+
   if (typeof placeholders === 'object' && !field) {
     return placeholders[lang] || placeholders['en'] || '';
   }
-  
+
   return '';
 }
 
@@ -53,6 +54,34 @@ export function createContainer(type) {
   const item = document.createElement('div');
   item.className = `${type}-item`;
   return item;
+}
+
+// Helper function to create a spoiler container
+export function createSpoilerContainer(contentElement, options = {}) {
+  const container = document.createElement('div');
+  container.classList.add("settings-spoiler");
+  const toggleButton = document.createElement('button');
+  // Use localized spoiler button text with emoji
+  const type = options.type;
+  const lang = getCurrentLanguage();
+  // Find emoji for this type from settingsConfig
+  const config = settingsConfig.find(cfg => cfg.type === type);
+  const emoji = config && config.emoji ? config.emoji + ' ' : '';
+  const spoilerMsg = settingsTitles.spoilerTitles[type] || settingsTitles.spoilerTitles.toggle;
+  toggleButton.textContent = (options.showText || (emoji + spoilerMsg[lang].show));
+  contentElement.style.display = 'none';
+
+  toggleButton.addEventListener('click', () => {
+    const isHidden = contentElement.style.display === 'none';
+    toggleButton.textContent = isHidden
+      ? (options.hideText || (emoji + spoilerMsg[lang].hide))
+      : (options.showText || (emoji + spoilerMsg[lang].show));
+    contentElement.style.display = isHidden ? 'flex' : 'none';
+  });
+
+  container.appendChild(toggleButton);
+  container.appendChild(contentElement);
+  return container;
 }
 
 // Helper function to create an input element

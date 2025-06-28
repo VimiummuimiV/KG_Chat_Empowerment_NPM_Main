@@ -36,7 +36,7 @@ import {
   getSettingsData
 } from "./settingsFileHandlers.js";
 
-import { createTrackedItem } from "./settingsCreators.js";
+import { createSpoilerContainer, createTrackedItem } from "./settingsCreators.js";
 import { settingsTitles } from "./settingsTitles.js";
 import { settingsConfig, toggleSettingsConfig } from "./settingsConfig.js";
 import { initializeSaveButtonLogic } from "./settingsSaveButton.js";
@@ -64,34 +64,6 @@ export const KG_Chat_Empowerment = stored
 
 if (!stored) {
   localStorage.setItem('KG_Chat_Empowerment', JSON.stringify(KG_Chat_Empowerment));
-}
-
-// Helper function to create a spoiler container
-function createSpoilerContainer(contentElement, options = {}) {
-  const container = document.createElement('div');
-  container.classList.add("settings-spoiler");
-  const toggleButton = document.createElement('button');
-  // Use localized spoiler button text with emoji
-  const type = options.type;
-  const lang = getCurrentLanguage();
-  // Find emoji for this type from settingsConfig
-  const config = settingsConfig.find(cfg => cfg.type === type);
-  const emoji = config && config.emoji ? config.emoji + ' ' : '';
-  const spoilerMsg = settingsTitles.spoilerTitles[type] || settingsTitles.spoilerTitles.toggle;
-  toggleButton.textContent = (options.showText || (emoji + spoilerMsg[lang].show));
-  contentElement.style.display = 'none';
-
-  toggleButton.addEventListener('click', () => {
-    const isHidden = contentElement.style.display === 'none';
-    toggleButton.textContent = isHidden
-      ? (options.hideText || (emoji + spoilerMsg[lang].hide))
-      : (options.showText || (emoji + spoilerMsg[lang].show));
-    contentElement.style.display = isHidden ? 'flex' : 'none';
-  });
-
-  container.appendChild(toggleButton);
-  container.appendChild(contentElement);
-  return container;
 }
 
 // Declare and initialize all arrays dynamically
