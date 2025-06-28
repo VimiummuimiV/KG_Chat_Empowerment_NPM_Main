@@ -1,4 +1,5 @@
-import { settingsConfig, settingsState } from './settings.js';
+import { settingsState } from './settings.js';
+import { settingsConfig } from './settingsConfig.js';
 
 // Global function to handle file input and process uploaded settings
 export async function handleUploadSettings(event) {

@@ -30,14 +30,6 @@ import {
 
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
 
-import {
-  createTrackedItem,
-  createMentionItem,
-  createReplacementItem,
-  createModeratorItem,
-  createIgnoredItem,
-  createToggleItem
-} from './settingsCreators.js';
 
 import {
   handleUploadSettings,
@@ -46,7 +38,9 @@ import {
   processUploadedSettings
 } from './settingsFileHandlers.js';
 
+import { createTrackedItem } from "./settingsCreators.js";
 import { settingsTitles } from './settingsTitles.js';
+import { settingsConfig, toggleSettingsConfig } from './settingsConfig.js';
 
 // definitions
 import {
@@ -102,108 +96,12 @@ function createSpoilerContainer(contentElement, options = {}) {
   return container;
 }
 
-// Process toggle settings separately with categorization and defaults
-export const toggleSettingsConfig = [
-  {
-    emoji: '👀',
-    description: 'Show chat static notifications',
-    image: 'https://i.imgur.com/oUPSi9I.jpeg',
-    category: 'notifications',
-    type: 'static'
-  },
-  {
-    emoji: '👀',
-    description: 'Show global dynamic notifications',
-    image: 'https://i.imgur.com/8ffCdUG.jpeg',
-    category: 'notifications',
-    type: 'dynamic'
-  },
-  {
-    emoji: '🔊',
-    description: 'Play a beep sound and speak feedback when the user enters or leaves the chat',
-    image: 'https://i.imgur.com/6PXFIES.jpeg',
-    category: 'sound',
-    type: 'presence'
-  },
-  {
-    emoji: '🔊',
-    description: 'Switch to google TTS engine if available',
-    image: 'https://i.imgur.com/0H94LII.jpeg',
-    category: 'sound',
-    type: 'gTTS'
-  },
-  {
-    emoji: '📦️',
-    description: 'Create participants counter',
-    image: 'https://i.imgur.com/rqIVAgH.jpeg',
-    category: 'elements',
-    type: 'counter'
-  },
-  {
-    emoji: '🌐',
-    description: 'Interface language',
-    image: '',
-    category: 'ui',
-    type: 'language',
-    languages: [
-      { value: 'en', label: '🇬🇧 English' },
-      { value: 'ru', label: '🇷🇺 Русский' }
-    ]
-  }
-];
-
-// 1. Define all settings keys in camelCase format
-export const settingsConfig = [
-  {
-    type: 'tracked',
-    emoji: '👀',
-    key: 'usersToTrack',
-    selector: '.settings-tracked-container',
-    creator: createTrackedItem
-  },
-  {
-    type: 'mention',
-    emoji: '📢',
-    key: 'mentionKeywords',
-    selector: '.settings-mention-container',
-    creator: createMentionItem
-  },
-  {
-    type: 'replacement',
-    emoji: '♻️',
-    key: 'usernameReplacements',
-    selector: '.settings-replacement-container',
-    creator: createReplacementItem
-  },
-  {
-    type: 'moderator',
-    emoji: '⚔️',
-    key: 'moderator',
-    selector: '.settings-moderator-container',
-    creator: createModeratorItem
-  },
-  {
-    type: 'ignored',
-    emoji: '🛑',
-    key: 'ignored',
-    selector: '.settings-ignored-container',
-    creator: createIgnoredItem
-  },
-  {
-    type: 'toggle',
-    emoji: '🔘',
-    key: 'toggle',
-    selector: '.settings-toggle-container',
-    creator: createToggleItem
-  }
-];
-
-// 2. Declare and initialize all arrays dynamically
+// Declare and initialize all arrays dynamically
 export const settingsState = Object.fromEntries(
   settingsConfig.map(config => [config.key, []])
 );
 
-// 3. Load data from localStorage and populate arrays
+// Load data from localStorage and populate arrays
 settingsConfig.forEach(config => {
   const key = config.key;
   const stored = JSON.parse(localStorage.getItem(key)) || [];
@@ -212,7 +110,7 @@ settingsConfig.forEach(config => {
   }
 });
 
-// 4. Add myNickname to mentionKeywords after loading stored data
+// Add myNickname to mentionKeywords after loading stored data
 const mentionConfig = settingsConfig.find(config => config.type === 'mention');
 if (typeof myNickname !== 'undefined' && myNickname && mentionConfig) {
   settingsState[mentionConfig.key].push(myNickname);
