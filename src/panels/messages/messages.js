@@ -20,6 +20,8 @@ import {
   getMessageTextWithImgTitles
 } from '../../helpers/helpers.js';
 
+import { normalizeUsernameColor } from "../../helpers/colorUtils.js";
+
 import {
   findGeneralChatMessage,
   updateMessageCount,
@@ -64,6 +66,7 @@ const PERSONAL_MESSAGES_KEY = 'personalMessages';
 const NEW_MESSAGES_COUNT_KEY = 'newMessagesCount';
 const PERSONAL_MESSAGES_BACKUP_KEY = 'personalMessagesBackup';
 const USERNAME_COLOR_CACHE_KEY = 'usernameColorCache';
+const USERNAME_ID_CACHE_KEY = 'usernameIdCache';
 
 // Function to create the button for opening personal messages
 export function createMessagesButton(panel) {
@@ -629,7 +632,7 @@ export async function showMessagesPanel() {
 // Loads absent mention messages for today from chatlogs and updates localStorage personalMessages
 export async function loadAbsentMentionsForToday() {
   const personalMessages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY)) || {};
-  const result = await fetchChatLogs("2025-06-28"); // Adjust date as needed
+  const result = await fetchChatLogs(today);
   if (!result?.chatlogs?.length) return;
   const chatlogEntries = result.chatlogs;
   // Build a set of keys for messages already stored, to avoid duplicates
@@ -637,7 +640,7 @@ export async function loadAbsentMentionsForToday() {
 
   // Load or initialize caches
   let usernameColorCache = JSON.parse(localStorage.getItem(USERNAME_COLOR_CACHE_KEY) || '{}');
-  let usernameIdCache = JSON.parse(localStorage.getItem('usernameIdCache') || '{}');
+  let usernameIdCache = JSON.parse(localStorage.getItem(USERNAME_ID_CACHE_KEY) || '{}');
 
   // Get all unique, non-SYSTEM usernames from today's chatlog
   const allUsernames = [...new Set(chatlogEntries.map(e => e.username).filter(u => u && u.trim() !== 'SYSTEM'))];
@@ -653,7 +656,10 @@ export async function loadAbsentMentionsForToday() {
       const userData = userDataResults[i];
       if (userData) {
         const carColor = userData.car ? extractHexColor(userData.car.color) : null;
-        usernameColorCache[username] = carColor && carColor.startsWith('#') ? carColor : '#808080'; // Default to gray
+        // Normalize and convert to HEX
+        usernameColorCache[username] = carColor && carColor.startsWith('#')
+          ? normalizeUsernameColor(carColor, "hex")
+          : '#808080';
         usernameIdCache[username] = userData.id || null;
       } else {
         usernameColorCache[username] = '#808080'; // Fallback for missing user data
@@ -661,7 +667,7 @@ export async function loadAbsentMentionsForToday() {
       }
     });
     localStorage.setItem(USERNAME_COLOR_CACHE_KEY, JSON.stringify(usernameColorCache));
-    localStorage.setItem('usernameIdCache', JSON.stringify(usernameIdCache));
+    localStorage.setItem(USERNAME_ID_CACHE_KEY, JSON.stringify(usernameIdCache));
   }
 
   // Process chatlog entries and add new mentions

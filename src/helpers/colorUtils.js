@@ -90,16 +90,70 @@ export function rgbToHex(rgb) {
   return `#${((1 << 24) + (validR << 16) + (validG << 8) + validB).toString(16).slice(1).padStart(6, '0')}`;
 }
 
-export function normalizeUsernameColor(initialColor) {
-  const [r, g, b] = initialColor.match(/\d+/g).map(Number);
-  const { h, s, l } = rgbToHsl(r, g, b);
+/**
+ * Converts a hexadecimal color string to its RGB components.
+ *
+ * @param {string} hex - A hex color string in the format '#RRGGBB' or 'RRGGBB'.
+ * @returns {{ r: number, g: number, b: number }} An object with the red, green, and blue values (0-255).
+ * @throws {Error} If the input is not a valid hex color string.
+ *
+ * @example
+ * // returns { r: 255, g: 165, b: 0 }
+ * const rgb = hexToRgb('#FFA500');
+ */
+export function hexToRgb(hex) {
+  // Remove leading '#' if present
+  const normalizedHex = hex.replace(/^#/, '');
+
+  // Validate hex string length and characters
+  if (!/^[0-9A-Fa-f]{6}$/.test(normalizedHex)) {
+    throw new Error(`Invalid hex color: "${hex}"`);
+  }
+
+  // Parse the three pairs of hex digits
+  const r = parseInt(normalizedHex.slice(0, 2), 16);
+  const g = parseInt(normalizedHex.slice(2, 4), 16);
+  const b = parseInt(normalizedHex.slice(4, 6), 16);
+
+  return { r, g, b };
+}
+
+/**
+ * Normalizes a username color to ensure minimum lightness and consistent output.
+ * @param {string|object} inputColor - The color value (HEX string, RGB string, or HSL object/string)
+ * @param {"hex"|"rgb"|"hsl"} [inputType="rgb"] - The type of the input color
+ * @returns {string} - Normalized RGB color string (e.g., "rgb(128, 128, 128)")
+ */
+export function normalizeUsernameColor(inputColor, inputType = "rgb") {
+  let r, g, b, h, s, l;
+  if (inputType === "hex") {
+    // Convert HEX to RGB
+    const rgb = hexToRgb(inputColor);
+    r = rgb.r; g = rgb.g; b = rgb.b;
+    ({ h, s, l } = rgbToHsl(r, g, b));
+  } else if (inputType === "rgb") {
+    // Parse RGB string
+    if (typeof inputColor === "string") {
+      [r, g, b] = inputColor.match(/\d+/g).map(Number);
+    } else if (typeof inputColor === "object" && inputColor.r !== undefined) {
+      r = inputColor.r; g = inputColor.g; b = inputColor.b;
+    }
+    ({ h, s, l } = rgbToHsl(r, g, b));
+  } else if (inputType === "hsl") {
+    // Accept either HSL object or string
+    if (typeof inputColor === "string") {
+      [h, s, l] = inputColor.match(/\d+/g).map(Number);
+    } else if (typeof inputColor === "object" && inputColor.h !== undefined) {
+      h = inputColor.h; s = inputColor.s; l = inputColor.l;
+    }
+  } else {
+    throw new Error("Unsupported inputType for normalizeUsernameColor: " + inputType);
+  }
 
   // Adjust lightness to ensure it's at least 50
   const normalizedLightness = l < 50 ? 50 : l;
-  const finalColor = hslToRgb(h, s, normalizedLightness);
-
-  // Round the RGB values in one go
-  return finalColor;
+  const rgbString = hslToRgb(h, s, normalizedLightness);
+  return rgbToHex(rgbString);
 }
 
 /**

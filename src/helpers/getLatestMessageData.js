@@ -199,7 +199,7 @@ export async function getLatestMessageData() {
   const userId = usernameDataElement ? usernameDataElement.getAttribute('data-user') : null;
   const extractedUsername = usernameDataElement ? usernameDataElement.textContent : 'SYSTEM';
   const usernameColor = usernameDataElement ? usernameDataElement.parentElement.style.color : 'rgb(180,180,180)';
-  const normalizedColor = normalizeUsernameColor(usernameColor);
+  const normalizedColor = normalizeUsernameColor(usernameColor, "rgb");
   const messageKey = `${time}_${extractedUsername}`;
 
   // Check if the message type is "mention" or "private", and if the username is not in the ignore list

@@ -195,7 +195,7 @@ export function normalizeAndResetUsernames(usernameElements, mode) {
     const userSpan = usernameElements.querySelector('span[data-user]');
     if (!userSpan) return; // Skip processing if child span is missing
     const computedColor = getComputedStyle(usernameElements).color;
-    const normalizedColor = normalizeUsernameColor(computedColor);
+    const normalizedColor = normalizeUsernameColor(computedColor, "rgb");
     usernameElements.style.setProperty('color', normalizedColor, 'important');
     userSpan.style.setProperty('filter', 'invert(0)', 'important');
   } else if (mode === 'all') {
@@ -205,7 +205,7 @@ export function normalizeAndResetUsernames(usernameElements, mode) {
       const userSpan = usernameElement.querySelector('span[data-user]');
       if (!userSpan) return; // Skip if child span is missing
       const computedColor = getComputedStyle(usernameElement).color;
-      const normalizedColor = normalizeUsernameColor(computedColor);
+      const normalizedColor = normalizeUsernameColor(computedColor, "rgb");
       usernameElement.style.setProperty('color', normalizedColor, 'important');
       userSpan.style.setProperty('filter', 'invert(0)', 'important');
     });
