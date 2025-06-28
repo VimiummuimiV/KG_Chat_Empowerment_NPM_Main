@@ -28,7 +28,7 @@ export function getUserChatDuration(username, actionTime) {
   const actionIndex = actionLog.indexOf(current);
   if (actionIndex === 0) return (lang === 'en')
     ? `${icons.first} ${username}'s first action`
-    : `${icons.first} ${username} зашёл впервые`;
+    : `${icons.first} ${username} первое действие`;
 
   // Find the most recent action before the current one that has a different type
   const prev = actionLog.slice(0, actionIndex).reverse().find(a => a.type !== current.type);
