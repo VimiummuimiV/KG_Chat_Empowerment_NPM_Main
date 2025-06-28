@@ -2,17 +2,12 @@ import { scrollToMiddle } from "../../helpers/scrollTo.js";
 
 // Extracts the text content from a <p> element, excluding .time and .username elements
 export function extractMessageText(pElem) {
-  let text = '';
-  for (let node of pElem.childNodes) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      text += node.textContent;
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      if (!node.classList.contains('time') && !node.classList.contains('username')) {
-        text += node.textContent;
-      }
-    }
-  }
-  return text.trim();
+  // Clone the element to safely remove unwanted nodes
+  const clone = pElem.cloneNode(true);
+  // Remove .time, .username, and .room.private elements
+  clone.querySelectorAll('.time, .username, .room.private').forEach(el => el.remove());
+  // Now get all text, including .private
+  return clone.textContent.trim();
 }
 
 // Find chat message by username and message text (backup)
