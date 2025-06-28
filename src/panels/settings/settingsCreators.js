@@ -1,4 +1,24 @@
 import { removeSVG, snowflakeSVG } from '../../icons.js';
+import { settingsTitles } from './settingsTitles.js';
+import { getCurrentLanguage } from '../../helpers/helpers.js';
+
+// Helper function to get localized placeholder text
+function getPlaceholder(type, field = null) {
+  const lang = getCurrentLanguage();
+  const placeholders = settingsTitles.placeholderTitles[type];
+  
+  if (!placeholders) return '';
+  
+  if (field && typeof placeholders === 'object' && placeholders[field]) {
+    return placeholders[field][lang] || placeholders[field]['en'] || '';
+  }
+  
+  if (typeof placeholders === 'object' && !field) {
+    return placeholders[lang] || placeholders['en'] || '';
+  }
+  
+  return '';
+}
 
 // Helper function to attach click event for removing an item
 export function attachRemoveListener(removeButton, item) {
@@ -66,8 +86,8 @@ export function createSnowflakeButton(state = 'thawed', username) {
 // Creator function for a tracked item
 export function createTrackedItem(user) {
   const item = createContainer('tracked');
-  const usernameInput = createInput('tracked-username', user.name, 'Username');
-  const pronunciationInput = createInput('tracked-pronunciation', user.pronunciation, 'Pronunciation');
+  const usernameInput = createInput('tracked-username', user.name, getPlaceholder('tracked', 'name'));
+  const pronunciationInput = createInput('tracked-pronunciation', user.pronunciation, getPlaceholder('tracked', 'pronunciation'));
   const removeButton = createRemoveButton('tracked', item);
   const initialState = (user.state === 'frozen') ? 'frozen' : 'thawed';
   const snowflakeButton = createSnowflakeButton(initialState, user.name);
@@ -97,7 +117,7 @@ export function createTrackedItem(user) {
 // Creator function for a mention item
 export function createMentionItem(keyword) {
   const item = createContainer('mention');
-  const mentionInput = createInput('mention', keyword, 'Mention Keyword');
+  const mentionInput = createInput('mention', keyword, getPlaceholder('mention'));
   const removeButton = createRemoveButton('mention', item);
   item.appendChild(mentionInput);
   item.appendChild(removeButton);
@@ -107,8 +127,8 @@ export function createMentionItem(keyword) {
 // Creator function for a replacement item
 export function createReplacementItem(replacement = { original: '', replacement: '' }) {
   const item = createContainer('replacement');
-  const originalInput = createInput('replacement-original', replacement.original, 'Original username');
-  const replacementInput = createInput('replacement', replacement.replacement, 'Replacement name');
+  const originalInput = createInput('replacement-original', replacement.original, getPlaceholder('replacement', 'find'));
+  const replacementInput = createInput('replacement', replacement.replacement, getPlaceholder('replacement', 'replace'));
   const removeButton = createRemoveButton('replacement', item);
   item.appendChild(originalInput);
   item.appendChild(replacementInput);
@@ -119,7 +139,7 @@ export function createReplacementItem(replacement = { original: '', replacement:
 // Creator function for a moderator item
 export function createModeratorItem(moderator) {
   const item = createContainer('moderator');
-  const moderatorInput = createInput('moderator', moderator, 'Moderator Name');
+  const moderatorInput = createInput('moderator', moderator, getPlaceholder('moderator'));
   const removeButton = createRemoveButton('moderator', item);
   item.appendChild(moderatorInput);
   item.appendChild(removeButton);
@@ -129,7 +149,7 @@ export function createModeratorItem(moderator) {
 // Creator function for an ignored item
 export function createIgnoredItem(user) {
   const item = createContainer('ignored');
-  const ignoredInput = createInput('ignored', user, 'Ignored User');
+  const ignoredInput = createInput('ignored', user, getPlaceholder('ignored'));
   const removeButton = createRemoveButton('ignored', item);
   item.appendChild(ignoredInput);
   item.appendChild(removeButton);
