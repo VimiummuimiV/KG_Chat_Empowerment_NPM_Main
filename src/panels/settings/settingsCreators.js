@@ -1,4 +1,4 @@
-import { removeSVG, snowflakeSVG } from "../../icons.js";
+import { addSVG, removeSVG, snowflakeSVG } from "../../icons.js";
 import { settingsTitles } from "./settingsTitles.js";
 import { getCurrentLanguage } from "../../helpers/helpers.js";
 import { settingsConfig } from "./settingsConfig.js";
@@ -237,4 +237,52 @@ export function createToggleItem(toggleConfig, optionValue, localizedDescription
   item.appendChild(select);
   item.appendChild(description);
   return item;
+}
+
+// Function to create an "Add" button for dynamic item creation
+export function createAddButton(containerSelector, itemCreator) {
+  const middleWord = containerSelector.split('-')[1]; // Extract key type (e.g., tracked, mention)
+  const existingButton = document.querySelector(`.add-${middleWord}-item`); // Check if the button already exists
+  // If the button exists, remove it
+  if (existingButton) existingButton.remove();
+
+  const addButton = document.createElement('div');
+  // Set class, content, and style for the button
+  addButton.className = `settings-button add-settings-button add-${middleWord}-item`;
+  addButton.innerHTML = addSVG; // Add SVG icon to the button
+
+  // On click, validate the last item and create a new one if valid
+  addButton.addEventListener('click', () => {
+    const container = document.querySelector(containerSelector); // Get the container element
+
+    // Get all settings {type} items and select the last one
+    const allItems = container.querySelectorAll(`.${middleWord}-item`);
+    const lastItem = allItems.length > 0 ? allItems[allItems.length - 1] : null;
+
+    // Check if the last item has any input fields
+    const inputFields = lastItem ? lastItem.querySelectorAll('input') : []; // Get all input fields in the last item
+    const hasEmptyFields = Array.from(inputFields).some(field => field.value.trim().length === 0); // Check for empty fields
+
+    // Allow creation only if the last item has no empty fields (or if there are no items yet)
+    const canCreateNewItem = !lastItem || !hasEmptyFields;
+
+    if (canCreateNewItem) {
+      // Create a new empty item based on the item creator function
+      const emptyItem = itemCreator === createTrackedItem
+        ? itemCreator({ name: '', pronunciation: '' }) // Remove gender from tracked item creation
+        : itemCreator('');
+
+      // Check if the new item is a valid HTMLElement before inserting
+      if (emptyItem instanceof HTMLElement) {
+        container.insertBefore(emptyItem, addButton); // Insert the new item before the Add button
+      } else {
+        console.error('Invalid item created.'); // Log an error if the item is not valid
+      }
+    } else {
+      // Alert the user if the last item is filled
+      alert('Please fill in the previous item before adding a new one.');
+    }
+  });
+
+  return addButton; // Return the created button
 }
