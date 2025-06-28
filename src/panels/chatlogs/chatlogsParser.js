@@ -12,7 +12,7 @@ import {
 
 import { chatlogsParserMessages } from './messages.js';
 import { createCustomTooltip } from "../../components/tooltip.js";
-import { deleteChatlogFromIndexedDB } from "./chatlogsStorage.js";
+import { deleteAllChatlogsFromIndexedDB } from "./chatlogsStorage.js";
 
 /**
  * Attach parse logic to the parse button in the chat logs panel header.
@@ -491,7 +491,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
   parseButton.addEventListener('click', async (event) => {
     if (event.ctrlKey) {
       if (confirm(chatlogsParserMessages.deleteConfirm[lang])) {
-        await deleteChatlogFromIndexedDB();
+        await deleteAllChatlogsFromIndexedDB();
         alert(chatlogsParserMessages.deleteSuccess[lang]);
       }
       return;

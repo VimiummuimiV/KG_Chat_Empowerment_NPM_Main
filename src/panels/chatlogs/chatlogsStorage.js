@@ -1,3 +1,4 @@
+
 const DB_NAME = 'chatlogsDB';
 const STORE_NAME = 'chatlogs';
 const DB_VERSION = 1;
@@ -50,23 +51,17 @@ export async function readChatlogFromIndexedDB(date) {
   });
 }
 
-export async function deleteChatlogFromIndexedDB(date) {
+
+// Remove all chatlogs from IndexedDB and reset cache size
+export async function deleteAllChatlogsFromIndexedDB() {
   const db = await initChatlogsDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    const req = store.get(date);
+    const req = store.clear();
     req.onsuccess = () => {
-      const prevEntry = req.result;
-      const prevSize = prevEntry && prevEntry.html ? new Blob([prevEntry.html]).size : 0;
-      store.delete(date);
-      tx.oncomplete = () => {
-        let totalKB = getCachedTotalSize();
-        totalKB = totalKB - prevSize / 1024;
-        setCachedTotalSize(Math.max(0, totalKB));
-        resolve();
-      };
-      tx.onerror = () => reject(tx.error);
+      setCachedTotalSize(0);
+      resolve();
     };
     req.onerror = () => reject(req.error);
   });
