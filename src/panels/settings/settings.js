@@ -30,7 +30,6 @@ import {
 
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
 
-// Import creator functions
 import {
   createTrackedItem,
   createMentionItem,
@@ -46,6 +45,8 @@ import {
   getSettingsData,
   processUploadedSettings
 } from './settingsFileHandlers.js';
+
+import { settingsTitles } from './settingsTitles.js';
 
 // definitions
 import {
@@ -73,61 +74,6 @@ if (!stored) {
   localStorage.setItem('KG_Chat_Empowerment', JSON.stringify(KG_Chat_Empowerment));
 }
 
-const settingsMessages = {
-  spoiler: {
-    tracked: {
-      en: { show: 'Show tracked', hide: 'Hide tracked' },
-      ru: { show: 'Показать отслеживаемых', hide: 'Скрыть отслеживаемых' }
-    },
-    mention: {
-      en: { show: 'Show mentions', hide: 'Hide mentions' },
-      ru: { show: 'Показать ключевые слова', hide: 'Скрыть ключевые слова' }
-    },
-    replacement: {
-      en: { show: 'Show replacements', hide: 'Hide replacements' },
-      ru: { show: 'Показать замены', hide: 'Скрыть замены' }
-    },
-    moderator: {
-      en: { show: 'Show moderators', hide: 'Hide moderators' },
-      ru: { show: 'Показать модераторов', hide: 'Скрыть модераторов' }
-    },
-    ignored: {
-      en: { show: 'Show ignored', hide: 'Hide ignored' },
-      ru: { show: 'Показать игнорируемых', hide: 'Скрыть игнорируемых' }
-    },
-    toggle: {
-      en: { show: 'Show toggles', hide: 'Hide toggles' },
-      ru: { show: 'Показать переключатели', hide: 'Скрыть переключатели' }
-    }
-  },
-  toggleDescriptions: {
-    static: {
-      en: 'Show chat static notifications',
-      ru: 'Показывать статические уведомления чата'
-    },
-    dynamic: {
-      en: 'Show global dynamic notifications',
-      ru: 'Показывать глобальные динамические уведомления'
-    },
-    presence: {
-      en: 'Play a beep sound and speak feedback when the user enters or leaves the chat',
-      ru: 'Воспроизводить звук и озвучивать, когда пользователь входит или выходит из чата'
-    },
-    gTTS: {
-      en: 'Switch to google TTS engine if available',
-      ru: 'Переключиться на Google TTS, если доступно'
-    },
-    counter: {
-      en: 'Create participants counter',
-      ru: 'Создать счетчик участников'
-    },
-    language: {
-      en: 'Interface language',
-      ru: 'Язык интерфейса'
-    }
-  }
-};
-
 // Helper function to create a spoiler container
 function createSpoilerContainer(contentElement, options = {}) {
   const container = document.createElement('div');
@@ -139,7 +85,7 @@ function createSpoilerContainer(contentElement, options = {}) {
   // Find emoji for this type from settingsConfig
   const config = settingsConfig.find(cfg => cfg.type === type);
   const emoji = config && config.emoji ? config.emoji + ' ' : '';
-  const spoilerMsg = settingsMessages.spoiler[type] || settingsMessages.spoiler.toggle;
+  const spoilerMsg = settingsTitles.spoilerTitles[type] || settingsTitles.spoilerTitles.toggle;
   toggleButton.textContent = (options.showText || (emoji + spoilerMsg[lang].show));
   contentElement.style.display = 'none';
 
@@ -704,7 +650,7 @@ function showSettingsPanel() {
             optionValue = storedSetting ? storedSetting.option : 'yes';
           }
           // Get localized description
-          const localizedDescription = settingsMessages.toggleDescriptions[toggle.type][lang];
+          const localizedDescription = settingsTitles.toggleTitles[toggle.type][lang];
           const toggleItem = creator(toggle, optionValue, localizedDescription);
           container.appendChild(toggleItem);
         });
