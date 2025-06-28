@@ -7,6 +7,12 @@ import { calibrateToMoscowTime } from "./messagesHelpers.js";
 import { timeColors } from '../../definitions.js';
 
 export function setupMessagesEvents(messagesContainer, showMessagesPanel) {
+  // Helper function to hide panels - extracted to avoid duplication
+  function hidePanelsAfterMessageFound() {
+    triggerTargetElement(messagesContainer.closest('.cached-messages-panel'), 'hide');
+    triggerDimmingElement('hide');
+  }
+
   messagesContainer.addEventListener('mouseover', function (event) {
     const timeEl = event.target.closest('.message-time');
     if (timeEl && messagesContainer.contains(timeEl)) {
@@ -88,8 +94,11 @@ export function setupMessagesEvents(messagesContainer, showMessagesPanel) {
       const type = messageItem.dataset.type;
 
       if (type === 'private') {
-        requestAnimationFrame(() => {
-          findGeneralChatMessage(messageTextEl.textContent, username, true);
+        requestAnimationFrame(async () => {
+          const foundGeneralChatMessage = await findGeneralChatMessage(messageTextEl.textContent, username, true);
+          if (foundGeneralChatMessage) {
+            hidePanelsAfterMessageFound();
+          }
         });
         return;
       }
@@ -97,8 +106,7 @@ export function setupMessagesEvents(messagesContainer, showMessagesPanel) {
       // For mention messages: search in general chat first, then chat logs if not found
       const foundGeneralChatMessage = await findGeneralChatMessage(messageTextEl.textContent, username, true);
       if (foundGeneralChatMessage) {
-        triggerTargetElement(messagesContainer.closest('.cached-messages-panel'), 'hide');
-        triggerDimmingElement('hide');
+        hidePanelsAfterMessageFound();
       } else {
         // If message not found in general chat, try chat logs (only for mention messages)
         let previousElement = messageTextEl.parentElement.previousElementSibling;
