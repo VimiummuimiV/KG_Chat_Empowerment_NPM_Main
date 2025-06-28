@@ -279,8 +279,13 @@ export function createAddButton(containerSelector, itemCreator) {
         console.error('Invalid item created.'); // Log an error if the item is not valid
       }
     } else {
-      // Alert the user if the last item is filled
-      alert('Please fill in the previous item before adding a new one.');
+      // Localized alert if the last item is not filled
+      const lang = getCurrentLanguage();
+      const msg = {
+        en: 'Please fill in the previous item before adding a new one.',
+        ru: 'Пожалуйста, заполните предыдущий элемент перед добавлением нового.'
+      };
+      alert(msg[lang] || msg.en);
     }
   });
 
