@@ -15,8 +15,7 @@ import { createCustomTooltip } from "../../components/tooltip.js";
 
 // helpers && helpers definitions
 import {
-  removePreviousPanel,
-  getCurrentLanguage
+  removePreviousPanel
 } from "../../helpers/helpers.js";
 
 import { isAltKeyPressed, isCtrlKeyPressed } from "../../helpers/hotkeyState.js";
@@ -35,10 +34,9 @@ import {
   getSettingsData
 } from "./settingsFileHandlers.js";
 
-import { createSpoilerContainer, createAddButton } from "./settingsCreators.js";
-import { settingsTitles } from "./settingsTitles.js";
-import { settingsConfig, toggleSettingsConfig } from "./settingsConfig.js";
+import { settingsConfig } from "./settingsConfig.js";
 import { initializeSaveButtonLogic } from "./settingsSaveButton.js";
+import { clearSettingsContainers, populateSettings } from "./settingsPopulator.js";
 
 // definitions
 import {
@@ -214,26 +212,11 @@ function showSettingsPanel() {
 
   // Add an event listener for the import file input
   importFileInput.addEventListener('change', async (event) => {
-    await handleUploadSettings(event); // Wait for processing uploaded settings
-    // Clear the containers before populating new data
+    await handleUploadSettings(event);
     clearSettingsContainers();
-    // Populate the UI with updated settings
     populateSettings();
   });
 
-  // Function to clear the content of settings containers
-  function clearSettingsContainers() {
-    // Generate container selectors from settingsConfig
-    settingsConfig.forEach(config => {
-      const container = document.querySelector(config.selector);
-      if (container) {
-        const addButton = container.querySelector('.add-settings-button');
-        container.replaceChildren(); // Clear the container
-        // Re-add the .add-settings-button if it was found
-        addButton && container.appendChild(addButton);
-      }
-    });
-  }
 
   // Add a click event listener to the import button
   importSettingsButton.addEventListener('click', () => {
@@ -282,60 +265,6 @@ function showSettingsPanel() {
 
   // Append the settings content container to the settings panel
   settingsPanel.appendChild(settingsContainer);
-
-  function populateSettings() {
-    const data = getSettingsData(); // Retrieves the settings data
-    const settingsContainer = document.querySelector('.settings-content-container'); // Main parent container (adjust if different)
-
-    // Clear all existing spoiler containers first
-    settingsContainer.innerHTML = '';
-
-    settingsConfig.forEach(config => {
-      const { key, creator, type } = config;
-
-      // Create a fresh container for each type
-      const container = document.createElement('div');
-      container.className = `settings-${type}-container`;
-      container.classList.add('settings-container');
-
-      if (type !== 'toggle') {
-        // For non-toggle settings, populate from stored data
-        const items = data[key] || [];
-        items.forEach(item => container.appendChild(creator(item)));
-        const addButton = createAddButton(`.settings-${type}-container`, creator);
-        container.appendChild(addButton);
-      } else {
-        // Inside your initialization logic (where you process toggle settings)
-        const storedToggleSettings = JSON.parse(localStorage.getItem(key)) || [];
-        const lang = getCurrentLanguage();
-        toggleSettingsConfig.forEach(toggle => {
-          // Find stored setting by category + type (not name)
-          const storedSetting = storedToggleSettings.find(
-            s => s.category === toggle.category && s.type === toggle.type
-          );
-          let optionValue = 'yes';
-          if (toggle.type === 'language') {
-            const storedSetting = storedToggleSettings.find(s => s.category === 'ui' && s.type === 'language');
-            optionValue = storedSetting ? storedSetting.option : 'en';
-          } else {
-            optionValue = storedSetting ? storedSetting.option : 'yes';
-          }
-          // Get localized description
-          const localizedDescription = settingsTitles.toggleTitles[toggle.type][lang];
-          const toggleItem = creator(toggle, optionValue, localizedDescription);
-          container.appendChild(toggleItem);
-        });
-      }
-
-      // Wrap the container in a spoiler for all settings types
-      const spoiler = createSpoilerContainer(container, {
-        type,
-        showText: undefined, // Use localization
-        hideText: undefined  // Use localization
-      });
-      settingsContainer.appendChild(spoiler);
-    });
-  }
 
   // Create and append scroll buttons
   const { scrollButtonsContainer } = createScrollButtons(settingsContainer);
