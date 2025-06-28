@@ -5,6 +5,7 @@ import { showChatLogsPanel } from '../chatlogs/chatlogs.js';
 import { triggerTargetElement, triggerDimmingElement } from '../../helpers/elementVisibility.js';
 import { calibrateToMoscowTime } from "./messagesHelpers.js";
 import { timeColors } from '../../definitions.js';
+import { addShakeEffect } from '../../animations.js';
 
 export function setupMessagesEvents(messagesContainer, showMessagesPanel) {
   // Helper function to hide panels - extracted to avoid duplication
@@ -56,7 +57,10 @@ export function setupMessagesEvents(messagesContainer, showMessagesPanel) {
         if (event.shiftKey) {
           event.preventDefault();
           event.stopPropagation();
-          copyChatlogsUrlToClipboard(date, calibrateToMoscowTime(timeEl.textContent), timeEl);
+          if (type === 'mention') {
+            copyChatlogsUrlToClipboard(date, calibrateToMoscowTime(timeEl.textContent), timeEl);
+          }
+          // For private messages, do nothing (no chatlogs URL)
           return;
         }
         if (event.ctrlKey) {
@@ -98,6 +102,8 @@ export function setupMessagesEvents(messagesContainer, showMessagesPanel) {
           const foundGeneralChatMessage = await findGeneralChatMessage(messageTextEl.textContent, username, true);
           if (foundGeneralChatMessage) {
             hidePanelsAfterMessageFound();
+          } else {
+            addShakeEffect(messageItem);
           }
         });
         return;
@@ -108,6 +114,7 @@ export function setupMessagesEvents(messagesContainer, showMessagesPanel) {
       if (foundGeneralChatMessage) {
         hidePanelsAfterMessageFound();
       } else {
+        addShakeEffect(messageItem);
         // If message not found in general chat, try chat logs (only for mention messages)
         let previousElement = messageTextEl.parentElement.previousElementSibling;
         while (previousElement && !previousElement.classList.contains('date-item')) {
