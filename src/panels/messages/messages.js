@@ -293,6 +293,15 @@ export async function showMessagesPanel() {
 
   // Event listener to handle copy actions
   copyPersonalMessagesButton.addEventListener('click', (event) => {
+    // Prevent copy/save if there are no messages
+    const messagesData = localStorage.getItem('personalMessages');
+    if (!messagesData || messagesData === '{}' || Object.keys(JSON.parse(messagesData)).length === 0) {
+      localizedMessage({
+        en: 'No messages to copy or save.',
+        ru: 'Нет сообщений для копирования или сохранения.'
+      }, 'alert');
+      return;
+    }
     // Create a new event object to simulate the desired behavior
     const modifiedEvent = new MouseEvent('click', {
       altKey: true, // Always set altKey to true to trigger format prompt

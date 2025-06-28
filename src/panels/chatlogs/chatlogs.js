@@ -20,6 +20,7 @@ import {
 } from "../../icons.js";
 
 import { handleExportClick } from "../../helpers/messagesFormatter.js";
+import { localizedMessage } from "../../helpers/helpers.js";
 
 // helpers
 import {
@@ -643,6 +644,16 @@ export async function showChatLogsPanel(personalMessagesDate) {
     }
 
     let savedChatlogs = JSON.parse(localStorage.getItem('savedChatlogs')) || [];
+
+    // Prevent copy/save if there are no chatlogs loaded
+    const chatlogItems = document.querySelectorAll('.chat-logs-container .message-item');
+    if ((event.altKey || (event.altKey && event.shiftKey)) && chatlogItems.length === 0) {
+      localizedMessage({
+        en: 'No chat logs to copy or save.',
+        ru: 'Нет чатлогов для копирования или сохранения.'
+      }, 'alert');
+      return;
+    }
 
     // Handle export with Alt and Alt+Shift to copy or save chat logs
     if (event.altKey) {
