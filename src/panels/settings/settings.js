@@ -242,11 +242,13 @@ function showSettingsPanel() {
   });
 
   // Append the buttons to the panel header container
-  panelControlButtons.appendChild(saveSettingsButton);
-  panelControlButtons.appendChild(importSettingsButton);
-  panelControlButtons.appendChild(exportSettingsButton);
-  panelControlButtons.appendChild(clearCacheButton);
-  panelControlButtons.appendChild(closePanelButton);
+  panelControlButtons.append(
+    saveSettingsButton,
+    importSettingsButton,
+    exportSettingsButton,
+    clearCacheButton,
+    closePanelButton
+  );
 
   panelHeaderContainer.appendChild(panelControlButtons);
 
