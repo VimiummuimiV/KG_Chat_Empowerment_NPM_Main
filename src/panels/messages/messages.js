@@ -632,11 +632,11 @@ export async function showMessagesPanel() {
 
 // Loads absent mention messages for today from chatlogs and updates localStorage personalMessages
 export async function loadAbsentMentionsForToday() {
-  // Caching logic: only fetch if last fetch was more than 5 minutes ago
+  // Caching logic: only fetch if last fetch was more than 1 minute ago
   const now = Date.now();
   const lastFetch = Number(localStorage.getItem(ABSENT_MENTIONS_CACHE_KEY)) || 0;
-  if (now - lastFetch < 5 * 60 * 1000) {
-    // Less than 5 minutes since last fetch, update timestamp and skip
+  if (now - lastFetch < 60 * 1000) {
+    // Less than 1 minute since last fetch, update timestamp and skip
     localStorage.setItem(ABSENT_MENTIONS_CACHE_KEY, String(now));
     return;
   }
