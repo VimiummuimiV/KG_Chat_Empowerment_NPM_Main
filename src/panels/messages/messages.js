@@ -67,6 +67,7 @@ const NEW_MESSAGES_COUNT_KEY = 'newMessagesCount';
 const PERSONAL_MESSAGES_BACKUP_KEY = 'personalMessagesBackup';
 const USERNAME_COLOR_CACHE_KEY = 'usernameColorCache';
 const USERNAME_ID_CACHE_KEY = 'usernameIdCache';
+const ABSENT_MENTIONS_CACHE_KEY = 'absentMentionsLastFetch';
 
 // Function to create the button for opening personal messages
 export function createMessagesButton(panel) {
@@ -631,7 +632,18 @@ export async function showMessagesPanel() {
 
 // Loads absent mention messages for today from chatlogs and updates localStorage personalMessages
 export async function loadAbsentMentionsForToday() {
+  // Caching logic: only fetch if last fetch was more than 1 minute ago
+  const now = Date.now();
+  const lastFetch = Number(localStorage.getItem(ABSENT_MENTIONS_CACHE_KEY)) || 0;
+  if (now - lastFetch < 60 * 1000) {
+    // Less than 1 minute since last fetch, update timestamp and skip
+    localStorage.setItem(ABSENT_MENTIONS_CACHE_KEY, String(now));
+    return;
+  }
+  localStorage.setItem(ABSENT_MENTIONS_CACHE_KEY, String(now));
+
   const personalMessages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY)) || {};
+
   const result = await fetchChatLogs(today);
   if (!result?.chatlogs?.length) return;
   const chatlogEntries = result.chatlogs;
