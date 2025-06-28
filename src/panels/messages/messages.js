@@ -44,7 +44,7 @@ import { setupMessagesTooltips } from "./messagesDelegatedTooltips.js";
 import { setupMessagesEvents } from "./messagesDelegatedEvents.js";
 import { fetchChatLogs } from "../chatlogs/chatlogs.js";
 import { isMentionForMe } from "../../helpers/getLatestMessageData.js";
-import { getDataByName } from "../../helpers/apiData.js";
+import { getDataByName, extractHexColor } from "../../helpers/apiData.js";
 
 // definitions
 import {
@@ -59,6 +59,12 @@ let {
   panelsEvents
 } = state;
 
+// Define the localStorage keys in one place
+const PERSONAL_MESSAGES_KEY = 'personalMessages';
+const NEW_MESSAGES_COUNT_KEY = 'newMessagesCount';
+const PERSONAL_MESSAGES_BACKUP_KEY = 'personalMessagesBackup';
+const USERNAME_COLOR_CACHE_KEY = 'usernameColorCache';
+
 // Function to create the button for opening personal messages
 export function createMessagesButton(panel) {
   const showPersonalMessagesButton = document.createElement('div');
@@ -68,7 +74,7 @@ export function createMessagesButton(panel) {
   // Create the small indicator for all message count
   const allMessageIndicator = document.createElement('div');
   allMessageIndicator.classList.add("message-count", "total-message-count");
-  const personalMessages = JSON.parse(localStorage.getItem('personalMessages')) || {};
+  const personalMessages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY)) || {};
   allMessageIndicator.textContent = Object.keys(personalMessages).length;
   showPersonalMessagesButton.appendChild(allMessageIndicator);
 
@@ -77,7 +83,7 @@ export function createMessagesButton(panel) {
   newMessageIndicator.classList.add("message-count", "new-message-count");
 
   // Get the new messages count from localStorage or set to 0 if not present
-  let newMessagesCount = Number(localStorage.getItem('newMessagesCount')) || (localStorage.setItem('newMessagesCount', '0'), 0);
+  let newMessagesCount = Number(localStorage.getItem(NEW_MESSAGES_COUNT_KEY)) || (localStorage.setItem(NEW_MESSAGES_COUNT_KEY, '0'), 0);
 
   newMessageIndicator.textContent = newMessagesCount;
   newMessageIndicator.style.visibility = newMessagesCount > 0 ? 'visible' : 'hidden';
@@ -91,9 +97,9 @@ export function createMessagesButton(panel) {
   showPersonalMessagesButton.addEventListener('click', function () {
     addPulseEffect(showPersonalMessagesButton);
     showMessagesPanel();
-    const personalMessagesCount = Object.keys(JSON.parse(localStorage.getItem('personalMessages')) || {}).length;
+    const personalMessagesCount = Object.keys(JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY)) || {}).length;
     if (personalMessagesCount > 0) {
-      localStorage.setItem('newMessagesCount', '0');
+      localStorage.setItem(NEW_MESSAGES_COUNT_KEY, '0');
       newMessagesCount = 0;
       newMessageIndicator.textContent = newMessagesCount;
     }
@@ -118,7 +124,7 @@ export async function showMessagesPanel() {
   // Update the message count after panel load to reset the value if messages were not saved
   updateMessageCount();
   // Remove 'personalMessagesBackup' from localStorage if it exists
-  if (localStorage.getItem('personalMessagesBackup')) localStorage.removeItem('personalMessagesBackup');
+  if (localStorage.getItem(PERSONAL_MESSAGES_BACKUP_KEY)) localStorage.removeItem(PERSONAL_MESSAGES_BACKUP_KEY);
   // Remove any previous panel before creating a new one
   removePreviousPanel();
 
@@ -127,7 +133,7 @@ export async function showMessagesPanel() {
   if (newMessagesCountElement) newMessagesCountElement.textContent = '0';
   newMessagesCountElement.style.visibility = 'hidden';
   // Remove the localStorage key for new personal messages after opening the messages panel (always)
-  localStorage.removeItem('newMessagesCount');
+  localStorage.removeItem(NEW_MESSAGES_COUNT_KEY);
 
   let messages = getMessages();
 
@@ -167,8 +173,8 @@ export async function showMessagesPanel() {
   saveMessagesButton.style.opacity = "0";
 
   saveMessagesButton.addEventListener('click', () => {
-    const backupData = localStorage.getItem('personalMessagesBackup');
-    const originalData = localStorage.getItem('personalMessages');
+    const backupData = localStorage.getItem(PERSONAL_MESSAGES_BACKUP_KEY);
+    const originalData = localStorage.getItem(PERSONAL_MESSAGES_KEY);
 
     const bothDataExist = backupData && originalData;
     const hasDataChanged = bothDataExist && originalData !== backupData;
@@ -179,8 +185,8 @@ export async function showMessagesPanel() {
       const userConfirmed = window.confirm("Do you want to apply changes?");
 
       if (userConfirmed) {
-        localStorage.setItem('personalMessages', backupData);
-        localStorage.removeItem('personalMessagesBackup');
+        localStorage.setItem(PERSONAL_MESSAGES_KEY, backupData);
+        localStorage.removeItem(PERSONAL_MESSAGES_BACKUP_KEY);
         saveMessagesButton.style.setProperty('display', 'none', 'important');
         saveMessagesButton.style.opacity = '0'; // Hide the save button after saving
         // Wait for the opacity transition to finish before hiding the element
@@ -212,7 +218,7 @@ export async function showMessagesPanel() {
         reader.onload = async () => {
           try {
             const importedMessages = JSON.parse(reader.result);
-            const existingMessages = JSON.parse(localStorage.getItem('personalMessages') || '{}');
+            const existingMessages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY) || '{}');
 
             const mergedMessages = { ...existingMessages, ...importedMessages };
             const cleanedMergedMessages = Object.fromEntries(
@@ -232,7 +238,7 @@ export async function showMessagesPanel() {
             );
 
             // Store the merged messages back in localStorage (time remains unchanged with square brackets)
-            localStorage.setItem('personalMessages', JSON.stringify(cleanedMergedMessages));
+            localStorage.setItem(PERSONAL_MESSAGES_KEY, JSON.stringify(cleanedMergedMessages));
 
             updateMessageCount(); // Update the message count after import
 
@@ -262,7 +268,7 @@ export async function showMessagesPanel() {
   });
 
   exportMessagesButton.addEventListener('click', () => {
-    const messages = localStorage.getItem('personalMessages');
+    const messages = localStorage.getItem(PERSONAL_MESSAGES_KEY);
     if (messages && messages !== '{}') {
       const currentDate = new Intl.DateTimeFormat('en-CA').format(new Date());
       const messagesObject = JSON.parse(messages);
@@ -297,7 +303,7 @@ export async function showMessagesPanel() {
   // Event listener to handle copy actions
   copyPersonalMessagesButton.addEventListener('click', (event) => {
     // Prevent copy/save if there are no messages
-    const messagesData = localStorage.getItem('personalMessages');
+    const messagesData = localStorage.getItem(PERSONAL_MESSAGES_KEY);
     if (!messagesData || messagesData === '{}' || Object.keys(JSON.parse(messagesData)).length === 0) {
       localizedMessage({
         en: 'No messages to copy or save.',
@@ -338,7 +344,7 @@ export async function showMessagesPanel() {
     // Set the flag to true when clear messages is initiated
     isMessagesImport = true;
     // Check if there are any messages before attempting to clear
-    const messages = JSON.parse(localStorage.getItem('personalMessages') || '{}');
+    const messages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY) || '{}');
     if (Object.keys(messages).length === 0) {
       localizedMessage({
         en: 'No messages to delete.',
@@ -350,7 +356,7 @@ export async function showMessagesPanel() {
     messagesContainer.innerHTML = null;
 
     // Set the 'personalMessages' key in localStorage to an empty object
-    localStorage.setItem('personalMessages', JSON.stringify({}));
+    localStorage.setItem(PERSONAL_MESSAGES_KEY, JSON.stringify({}));
 
     // Fade out the cached messages panel when the clear cache button is clicked
     triggerTargetElement(cachedMessagesPanel, 'hide');
@@ -622,42 +628,45 @@ export async function showMessagesPanel() {
 
 // Loads absent mention messages for today from chatlogs and updates localStorage personalMessages
 export async function loadAbsentMentionsForToday() {
-  // Load existing personal messages from localStorage
-  const personalMessages = JSON.parse(localStorage.getItem('personalMessages')) || {};
-  // Fetch today's chatlogs from the server
-  const result = await fetchChatLogs(today);
+  const personalMessages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY)) || {};
+  const result = await fetchChatLogs("2025-06-28"); // Adjust date as needed
   if (!result?.chatlogs?.length) return;
   const chatlogEntries = result.chatlogs;
   // Build a set of keys for messages already stored, to avoid duplicates
   const existingKeys = new Set(Object.values(personalMessages).map(m => `${m.date}|${m.time.replace(/[[\]]/g, '')}|${m.message}`));
 
-  // Prepare username color cache and fetch missing car colors
-  let usernameColorCache = JSON.parse(localStorage.getItem('usernameColorCache') || '{}');
+  // Load or initialize caches
+  let usernameColorCache = JSON.parse(localStorage.getItem(USERNAME_COLOR_CACHE_KEY) || '{}');
+  let usernameIdCache = JSON.parse(localStorage.getItem('usernameIdCache') || '{}');
+
   // Get all unique, non-SYSTEM usernames from today's chatlog
-  const allUsernames = Array.from(new Set(chatlogEntries.map(e => e.username).filter(u => u && u !== 'SYSTEM')));
-  // Find which usernames are missing a cached car (username) color
-  const usernamesToFetch = allUsernames.filter(username => !usernameColorCache[username]);
+  const allUsernames = [...new Set(chatlogEntries.map(e => e.username).filter(u => u && u.trim() !== 'SYSTEM'))];
+
+  // Find usernames missing from either cache
+  const usernamesToFetch = allUsernames.filter(username => !usernameColorCache[username] || !usernameIdCache[username]);
+
   if (usernamesToFetch.length) {
-    // Fetch car (username) colors for missing usernames in parallel
-    const colorResults = await Promise.all(usernamesToFetch.map(username => getDataByName(username, 'carColor')));
+    const userDataResults = await Promise.all(
+      usernamesToFetch.map(username => getDataByName(username, 'allUserData'))
+    );
     usernamesToFetch.forEach((username, i) => {
-      const carColor = colorResults[i];
-      if (typeof carColor === 'string' && carColor.startsWith('#')) {
-        usernameColorCache[username] = carColor;
+      const userData = userDataResults[i];
+      if (userData) {
+        const carColor = userData.car ? extractHexColor(userData.car.color) : null;
+        usernameColorCache[username] = carColor && carColor.startsWith('#') ? carColor : '#808080'; // Default to gray
+        usernameIdCache[username] = userData.id || null;
+      } else {
+        usernameColorCache[username] = '#808080'; // Fallback for missing user data
+        usernameIdCache[username] = null;
       }
     });
-    localStorage.setItem('usernameColorCache', JSON.stringify(usernameColorCache));
+    localStorage.setItem(USERNAME_COLOR_CACHE_KEY, JSON.stringify(usernameColorCache));
+    localStorage.setItem('usernameIdCache', JSON.stringify(usernameIdCache));
   }
 
-  // Ensure every username has a color (either car color or fallback gray)
-  allUsernames.forEach(username => {
-    usernameColorCache[username] = usernameColorCache[username] || normalizeUsernameColor('rgb(180,180,180)');
-  });
-
-  // Add new mention messages from chatlog if not already present
+  // Process chatlog entries and add new mentions
   let newMentions = 0;
   for (const entry of chatlogEntries) {
-    // Only process real user messages that mention the user
     if (
       entry.username &&
       entry.username !== 'SYSTEM' &&
@@ -671,19 +680,19 @@ export async function loadAbsentMentionsForToday() {
           time: `[${entry.time}]`,
           date: today,
           username: entry.username,
-          usernameColor: usernameColorCache[entry.username],
+          usernameColor: usernameColorCache[entry.username] || '#808080',
           message: entry.message,
           type: 'mention',
-          userId: ''
+          userId: usernameIdCache[entry.username] || ''
         };
         newMentions++;
       }
     }
   }
 
-  // If new mentions were added, update localStorage and UI indicator
+  // Update localStorage and UI if new mentions were added
   if (newMentions > 0) {
-    localStorage.setItem('personalMessages', JSON.stringify(personalMessages));
+    localStorage.setItem(PERSONAL_MESSAGES_KEY, JSON.stringify(personalMessages));
     let newMessagesCount = Number(localStorage.getItem('newMessagesCount')) || 0;
     newMessagesCount += newMentions;
     localStorage.setItem('newMessagesCount', String(newMessagesCount));
@@ -691,7 +700,7 @@ export async function loadAbsentMentionsForToday() {
     if (newMessageIndicator) {
       newMessageIndicator.textContent = newMessagesCount;
       newMessageIndicator.style.visibility = newMessagesCount > 0 ? 'visible' : 'hidden';
-      addJumpEffect(newMessageIndicator);
+      addJumpEffect(newMessageIndicator, 50, 50);
     }
   }
 }

@@ -1,8 +1,8 @@
 // Helper to extract only a valid hex color (e.g. #RRGGBB) from a string
-function extractHexColor(str) {
+export function extractHexColor(str) {
   if (typeof str !== 'string') return null;
-  const match = str.match(/^#([0-9a-fA-F]{6})$/);
-  return match ? match[0] : null;
+  const match = str.match(/^#([0-9a-fA-F]{6})\b/);
+  return match ? `#${match[1]}` : null;
 }
 
 // Function to convert Unix timestamp to YYYY-MM-DD format
