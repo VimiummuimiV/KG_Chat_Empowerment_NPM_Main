@@ -12,7 +12,7 @@ const {
 // --- Helper functions for message processing ---
 
 // Function to check if a username is mentioned in the message
-function isMentionForMe(message) {
+export function isMentionForMe(message) {
   const messageLowercase = message.toLowerCase();
   return mentionKeywords.some(keyword => messageLowercase.includes(keyword.toLowerCase()));
 }

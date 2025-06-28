@@ -9,6 +9,7 @@ import { highlightMentionWords } from "./helpers/getLatestMessageData.js";
 import { processEncodedLinks } from "./helpers/urlUtils.js";
 import { refreshFetchedUsers } from "./panels/cache/cacheHelpers.js";
 import { removeIgnoredUserMessages } from "./chat/chatIgnore.js";
+import { loadAbsentMentionsForToday } from "./panels/messages/messages.js";
 
 import {
   restoreChatTab,
@@ -147,6 +148,7 @@ export let isInitializedChat = false;
         pruneDeletedMessages();
         setTimeout(() => { initChatEvents() }, 600);
         setTimeout(() => (isInitializedChat = true), 600);
+        loadAbsentMentionsForToday();
       }
     }
   });

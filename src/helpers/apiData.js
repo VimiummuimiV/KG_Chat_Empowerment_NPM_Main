@@ -1,3 +1,10 @@
+// Helper to extract only a valid hex color (e.g. #RRGGBB) from a string
+function extractHexColor(str) {
+  if (typeof str !== 'string') return null;
+  const match = str.match(/^#([0-9a-fA-F]{6})$/);
+  return match ? match[0] : null;
+}
+
 // Function to convert Unix timestamp to YYYY-MM-DD format
 export function formatRegisteredDate(registered) {
   if (!registered || !registered.sec) {
@@ -86,7 +93,7 @@ const INDEX_DATA_TYPES = new Set([
 // Data types that require the summary API
 const SUMMARY_DATA_TYPES = new Set([
   'usernamesHistory', 'currentLogin', 'userId', 'level', 'status', 'title',
-  'car', 'isOnline', 'avatar', 'blocked', 'isFriend', 'publicPrefs', 'allUserData'
+  'car', 'carColor', 'isOnline', 'avatar', 'blocked', 'isFriend', 'publicPrefs', 'allUserData'
 ]);
 
 // MAIN FUNCTION: Get specific data by username - automatically chooses correct API
@@ -147,6 +154,10 @@ function extractData(data, dataType, apiType) {
         return userData.title || (userData.status?.title ?? null);
       case 'car': // Cars Count
         return userData.car || null;
+      case 'carColor': {
+        // Only return a valid hex color (e.g. #RRGGBB), ignore if contains anything else
+        return userData.car ? extractHexColor(userData.car.color) : null;
+      }
       case 'isOnline':
         return userData.is_online ?? false;
       case 'avatar': // sec and usec data

@@ -42,6 +42,9 @@ import { createScrollButtons } from "../../helpers/scrollButtons.js";
 import { highlightMentionWords } from "../../helpers/getLatestMessageData.js";
 import { setupMessagesTooltips } from "./messagesDelegatedTooltips.js";
 import { setupMessagesEvents } from "./messagesDelegatedEvents.js";
+import { fetchChatLogs } from "../chatlogs/chatlogs.js";
+import { isMentionForMe } from "../../helpers/getLatestMessageData.js";
+import { getDataByName } from "../../helpers/apiData.js";
 
 // definitions
 import {
@@ -615,4 +618,80 @@ export async function showMessagesPanel() {
   // Setup delegated tooltips and events
   setupMessagesTooltips(cachedMessagesPanel);
   setupMessagesEvents(messagesContainer, showMessagesPanel);
+}
+
+// Loads absent mention messages for today from chatlogs and updates localStorage personalMessages
+export async function loadAbsentMentionsForToday() {
+  // Load existing personal messages from localStorage
+  const personalMessages = JSON.parse(localStorage.getItem('personalMessages')) || {};
+  // Fetch today's chatlogs from the server
+  const result = await fetchChatLogs(today);
+  if (!result?.chatlogs?.length) return;
+  const chatlogEntries = result.chatlogs;
+  // Build a set of keys for messages already stored, to avoid duplicates
+  const existingKeys = new Set(Object.values(personalMessages).map(m => `${m.date}|${m.time.replace(/[[\]]/g, '')}|${m.message}`));
+
+  // Prepare username color cache and fetch missing car colors
+  let usernameColorCache = JSON.parse(localStorage.getItem('usernameColorCache') || '{}');
+  // Get all unique, non-SYSTEM usernames from today's chatlog
+  const allUsernames = Array.from(new Set(chatlogEntries.map(e => e.username).filter(u => u && u !== 'SYSTEM')));
+  // Find which usernames are missing a cached car (username) color
+  const usernamesToFetch = allUsernames.filter(username => !usernameColorCache[username]);
+  if (usernamesToFetch.length) {
+    // Fetch car (username) colors for missing usernames in parallel
+    const colorResults = await Promise.all(usernamesToFetch.map(username => getDataByName(username, 'carColor')));
+    usernamesToFetch.forEach((username, i) => {
+      const carColor = colorResults[i];
+      if (typeof carColor === 'string' && carColor.startsWith('#')) {
+        usernameColorCache[username] = carColor;
+      }
+    });
+    localStorage.setItem('usernameColorCache', JSON.stringify(usernameColorCache));
+  }
+
+  // Ensure every username has a color (either car color or fallback gray)
+  allUsernames.forEach(username => {
+    usernameColorCache[username] = usernameColorCache[username] || normalizeUsernameColor('rgb(180,180,180)');
+  });
+
+  // Add new mention messages from chatlog if not already present
+  let newMentions = 0;
+  for (const entry of chatlogEntries) {
+    // Only process real user messages that mention the user
+    if (
+      entry.username &&
+      entry.username !== 'SYSTEM' &&
+      entry.message &&
+      isMentionForMe(entry.message)
+    ) {
+      const key = `${today}|${entry.time}|${entry.message}`;
+      if (!existingKeys.has(key)) {
+        const newId = `[${entry.time}]_${entry.username}`;
+        personalMessages[newId] = {
+          time: `[${entry.time}]`,
+          date: today,
+          username: entry.username,
+          usernameColor: usernameColorCache[entry.username],
+          message: entry.message,
+          type: 'mention',
+          userId: ''
+        };
+        newMentions++;
+      }
+    }
+  }
+
+  // If new mentions were added, update localStorage and UI indicator
+  if (newMentions > 0) {
+    localStorage.setItem('personalMessages', JSON.stringify(personalMessages));
+    let newMessagesCount = Number(localStorage.getItem('newMessagesCount')) || 0;
+    newMessagesCount += newMentions;
+    localStorage.setItem('newMessagesCount', String(newMessagesCount));
+    const newMessageIndicator = document.querySelector('.personal-messages-button .new-message-count');
+    if (newMessageIndicator) {
+      newMessageIndicator.textContent = newMessagesCount;
+      newMessageIndicator.style.visibility = newMessagesCount > 0 ? 'visible' : 'hidden';
+      addJumpEffect(newMessageIndicator);
+    }
+  }
 }
