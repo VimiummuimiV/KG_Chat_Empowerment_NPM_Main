@@ -53,6 +53,9 @@ export function renderChatMessages(chatlogs, messagesContainer, usernameHueMap, 
     return message.replace(regex, '<span class="search-match">$1</span>');
   }
 
+
+  // Batch DOM updates using a DocumentFragment
+  const fragment = document.createDocumentFragment();
   chatlogs.forEach(({ time, username, message }) => {
     usernameMessageCountMap.set(username, (usernameMessageCountMap.get(username) || 0) + 1);
 
@@ -71,15 +74,18 @@ export function renderChatMessages(chatlogs, messagesContainer, usernameHueMap, 
 
     const messageTextElement = document.createElement('span');
     messageTextElement.className = 'message-text';
-    let html = message
-      .replace(/:(?=\w*[a-zA-Z])(\w+):/g,
-        (_, word) => `<img src="/img/smilies/${word}.gif" alt=":${word}:" title=":${word}:" class="smile">`
-      )
-      .replace(/(https?:\/\/[^\s]+)/gi,
-        (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
-      );
-    if (highlightSearch && searchTerms && searchTerms.length > 0) {
-      html = highlightTerms(html, searchTerms);
+    let html = '';
+    if (typeof message === 'string' && message.length > 0) {
+      html = message
+        .replace(/:(?=\w*[a-zA-Z])(\w+):/g,
+          (_, word) => `<img src="/img/smilies/${word}.gif" alt=":${word}:" title=":${word}:" class="smile">`
+        )
+        .replace(/(https?:\/\/[^\s]+)/gi,
+          (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
+        );
+      if (highlightSearch && searchTerms && searchTerms.length > 0) {
+        html = highlightTerms(html, searchTerms);
+      }
     }
     messageTextElement.innerHTML = html;
 
@@ -90,8 +96,9 @@ export function renderChatMessages(chatlogs, messagesContainer, usernameHueMap, 
     messageContainer.appendChild(usernameElement);
     messageContainer.appendChild(messageTextElement);
 
-    messagesContainer.appendChild(messageContainer);
+    fragment.appendChild(messageContainer);
   });
+  messagesContainer.appendChild(fragment);
 
   return usernameMessageCountMap;
 }
