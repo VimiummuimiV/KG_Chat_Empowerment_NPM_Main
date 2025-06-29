@@ -1,5 +1,5 @@
 import { playSVG, pauseSVG, shuffleSVG, sunSVG } from "../../icons.js";
-import { minimalChatlogsDate } from "../../definitions.js";
+import { minimalChatlogsDate, myNickname } from "../../definitions.js";
 import { fetchChatLogs } from './chatlogs.js';
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
@@ -13,6 +13,57 @@ import {
 import { chatlogsParserMessages } from "./chatlogsParserMessages.js";
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { deleteAllChatlogsFromIndexedDB } from "./chatlogsStorage.js";
+
+
+/**
+ * Helper function to get all mention terms including myNickname, its history, and mention keywords from localStorage
+ * Order: myNickname first, then usernamesHistory, then mentionKeywords
+ * @returns {Promise<Array>} - Array of unique mention terms in proper order
+ */
+async function getAllMentionTerms() {
+  let allMentionTerms = [];
+
+  // 1. Add myNickname first (if it exists)
+  if (myNickname) {
+    allMentionTerms.push(myNickname);
+  }
+
+  // 2. Add username history (excluding myNickname to avoid duplicates)
+  if (myNickname) {
+    try {
+      const usernamesHistory = await getDataByName(myNickname, 'usernamesHistory');
+      if (Array.isArray(usernamesHistory) && usernamesHistory.length > 0) {
+        usernamesHistory.forEach(username => {
+          if (username && !allMentionTerms.includes(username)) {
+            allMentionTerms.push(username);
+          }
+        });
+      }
+    } catch (error) {
+      console.warn('Could not fetch username history for', myNickname, ':', error);
+    }
+  }
+
+  // 3. Get mention keywords from localStorage and add them last (excluding any that are already in the list)
+  let mentionKeywords = [];
+  try {
+    const storedKeywords = localStorage.getItem('mentionKeywords');
+    if (storedKeywords) {
+      mentionKeywords = JSON.parse(storedKeywords);
+    }
+  } catch (error) {
+    console.warn('Could not parse mention keywords from localStorage:', error);
+  }
+  if (!Array.isArray(mentionKeywords)) mentionKeywords = [];
+
+  mentionKeywords.forEach(keyword => {
+    if (keyword && !allMentionTerms.includes(keyword)) {
+      allMentionTerms.push(keyword);
+    }
+  });
+
+  return allMentionTerms;
+}
 
 /**
  * Attach parse logic to the parse button in the chat logs panel header.
@@ -108,21 +159,44 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       }
       const dateResult = await promptDateRange(dateMode);
       if (dateResult === null) return null;
-      // Prompt to edit mention keywords for this search only
-      let mentionKeywords = [];
-      try {
-        mentionKeywords = JSON.parse(localStorage.getItem('mentionKeywords'));
-      } catch { }
-      if (!Array.isArray(mentionKeywords)) mentionKeywords = [];
-      let mentionInput = prompt(chatlogsParserMessages.enterMentionKeywords[lang], mentionKeywords.join(', '));
+
+      // Get all mention terms including myNickname, usernamesHistory, and mentionKeywords
+      const allMentionTerms = await getAllMentionTerms();
+
+      // Prompt user to edit the combined list
+      let mentionInput = prompt(
+        chatlogsParserMessages.enterMentionKeywords[lang],
+        allMentionTerms.join(', ')
+      );
       if (mentionInput === null) return null;
-      mentionKeywords = mentionInput.split(',').map(s => s.trim()).filter(Boolean);
-      if (mentionKeywords.length === 0) {
+
+      // Parse and clean the input - Fixed the undefined array issue
+      let finalMentionKeywords = [];
+      if (mentionInput && mentionInput.trim()) {
+        const splitKeywords = mentionInput.split(',');
+        if (Array.isArray(splitKeywords)) {
+          finalMentionKeywords = splitKeywords
+            .map(s => s ? s.trim() : '')
+            .filter(Boolean);
+          
+          // Remove duplicates safely
+          const uniqueKeywords = [];
+          finalMentionKeywords.forEach(keyword => {
+            if (keyword && !uniqueKeywords.includes(keyword)) {
+              uniqueKeywords.push(keyword);
+            }
+          });
+          finalMentionKeywords = uniqueKeywords;
+        }
+      }
+
+      if (finalMentionKeywords.length === 0) {
         alert(chatlogsParserMessages.noMentionKeywords[lang]);
         return null;
       }
+
       opts.mode = 'personalmentions';
-      opts.mentionKeywords = mentionKeywords;
+      opts.mentionKeywords = finalMentionKeywords;
       return opts;
     } else if (modeInput === '5') {
       opts.mode = 'fromregistered';
@@ -147,8 +221,19 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       usernamesInput = prompt(chatlogsParserMessages.enterUsernames[lang], usernamesInput || "");
       if (usernamesInput === null) return null;
       if (!usernamesInput || !usernamesInput.trim()) return [];
-      let usernames = usernamesInput.split(',').map(u => u.trim()).filter(Boolean);
+      
+      let usernames = [];
+      if (usernamesInput && usernamesInput.trim()) {
+        const splitUsernames = usernamesInput.split(',');
+        if (Array.isArray(splitUsernames)) {
+          usernames = splitUsernames
+            .map(u => u ? u.trim() : '')
+            .filter(Boolean);
+        }
+      }
+      
       if (usernames.length === 0) return [];
+      
       const validUsernames = [];
       for (const username of usernames) {
         const userId = await getExactUserIdByName(username);
@@ -174,7 +259,17 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
               const allUsernames = [validUsernames[0], ...historyUsernames.filter(u => u !== validUsernames[0])];
               const confirmed = prompt(chatlogsParserMessages.confirmUsernames[lang], allUsernames.join(', '));
               if (!confirmed) return null;
-              return confirmed.split(',').map(u => u.trim()).filter(Boolean);
+              
+              let confirmedUsernames = [];
+              if (confirmed && confirmed.trim()) {
+                const splitConfirmed = confirmed.split(',');
+                if (Array.isArray(splitConfirmed)) {
+                  confirmedUsernames = splitConfirmed
+                    .map(u => u ? u.trim() : '')
+                    .filter(Boolean);
+                }
+              }
+              return confirmedUsernames;
             }
           }
         }
@@ -189,14 +284,24 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     while (true) {
       searchInput = prompt(chatlogsParserMessages.enterSearchTerms[lang](searchAllUsers), '');
       if (searchInput === null) return null;
-      if (!searchInput.trim()) {
+      if (!searchInput || !searchInput.trim()) {
         if (searchAllUsers) {
           alert(chatlogsParserMessages.searchAllUsersRequired[lang]);
           continue;
         }
         return [];
       }
-      return searchInput.split(',').map(term => term.trim().toLowerCase()).filter(Boolean);
+      
+      let searchTerms = [];
+      if (searchInput && searchInput.trim()) {
+        const splitTerms = searchInput.split(',');
+        if (Array.isArray(splitTerms)) {
+          searchTerms = splitTerms
+            .map(term => term ? term.trim().toLowerCase() : '')
+            .filter(Boolean);
+        }
+      }
+      return searchTerms;
     }
   }
 
@@ -280,7 +385,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         resetButton();
         return;
       }
-      searchTerms = mentionKeywords.map(s => s.toLowerCase());
+      searchTerms = mentionKeywords.map(s => s ? s.toLowerCase() : '').filter(Boolean);
       usernames = [];
     } else if (opts.mode === 'fromregistered') {
       // Prompt for usernames and fetch registration dates
