@@ -10,7 +10,7 @@ import {
   getDataByName
 } from '../../helpers/apiData.js';
 
-import { chatlogsParserMessages } from './messages.js';
+import { chatlogsParserMessages } from "./chatlogsParserMessages.js";
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { deleteAllChatlogsFromIndexedDB } from "./chatlogsStorage.js";
 
@@ -38,72 +38,105 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     while (true) {
       modeInput = prompt(chatlogsParserMessages.selectParseMode[lang], '1');
       if (modeInput === null) return null;
-      if (["1", "2", "3", "4", "5"].includes(modeInput)) break;
+      if (["1", "2", "3", "4", "5", "6"].includes(modeInput)) break;
       alert(chatlogsParserMessages.invalidSelection[lang]);
     }
     const opts = {};
-    if (modeInput === '5') {
+
+    // Helper for date range prompts (to avoid code repetition)
+    async function promptDateRange(mode) {
+      if (mode === '4') {
+        opts.from = minimalChatlogsDate;
+        opts.to = new Date().toISOString().slice(0, 10);
+      } else if (mode === '3') {
+        let rangeInput, fromDate, toDate;
+        while (true) {
+          rangeInput = prompt(chatlogsParserMessages.enterDateRange[lang], '');
+          if (rangeInput === null) return null;
+          if (!rangeInput.trim()) continue;
+          const match = rangeInput.match(/([\d:\-]{6,10})\s*-\s*([\d:\-]{6,10})/);
+          if (match) {
+            fromDate = normalizeDate(match[1]);
+            toDate = normalizeDate(match[2]);
+            if (fromDate && toDate) {
+              opts.from = fromDate;
+              opts.to = toDate;
+              break;
+            }
+          }
+          alert(chatlogsParserMessages.invalidRange[lang]);
+        }
+      } else if (mode === '2') {
+        let fromInput, fromDate;
+        while (true) {
+          fromInput = prompt(chatlogsParserMessages.enterFromDate[lang], '');
+          if (fromInput === null) return null;
+          if (!fromInput.trim()) continue;
+          fromDate = normalizeDate(fromInput.trim());
+          if (fromDate) {
+            opts.from = fromDate;
+            opts.to = new Date().toISOString().slice(0, 10);
+            break;
+          }
+          alert(chatlogsParserMessages.invalidFromDate[lang]);
+        }
+      } else if (mode === '1') {
+        let dateInput, dateVal;
+        while (true) {
+          dateInput = prompt(chatlogsParserMessages.enterSingleDate[lang], '');
+          if (dateInput === null) return null;
+          if (!dateInput.trim()) continue;
+          dateVal = normalizeDate(dateInput.trim());
+          if (dateVal) {
+            opts.from = dateVal;
+            opts.to = dateVal;
+            break;
+          }
+          alert(chatlogsParserMessages.invalidDate[lang]);
+        }
+      }
+    } // promptDateRange END
+
+    if (modeInput === '6') {
+      // Personal mentions mode: prompt for date(s), skip username prompt
+      let dateMode;
+      while (true) {
+        dateMode = prompt(chatlogsParserMessages.selectPersonalMentionsDateMode[lang], '1');
+        if (dateMode === null) return null;
+        if (["1", "2", "3", "4"].includes(dateMode)) break;
+        alert(chatlogsParserMessages.invalidSelection[lang]);
+      }
+      const dateResult = await promptDateRange(dateMode);
+      if (dateResult === null) return null;
+      // Prompt to edit mention keywords for this search only
+      let mentionKeywords = [];
+      try {
+        mentionKeywords = JSON.parse(localStorage.getItem('mentionKeywords'));
+      } catch { }
+      if (!Array.isArray(mentionKeywords)) mentionKeywords = [];
+      let mentionInput = prompt(chatlogsParserMessages.enterMentionKeywords[lang], mentionKeywords.join(', '));
+      if (mentionInput === null) return null;
+      mentionKeywords = mentionInput.split(',').map(s => s.trim()).filter(Boolean);
+      if (mentionKeywords.length === 0) {
+        alert(chatlogsParserMessages.noMentionKeywords[lang]);
+        return null;
+      }
+      opts.mode = 'personalmentions';
+      opts.mentionKeywords = mentionKeywords;
+      return opts;
+    } else if (modeInput === '5') {
       opts.mode = 'fromregistered';
       // We'll fetch the date after prompting for usernames in startParsing
       return opts;
-    } else if (modeInput === '4') {
-      opts.from = minimalChatlogsDate;
-      opts.to = new Date().toISOString().slice(0, 10);
-      opts.mode = 'fromstart';
+    } else if (["4", "3", "2", "1"].includes(modeInput)) {
+      const dateResult = await promptDateRange(modeInput);
+      if (dateResult === null) return null;
+      opts.mode =
+        modeInput === '1' ? 'single' :
+          modeInput === '2' ? 'fromdate' :
+            modeInput === '3' ? 'range' :
+              'fromstart';
       return opts;
-    } else if (modeInput === '3') {
-      // Prompt for date range in a single input (e.g. 240202-240303 or 2024-02-02 - 2024-03-03)
-      let rangeInput, fromDate, toDate;
-      while (true) {
-        rangeInput = prompt(chatlogsParserMessages.enterDateRange[lang], '');
-        if (rangeInput === null) return null;
-        if (!rangeInput.trim()) continue;
-        // Accept with or without spaces around the dash
-        const match = rangeInput.match(/([\d:\-]{6,10})\s*-\s*([\d:\-]{6,10})/);
-        if (match) {
-          fromDate = normalizeDate(match[1]);
-          toDate = normalizeDate(match[2]);
-          if (fromDate && toDate) {
-            opts.from = fromDate;
-            opts.to = toDate;
-            opts.mode = 'range';
-            return opts;
-          }
-        }
-        alert(chatlogsParserMessages.invalidRange[lang]);
-      }
-    } else if (modeInput === '2') {
-      // Prompt for FROM date, TO is today
-      let fromInput, fromDate;
-      while (true) {
-        fromInput = prompt(chatlogsParserMessages.enterFromDate[lang], '');
-        if (fromInput === null) return null;
-        if (!fromInput.trim()) continue;
-        fromDate = normalizeDate(fromInput.trim());
-        if (fromDate) {
-          opts.from = fromDate;
-          opts.to = new Date().toISOString().slice(0, 10);
-          opts.mode = 'fromdate';
-          return opts;
-        }
-        alert(chatlogsParserMessages.invalidFromDate[lang]);
-      }
-    } else if (modeInput === '1') {
-      // Prompt for single date
-      let dateInput, dateVal;
-      while (true) {
-        dateInput = prompt(chatlogsParserMessages.enterSingleDate[lang], '');
-        if (dateInput === null) return null;
-        if (!dateInput.trim()) continue;
-        dateVal = normalizeDate(dateInput.trim());
-        if (dateVal) {
-          opts.from = dateVal;
-          opts.to = dateVal;
-          opts.mode = 'single';
-          return opts;
-        }
-        alert(chatlogsParserMessages.invalidDate[lang]);
-      }
     }
   }
 
@@ -238,7 +271,18 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     }
 
     let usernames;
-    if (opts.mode === 'fromregistered') {
+    let searchTerms;
+    if (opts.mode === 'personalmentions') {
+      // Use mention keywords from opts (do not update localStorage)
+      let mentionKeywords = opts.mentionKeywords || [];
+      if (!Array.isArray(mentionKeywords) || mentionKeywords.length === 0) {
+        alert('No mention keywords provided. Please enter at least one keyword.');
+        resetButton();
+        return;
+      }
+      searchTerms = mentionKeywords.map(s => s.toLowerCase());
+      usernames = [];
+    } else if (opts.mode === 'fromregistered') {
       // Prompt for usernames and fetch registration dates
       let usernamesInput = await promptUsernames();
       if (usernamesInput === null || usernamesInput.length === 0) {
@@ -295,19 +339,19 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       }
     }
     const searchAllUsers = usernames.length === 0;
-
-    // Prompt for message search terms
-    const searchTerms = promptSearchTerms(searchAllUsers);
-    if (searchTerms === null) {
-      resetButton();
-      return;
-    }
-
-    // If searching all users, search terms are required
-    if (searchAllUsers && searchTerms.length === 0) {
-      alert(chatlogsParserMessages.searchAllUsersRequired[lang]);
-      resetButton();
-      return;
+    if (opts.mode !== 'personalmentions') {
+      // Prompt for message search terms
+      searchTerms = promptSearchTerms(searchAllUsers);
+      if (searchTerms === null) {
+        resetButton();
+        return;
+      }
+      // If searching all users, search terms are required
+      if (searchAllUsers && searchTerms.length === 0) {
+        alert(chatlogsParserMessages.searchAllUsersRequired[lang]);
+        resetButton();
+        return;
+      }
     }
 
     // Use opts.from and opts.to directly for all modes

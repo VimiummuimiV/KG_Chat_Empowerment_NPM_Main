@@ -18,7 +18,8 @@ export const chatlogsParserMessages = {
       '2. From date',
       '3. Date range',
       '4. From start',
-      '5. From registered date'
+      '5. From registered date',
+      '6. Personal mentions'
     ].join('\n'),
     ru: [
       `${INFO} Выберите режим парсинга`,
@@ -26,7 +27,8 @@ export const chatlogsParserMessages = {
       '2. С даты',
       '3. Диапазон дат',
       '4. С самого начала',
-      '5. С даты регистрации'
+      '5. С даты регистрации',
+      '6. Личные упоминания'
     ].join('\n')
   },
   invalidSelection: { // Alert
@@ -222,5 +224,31 @@ export const chatlogsParserMessages = {
   deleteSuccess: { // Alert
     en: `${INFO} All ${CHATLOGS} chatlogs deleted and cache size reset.`,
     ru: `${INFO} Все ${CHATLOGS} чатлоги удалены, размер кэша сброшен.`
+  },
+
+  // Personal mentions mode messages
+  selectPersonalMentionsDateMode: {
+    en: [
+      `${INFO} Select date mode for personal mentions`,
+      '1. Single date',
+      '2. From date',
+      '3. Date range',
+      '4. From start'
+    ].join('\n'),
+    ru: [
+      `${INFO} Выберите режим дат для личных упоминаний`,
+      '1. Одна дата',
+      '2. С даты',
+      '3. Диапазон дат',
+      '4. С самого начала'
+    ].join('\n')
+  },
+  enterMentionKeywords: {
+    en: `${EDIT} Enter mention keywords to search (comma-separated):`,
+    ru: `${EDIT} Введите ключевые слова для поиска упоминаний (через запятую):`
+  },
+  noMentionKeywords: {
+    en: `${WARN} No mention keywords provided. Please enter at least one keyword.`,
+    ru: `${WARN} Не указаны ключевые слова для поиска упоминаний. Введите хотя бы одно слово.`
   }
 };
