@@ -370,14 +370,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
   chatlogsSearchInput.className = 'chatlogs-search-input';
   chatlogsSearchInput.type = 'text';
   createCustomTooltip(chatlogsSearchInput, {
-    en: [
-      '[Ctrl + Click] clear input and reset filtered items',
-      '[Valid date + Enter] load chat logs for the date in input field (e.g. 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)'
-    ],
-    ru: [
-      '[Ctrl + Click] очистить поле и сбросить фильтр',
-      '[Корректная дата + Enter] загрузить чат-логи за выбранную дату (например, 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)'
-    ]
+    en: ` 
+      [Ctrl + Click] clear input and reset filtered items
+      [Valid date + Enter] load chat logs for the date in input field (e.g. 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)
+    `,
+    ru: ` 
+      [Ctrl + Click] очистить поле и сбросить фильтр
+      [Корректная дата + Enter] загрузить чат-логи за выбранную дату (например, 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)
+    ` 
   });
 
   // Append search input to the search container
