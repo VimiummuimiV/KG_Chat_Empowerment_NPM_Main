@@ -1,4 +1,4 @@
-import { stopParserIfRunning } from './helpers.js';
+import { stopParserIfRunning, removeBigImageEventListeners } from './helpers.js';
 
 // Adjust element visibility with smooth opacity transition
 export function adjustVisibility(element, action, opacity) {
