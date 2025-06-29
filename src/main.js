@@ -9,7 +9,7 @@ import { highlightMentionWords } from "./helpers/getLatestMessageData.js";
 import { processEncodedLinks } from "./helpers/urlUtils.js";
 import { refreshFetchedUsers } from "./panels/cache/cacheHelpers.js";
 import { removeIgnoredUserMessages } from "./chat/chatIgnore.js";
-import { loadAbsentMentionsForToday } from "./panels/messages/messages.js";
+import { parsePersonalMessages } from "./panels/messages/messagesParser.js";
 
 import {
   restoreChatTab,
@@ -44,7 +44,8 @@ import { createSettingsButton } from "./panels/settings/settings.js";
 
 // definitions
 import {
-  cacheRefreshThresholdHours
+  cacheRefreshThresholdHours,
+  today
 } from "./definitions.js";
 
 // Skip reading the messages on page load to read them normally when the user is present and the page is stable
@@ -148,7 +149,7 @@ export let isInitializedChat = false;
         pruneDeletedMessages();
         setTimeout(() => { initChatEvents() }, 600);
         setTimeout(() => (isInitializedChat = true), 600);
-        loadAbsentMentionsForToday();
+        parsePersonalMessages(today);
       }
     }
   });

@@ -282,3 +282,34 @@ export function localizedMessage(msgs, type = 'alert', ...args) {
   if (type === 'prompt') return prompt(message, ...args);
   return alert(message);
 }
+
+// Function to validate date parts (year, month, day)
+function isValidDateParts(year, month, day) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  year = parseInt(year, 10);
+  month = parseInt(month, 10);
+  day = parseInt(day, 10);
+  if (year > currentYear) return false;
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+  return true;
+}
+
+// Function to normalize date strings into YYYY-MM-DD format
+export function normalizeDate(str) {
+  let y, m, d;
+  if (/^\d{4}[:\-]\d{2}[:\-]\d{2}$/.test(str)) {
+    [y, m, d] = str.replace(/:/g, '-').split('-');
+  } else if (/^\d{8}$/.test(str)) {
+    y = str.slice(0, 4); m = str.slice(4, 6); d = str.slice(6, 8);
+  } else if (/^\d{6}$/.test(str)) {
+    y = '20' + str.slice(0, 2); m = str.slice(2, 4); d = str.slice(4, 6);
+  } else if (/^\d{2}-\d{2}-\d{2}$/.test(str)) {
+    y = '20' + str.slice(0, 2); m = str.slice(3, 5); d = str.slice(6, 8);
+  } else {
+    return null;
+  }
+  if (!isValidDateParts(y, m, d)) return null;
+  return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+}

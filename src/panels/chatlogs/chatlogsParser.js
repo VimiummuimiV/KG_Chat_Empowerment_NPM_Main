@@ -3,7 +3,7 @@ import { minimalChatlogsDate } from "../../definitions.js";
 import { fetchChatLogs } from './chatlogs.js';
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
-import { getCurrentLanguage } from "../../helpers/helpers.js";
+import { getCurrentLanguage, normalizeDate } from "../../helpers/helpers.js";
 
 import {
   getExactUserIdByName,
@@ -24,34 +24,6 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
   let stopRequested = false;
   let abortController = null;
   const lang = getCurrentLanguage();
-
-  // Move these helpers to the top-level scope so they are accessible everywhere
-  function isValidDateParts(year, month, day) {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    year = parseInt(year, 10);
-    month = parseInt(month, 10);
-    day = parseInt(day, 10);
-    if (year > currentYear) return false;
-    if (month < 1 || month > 12) return false;
-    if (day < 1 || day > 31) return false;
-    return true;
-  }
-
-  function normalizeDate(str) {
-    let y, m, d;
-    if (/^\d{4}[:\-]\d{2}[:\-]\d{2}$/.test(str)) {
-      [y, m, d] = str.replace(/:/g, '-').split('-');
-    } else if (/^\d{8}$/.test(str)) {
-      y = str.slice(0, 4); m = str.slice(4, 6); d = str.slice(6, 8);
-    } else if (/^\d{6}$/.test(str)) {
-      y = '20' + str.slice(0, 2); m = str.slice(2, 4); d = str.slice(4, 6);
-    } else {
-      return null;
-    }
-    if (!isValidDateParts(y, m, d)) return null;
-    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-  }
 
   // Helper to get the messages container
   function getMessagesContainer(panelOrContainer) {
