@@ -15,82 +15,80 @@ function validateUserData(user) {
 
 // Main function to get profile summary and index data
 export async function getUserProfileData(userId, useLocalStorage = true) {
-  return new Promise(async (resolve, reject) => {
-    let cachedUserInfo = useLocalStorage ? JSON.parse(localStorage.getItem('fetchedUsers')) || {} : {};
-    const user = cachedUserInfo[userId];
+  let cachedUserInfo = useLocalStorage ? JSON.parse(localStorage.getItem('fetchedUsers')) || {} : {};
+  const user = cachedUserInfo[userId];
 
-    // Validate if user data exists and has the required properties
-    if (useLocalStorage && validateUserData(user)) {
-      // If all data is cached, resolve with the cached data
-      resolve({
-        rank: user.rank,
-        login: user.login,
-        registeredDate: user.registered,
-        bestSpeed: user.bestSpeed,
-        ratingLevel: user.ratingLevel,
-        friends: user.friends,
-        cars: user.cars,
-        avatar: user.avatar,
-        avatarTimestamp: user.avatarTimestamp
-      });
-    } else {
-      try {
-        // Fetch all summary and index data in just 2 requests
-        const [allUserData, allIndexData] = await Promise.all([
-          getDataById(userId, 'allUserData'),
-          getDataById(userId, 'allIndexData')
-        ]);
-        if (!allUserData || !allIndexData) throw new Error('Invalid data format received from the API.');
+  // Validate if user data exists and has the required properties
+  if (useLocalStorage && validateUserData(user)) {
+    // If all data is cached, return the cached data
+    return {
+      rank: user.rank,
+      login: user.login,
+      registeredDate: user.registered,
+      bestSpeed: user.bestSpeed,
+      ratingLevel: user.ratingLevel,
+      friends: user.friends,
+      cars: user.cars,
+      avatar: user.avatar,
+      avatarTimestamp: user.avatarTimestamp
+    };
+  }
 
-        // Extract fields from the two objects
-        const rank = allUserData.title || (allUserData.status?.title ?? null);
-        const login = allUserData.login || null;
-        const registeredDate = formatRegisteredDate(allIndexData.stats?.registered);
-        const bestSpeed = allIndexData.stats?.best_speed || 0;
-        const ratingLevel = allIndexData.stats?.rating_level || 0;
-        const friends = allIndexData.stats?.friends_cnt || 0;
-        const cars = allIndexData.stats?.cars_cnt || 0;
-        const avatar = allUserData.avatar || null;
-        const sec = avatar?.sec || 0;
-        const usec = avatar?.usec || 0;
-        const avatarTimestamp = (sec != null && usec != null)
-          ? convertToUpdatedTimestamp(sec, usec)
-          : null;
+  try {
+    // Fetch all summary and index data in just 2 requests
+    const [allUserData, allIndexData] = await Promise.all([
+      getDataById(userId, 'allUserData'),
+      getDataById(userId, 'allIndexData')
+    ]);
+    if (!allUserData || !allIndexData) throw new Error('Invalid data format received from the API.');
 
-        if (login && rank && registeredDate) {
-          if (useLocalStorage) {
-            cachedUserInfo[userId] = {
-              rank,
-              login,
-              registered: registeredDate,
-              bestSpeed,
-              ratingLevel,
-              friends,
-              cars,
-              avatar,
-              avatarTimestamp
-            };
-            localStorage.setItem('fetchedUsers', JSON.stringify(cachedUserInfo));
-          }
+    // Extract fields from the two objects
+    const rank = allUserData.title || (allUserData.status?.title ?? null);
+    const login = allUserData.login || null;
+    const registeredDate = formatRegisteredDate(allIndexData.stats?.registered);
+    const bestSpeed = allIndexData.stats?.best_speed || 0;
+    const ratingLevel = allIndexData.stats?.rating_level || 0;
+    const friends = allIndexData.stats?.friends_cnt || 0;
+    const cars = allIndexData.stats?.cars_cnt || 0;
+    const avatar = allUserData.avatar || null;
+    const sec = avatar?.sec || 0;
+    const usec = avatar?.usec || 0;
+    const avatarTimestamp = (sec != null && usec != null)
+      ? convertToUpdatedTimestamp(sec, usec)
+      : null;
 
-          resolve({
-            rank,
-            login,
-            registeredDate,
-            bestSpeed,
-            ratingLevel,
-            friends,
-            cars,
-            avatar,
-            avatarTimestamp
-          });
-        } else {
-          throw new Error('Invalid data format received from the API.');
-        }
-      } catch (error) {
-        console.error(`Error fetching user profile data for ${userId}:`, error);
-        reject(error);
+    if (login && rank && registeredDate) {
+      if (useLocalStorage) {
+        cachedUserInfo[userId] = {
+          rank,
+          login,
+          registered: registeredDate,
+          bestSpeed,
+          ratingLevel,
+          friends,
+          cars,
+          avatar,
+          avatarTimestamp
+        };
+        localStorage.setItem('fetchedUsers', JSON.stringify(cachedUserInfo));
       }
+
+      return {
+        rank,
+        login,
+        registeredDate,
+        bestSpeed,
+        ratingLevel,
+        friends,
+        cars,
+        avatar,
+        avatarTimestamp
+      };
+    } else {
+      throw new Error('Invalid data format received from the API.');
     }
-  });
+  } catch (error) {
+    console.error(`Error fetching user profile data for ${userId}:`, error);
+    throw error;
+  }
 }
