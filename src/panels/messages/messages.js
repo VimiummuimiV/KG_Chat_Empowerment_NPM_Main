@@ -433,9 +433,14 @@ export async function showMessagesPanel() {
 
   // Load messages on initial panel open
   async function loadMessages(messages) {
+
     messagesContainer.children.length && messagesContainer.replaceChildren();
 
-    // Loop through the messages and create elements
+    // Use a DocumentFragment to batch DOM updates
+    const fragment = document.createDocumentFragment();
+    let lastDate = null;
+    let lastUsername = null;
+
     Object.entries(messages).forEach(([, { time, date, username, usernameColor, message, type, userId }]) => {
       // If the current date is different from the last processed one, create a new date-item
       if (lastDate !== date) {
@@ -457,7 +462,7 @@ export async function showMessagesPanel() {
         dateItem.appendChild(emojiSpan);
 
         dateItem.dataset.date = date;
-        messagesContainer.appendChild(dateItem);
+        fragment.appendChild(dateItem);
         lastDate = date;
       }
 
@@ -515,9 +520,12 @@ export async function showMessagesPanel() {
       messageElement.appendChild(usernameElement);
       messageElement.appendChild(messageTextElement);
 
-      // Append the message element to the messages container
-      messagesContainer.appendChild(messageElement);
+      // Append the message element to the fragment
+      fragment.appendChild(messageElement);
     });
+
+    // After all elements are created, append the fragment to the container
+    messagesContainer.appendChild(fragment);
 
     requestAnimationFrame(() => {
       convertImageLinksToImage('personalMessages');
