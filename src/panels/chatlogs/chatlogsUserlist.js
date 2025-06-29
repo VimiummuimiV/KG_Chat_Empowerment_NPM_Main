@@ -19,6 +19,8 @@ export function renderActiveUsers(usernameMessageCountMap, parentContainer, user
       .sort(([, countA], [, countB]) => countB - countA);
     activeUsers.innerHTML = '';
 
+    // Batch DOM updates using a DocumentFragment
+    const fragment = document.createDocumentFragment();
     sortedUsernames.forEach(([username, count]) => {
       const userElement = document.createElement('div');
       userElement.className = 'active-user-item';
@@ -38,7 +40,8 @@ export function renderActiveUsers(usernameMessageCountMap, parentContainer, user
 
       userElement.appendChild(messageCountElement);
       userElement.appendChild(nicknameElement);
-      activeUsers.appendChild(userElement);
+      fragment.appendChild(userElement);
     });
+    activeUsers.appendChild(fragment);
   }
 }
