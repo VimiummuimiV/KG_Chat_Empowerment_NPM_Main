@@ -1124,8 +1124,13 @@ export async function showChatLogsPanel(personalMessagesDate) {
               prev = prev.previousElementSibling;
             }
             if (prev && prev.classList.contains('date-item')) {
-              // Use the text of the nearest previous .date-item as the date
-              date = prev.textContent.trim();
+              // Use only the text content of the .date-text child, not the whole .date-item
+              const dateText = prev.querySelector('.date-text');
+              if (dateText) {
+                date = dateText.textContent.trim();
+              } else {
+                date = prev.textContent.trim();
+              }
             }
           }
           copyChatlogsUrlToClipboard(date, time, timeElement);
