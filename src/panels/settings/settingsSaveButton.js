@@ -1,8 +1,9 @@
 import { addShakeEffect } from "../../animations.js";
 import { debounce } from "../../helpers/helpers.js";
-import { debounceTimeout } from "../../definitions.js";
+import { debounceTimeout, myNickname } from "../../definitions.js";
 import { settingsConfig } from "./settingsConfig.js";
 import { getSettingsData, processUploadedSettings } from "./settingsFileHandlers.js";
+import { createCustomTooltip, disableCustomTooltip } from "../../components/tooltip.js";
 
 /**
  * Initializes save button logic for the settings panel
@@ -65,10 +66,27 @@ export function initializeSaveButtonLogic(saveButton) {
       currentValues.usersToTrack.map(user => user.name.toLowerCase())
     );
 
-    // Process mention items
+    // Process mention items, prevent adding myNickname as a mention keyword
     container.querySelectorAll('.settings-mention-container .mention-item').forEach(item => {
       const mentionField = item.querySelector('.mention-field');
       const mentionValue = mentionField ? mentionField.value.trim() : '';
+      if (
+        mentionValue &&
+        typeof myNickname !== 'undefined' &&
+        myNickname &&
+        mentionValue.toLowerCase() === myNickname.toLowerCase()
+      ) {
+        mentionField.classList.add('input-error');
+        addShakeEffect(mentionField);
+        createCustomTooltip(mentionField, {
+          en: 'You cannot add your own nickname as a mention keyword.',
+          ru: 'Нельзя добавить свой собственный ник в ключевые слова упоминаний.'
+        });
+        return; // Skip pushing this mention keyword
+      } else {
+        mentionField.classList.remove('input-error');
+        disableCustomTooltip(mentionField);
+      }
       currentValues.mentionKeywords.push(mentionValue);
     });
 
@@ -81,12 +99,16 @@ export function initializeSaveButtonLogic(saveButton) {
 
       // If the original value exists in tracked users, prevent creating a new replacement item.
       if (trackedNames.has(originalValue.toLowerCase())) {
-        // Optionally, mark the field as invalid to notify the user.
         originalField.classList.add('input-error');
         addShakeEffect(originalField);
+        createCustomTooltip(originalField, {
+          en: 'You cannot create a replacement for a user you are already tracking.',
+          ru: 'Нельзя создать замену для пользователя, который уже отслеживается.'
+        });
         return; // Skip pushing this replacement item.
       } else {
         originalField.classList.remove('input-error');
+        disableCustomTooltip(originalField);
       }
 
       currentValues.usernameReplacements.push({

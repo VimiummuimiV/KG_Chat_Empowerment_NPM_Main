@@ -71,7 +71,7 @@ function interpolateTooltip(content, target) {
 }
 
 export function createCustomTooltip(element, tooltipContent, delegation = false) {
-  if (tooltipContent == null) return; // Skip if content is null/undefined
+  if (tooltipContent == null || tooltipContent === '') return; // Skip if content is null/undefined/empty
 
   // Create tooltip element if it doesn't exist
   tooltipEl ||= (() => {
@@ -156,12 +156,19 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
     if (typeof content === 'string') {
       content = interpolateTooltip(content, element);
     }
+    // If content is empty or falsy, do not set up tooltip
+    if (!content) {
+      element._tooltipContent = '';
+      return;
+    }
     element._tooltipContent = content;
 
     if (!element._tooltipInitialized) {
       element._tooltipInitialized = true;
 
       element.addEventListener('mouseenter', e => {
+        // Do not show tooltip if content is empty or falsy
+        if (!element._tooltipContent) return;
         tooltipIsVisible = true;
         tooltipCurrentTarget = element;
         clearTimeout(tooltipHideTimer);
@@ -189,7 +196,14 @@ export function createCustomTooltip(element, tooltipContent, delegation = false)
   }
 }
 
+// Disable a custom tooltip for an element (clears content, does not remove listeners)
+export function disableCustomTooltip(element) {
+  if (!element) return;
+  element._tooltipContent = '';
+}
+
 function highlightTooltipActions(str) {
+  if (typeof str !== 'string') return '';
   const regex = /\[([^\]]+)\]([^\[]*)/g;
   let result = '';
   let lastEnd = 0;
