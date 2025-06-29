@@ -21,13 +21,26 @@
 .delete-btn {
   z-index: 999;
   padding: 8px 16px;
-  background-color: hsl(0, 50%, 20%);
-  color: hsl(0, 60%, 70%);
-  border: 1px solid hsl(0, 50%, 35%);
   transition: all 0.3s;
   cursor: pointer;
   filter: brightness(1);
   border-radius: 0.2em !important;
+
+  &.message-mode {
+    background-color: hsl(0, 50%, 20%);
+    color: hsl(0, 60%, 70%);
+    border: 1px solid hsl(0, 50%, 35%);
+  }
+  &.username-mode {
+    background-color: hsl(145, 50%, 20%);
+    color: hsl(145, 60%, 70%);
+    border: 1px solid hsl(145, 50%, 35%);
+  }
+  &.time-mode {
+    background-color: hsl(200, 50%, 20%);
+    color: hsl(200, 60%, 70%);
+    border: 1px solid hsl(200, 50%, 35%);
+  }
 
   &:hover {
     filter: brightness(1.5);

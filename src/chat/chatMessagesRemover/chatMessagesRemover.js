@@ -131,11 +131,17 @@ export default class ChatMessagesRemover {
     // Prevent showing the delete button if text is already selected in the message
     if (isTextSelected()) return;
 
+
     const existingBtn = document.querySelector(".delete-btn");
     if (existingBtn) existingBtn.remove();
 
+    // Determine selection mode for color adaptation
+    let mode = "message-mode";
+    if (msg.classList.contains("username-mode")) mode = "username-mode";
+    else if (msg.classList.contains("time-mode")) mode = "time-mode";
+
     const btn = document.createElement("button");
-    btn.className = "delete-btn";
+    btn.className = `delete-btn ${mode}`;
     btn.textContent = "Delete";
 
     document.body.append(btn);
