@@ -1113,26 +1113,26 @@ export async function showChatLogsPanel(personalMessagesDate) {
       if (timeElement) {
         let date = dateInput.value;
         const time = timeElement.textContent;
+        // Always try to find the nearest previous .date-item for the correct date
+        let dateItem = timeElement.closest('.chat-logs-container');
+        if (dateItem) {
+          let prev = timeElement.parentElement;
+          while (prev && !prev.classList.contains('date-item')) {
+            prev = prev.previousElementSibling;
+          }
+          if (prev && prev.classList.contains('date-item')) {
+            // Use only the text content of the .date-text child, not the whole .date-item
+            const dateText = prev.querySelector('.date-text');
+            if (dateText) {
+              date = dateText.textContent.trim();
+            } else {
+              date = prev.textContent.trim();
+            }
+          }
+        }
         if (event.shiftKey) {
           event.preventDefault();
           event.stopPropagation();
-          // Try to find the nearest previous .date-item
-          let dateItem = timeElement.closest('.chat-logs-container');
-          if (dateItem) {
-            let prev = timeElement.parentElement;
-            while (prev && !prev.classList.contains('date-item')) {
-              prev = prev.previousElementSibling;
-            }
-            if (prev && prev.classList.contains('date-item')) {
-              // Use only the text content of the .date-text child, not the whole .date-item
-              const dateText = prev.querySelector('.date-text');
-              if (dateText) {
-                date = dateText.textContent.trim();
-              } else {
-                date = prev.textContent.trim();
-              }
-            }
-          }
           copyChatlogsUrlToClipboard(date, time, timeElement);
           return;
         }
