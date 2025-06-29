@@ -1,3 +1,4 @@
+import { localizedMessage } from "../../helpers/helpers.js";
 const sortIcons = {
   online: '✅',
   offline: '🛑',
@@ -64,7 +65,10 @@ export function createSortButtons(
   const sortButtonsContainer = document.createElement('div');
   sortButtonsContainer.className = 'sort-buttons-container';
 
-  const sortModes = ['online', 'offline', 'rankSpeed', 'ratingLevel', 'carsCount', 'friendsCount', 'visitsCount', 'alpha', 'registered'];
+  const sortModes = [
+    'online', 'offline', 'rankSpeed', 'ratingLevel', 'carsCount',
+    'friendsCount', 'visitsCount', 'alpha', 'registered'
+  ];
 
   sortModes.forEach(modeKey => {
     const button = document.createElement('button');
@@ -72,6 +76,16 @@ export function createSortButtons(
     button.textContent = sortIcons[modeKey];
     button.dataset.mode = modeKey;
     button.addEventListener('click', () => {
+      if ((modeKey === 'online' || modeKey === 'offline')) {
+        const anyWaiting = userElements.some(u => u.userElement.querySelector('.present-marker.waiting'));
+        if (anyWaiting) {
+          localizedMessage({
+            en: 'Some user statuses are still loading.',
+            ru: 'Статусы некоторых пользователей ещё загружаются.'
+          });
+          return;
+        }
+      }
       if (currentSortButton) currentSortButton.classList.remove('active');
       button.classList.add('active');
       currentSortButton = button;
