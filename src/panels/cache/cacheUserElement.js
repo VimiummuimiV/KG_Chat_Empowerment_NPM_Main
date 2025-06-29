@@ -43,7 +43,8 @@ export function createCachePanelUserElement(userId, userData) {
     cars: userData.cars,
     friends: userData.friends,
     bestSpeed: userData.bestSpeed || 0,
-    order: rankOrder[userData.rank] || 10
+    order: rankOrder[userData.rank] || 10,
+    visits: userData.visits !== undefined ? userData.visits : 0
   };
 
   if (typeof getDataById === 'function') {

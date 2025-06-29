@@ -4,7 +4,10 @@ const sortIcons = {
   rankSpeed: '🚀',
   ratingLevel: '⭐',
   carsCount: '🚖',
-  friendsCount: '🤝'
+  friendsCount: '🤝',
+  visitsCount: '👁️',
+  alpha: '🅰️',
+  registered: '📅'
 };
 
 function getSortFunction(sortMode) {
@@ -21,6 +24,26 @@ function getSortFunction(sortMode) {
       if (a.sortData.cars !== b.sortData.cars) return b.sortData.cars - a.sortData.cars;
     } else if (sortMode === 'friendsCount') {
       if (a.sortData.friends !== b.sortData.friends) return b.sortData.friends - a.sortData.friends;
+    } else if (sortMode === 'visitsCount') {
+      if (a.sortData.visits !== b.sortData.visits) return b.sortData.visits - a.sortData.visits;
+    } else if (sortMode === 'alpha') {
+      // Cyrillic first, then Latin, both alphabetically
+      const getAlphaType = (str) => {
+        if (/^[\u0400-\u04FF]/.test(str)) return 0; // Cyrillic
+        if (/^[A-Za-z]/.test(str)) return 1; // Latin
+        return 2; // Other
+      };
+      const aType = getAlphaType(a.userElement.querySelector('.login')?.textContent || '');
+      const bType = getAlphaType(b.userElement.querySelector('.login')?.textContent || '');
+      if (aType !== bType) return aType - bType;
+      const aLogin = (a.userElement.querySelector('.login')?.textContent || '').toLocaleLowerCase();
+      const bLogin = (b.userElement.querySelector('.login')?.textContent || '').toLocaleLowerCase();
+      return aLogin.localeCompare(bLogin);
+    } else if (sortMode === 'registered') {
+      // Sort by registration date (oldest first)
+      const aReg = new Date(a.registered);
+      const bReg = new Date(b.registered);
+      return aReg - bReg;
     }
     if (a.sortData.order !== b.sortData.order) return a.sortData.order - b.sortData.order;
     return b.sortData.bestSpeed - a.sortData.bestSpeed;
@@ -41,7 +64,7 @@ export function createSortButtons(
   const sortButtonsContainer = document.createElement('div');
   sortButtonsContainer.className = 'sort-buttons-container';
 
-  const sortModes = ['online', 'offline', 'rankSpeed', 'ratingLevel', 'carsCount', 'friendsCount'];
+  const sortModes = ['online', 'offline', 'rankSpeed', 'ratingLevel', 'carsCount', 'friendsCount', 'visitsCount', 'alpha', 'registered'];
 
   sortModes.forEach(modeKey => {
     const button = document.createElement('button');

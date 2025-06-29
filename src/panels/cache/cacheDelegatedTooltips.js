@@ -42,6 +42,24 @@ export function setupCacheTooltips(sortButtonsContainer, fetchedUsersContainer) 
           ru: 'Сортировать по количеству друзей'
         };
       }
+      if (el.classList.contains('visitsCount')) {
+        return {
+          en: 'Sort by visits count',
+          ru: 'Сортировать по количеству посещений'
+        };
+      }
+      if (el.classList.contains('alpha')) {
+        return {
+          en: 'Sort alphabetically',
+          ru: 'Сортировать по алфавиту'
+        };
+      }
+      if (el.classList.contains('registered')) {
+        return {
+          en: 'Sort by registration date',
+          ru: 'Сортировать по дате регистрации'
+        };
+      }
     });
 
   // Delegated tooltips for user metrics
