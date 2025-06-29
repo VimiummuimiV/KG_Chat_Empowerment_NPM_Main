@@ -19,6 +19,11 @@ export default class ChatMessagesRemover {
     document.addEventListener("mousedown", (e) => {
       const msgEl = e.target.closest(".messages-content p");
 
+      // Prevent selection mode if right-clicked on an anchor inside a message
+      if (e.button === 2 && e.target.closest('a') && msgEl) {
+        return;
+      }
+
       // Guard clause - if no message element is found, return early
       if (!msgEl) return;
 
@@ -93,7 +98,8 @@ export default class ChatMessagesRemover {
 
     document.addEventListener("contextmenu", (e) => {
       const msg = e.target.closest(".messages-content p");
-      if (msg) {
+      // Do not prevent context menu if right click was on an anchor
+      if (msg && !e.target.closest('a')) {
         if (!isTextSelected()) {
           e.preventDefault();
           this.showDeleteButton(e, msg);
