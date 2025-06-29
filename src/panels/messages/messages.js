@@ -181,8 +181,10 @@ export async function showMessagesPanel() {
     if (!bothDataExist) return;
 
     if (hasDataChanged && !isFirstPanelRun) {
-      const userConfirmed = window.confirm("Do you want to apply changes?");
-
+      const userConfirmed = localizedMessage({
+        en: "Do you want to apply changes?",
+        ru: "Вы хотите применить изменения?"
+      }, 'confirm');
       if (userConfirmed) {
         localStorage.setItem(PERSONAL_MESSAGES_KEY, backupData);
         localStorage.removeItem(PERSONAL_MESSAGES_BACKUP_KEY);

@@ -37,8 +37,13 @@ export async function parsePersonalMessages(date) {
   let usernameColorCache = JSON.parse(localStorage.getItem(USERNAME_COLOR_CACHE_KEY) || '{}');
   let usernameIdCache = JSON.parse(localStorage.getItem(USERNAME_ID_CACHE_KEY) || '{}');
 
-  // Get all unique, non-SYSTEM usernames from today's chatlog
-  const allUsernames = [...new Set(chatlogEntries.map(e => e.username).filter(u => u && u.trim() !== 'SYSTEM'))];
+  // Get all unique, non-SYSTEM usernames from today's chatlog (optimized with reduce)
+  const allUsernames = [...new Set(
+    chatlogEntries.reduce((acc, e) => {
+      if (e.username && e.username.trim() !== 'SYSTEM') acc.push(e.username);
+      return acc;
+    }, [])
+  )];
 
   // Find usernames missing from either cache
   const usernamesToFetch = allUsernames.filter(username => !usernameColorCache[username] || !usernameIdCache[username]);
