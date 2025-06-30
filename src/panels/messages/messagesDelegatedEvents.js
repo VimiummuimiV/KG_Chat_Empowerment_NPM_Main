@@ -90,6 +90,11 @@ export function setupMessagesEvents(messagesContainer, showMessagesPanel) {
 
     if (messageTextEl && messageItem.contains(messageTextEl)) {
       if (event.ctrlKey) {
+        // Prevent link navigation on ctrl+click for message links
+        if (event.target.closest('a')) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
         removeMessage(messageItem, 'single');
         return;
       }
