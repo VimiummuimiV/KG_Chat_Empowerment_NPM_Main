@@ -65,8 +65,6 @@ export function formatMessages(container, format, options = {}) {
         output += `${dateText}\n`;
       }
       isFirstLine = false;
-
-      output += `${prefix}: `;
     }
     else if (el.classList.contains('message-item')) {
       // Message item

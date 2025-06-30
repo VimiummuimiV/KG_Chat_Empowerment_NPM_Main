@@ -16,6 +16,14 @@
   background-color: #6b2f2f !important;
 }
 
+// Hide filtered messages efficiently
+.popup-panel {
+  .hidden-message,
+  .hidden-date {
+    display: none !important;
+  }
+}
+
 .popup-panel .date-item {
   position: relative;
   font: 1em Montserrat, sans-serif;

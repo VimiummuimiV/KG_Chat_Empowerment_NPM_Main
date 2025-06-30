@@ -1045,7 +1045,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
     // Filter message items based on the query
     messageItems.forEach((item, index) => {
-      const messageContainer = item.closest('.message-item'); // Get the closest message item container
+      const messageContainer = item.closest('.message-item');
       const messageDetailsItem = messageDetails[index];
 
       let shouldDisplay = false;
@@ -1066,13 +1066,11 @@ export async function showChatLogsPanel(personalMessagesDate) {
           normalizedMessageText.includes(queryWithoutSymbols);
       }
 
-      // Toggle visibility based on shouldDisplay using content visibility and font size
-      messageContainer.style.contentVisibility = shouldDisplay ? 'visible' : 'hidden';
-      // Set font size to 0 for hidden messages to maintain layout or remove the font size property
-      messageContainer.style.fontSize = shouldDisplay ? '' : '0';
+      // Use a class to hide/show messages
+      messageContainer.classList.toggle('hidden-message', !shouldDisplay);
     });
 
-    // --- Hide date headers with no visible messages ---
+    // --- Hide date headers with no visible messages (class-based) ---
     // Find all date-item elements
     const dateItems = allElements.filter(el => el.classList.contains('date-item'));
     for (let i = 0; i < dateItems.length; i++) {
@@ -1082,15 +1080,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
       let hasVisibleMessage = false;
       while (nextDateIndex < allElements.length && !allElements[nextDateIndex].classList.contains('date-item')) {
         const el = allElements[nextDateIndex];
-        if (el.classList.contains('message-item') && el.style.contentVisibility !== 'hidden' && el.style.fontSize !== '0') {
+        if (el.classList.contains('message-item') && !el.classList.contains('hidden-message')) {
           hasVisibleMessage = true;
           break;
         }
         nextDateIndex++;
       }
-      // Show or hide the date header using contentVisibility and fontSize
-      dateItem.style.contentVisibility = hasVisibleMessage ? 'visible' : 'hidden';
-      dateItem.style.fontSize = hasVisibleMessage ? '' : '0';
+      // Show or hide the date header using a class
+      dateItem.classList.toggle('hidden-date', !hasVisibleMessage);
     }
   }
 
@@ -1318,14 +1315,11 @@ export async function showChatLogsPanel(personalMessagesDate) {
       const hasMediaClass = item.querySelector('.media');
       const hasMentionClass = item.querySelector('.mention');
       if (visibleMessages.media) {
-        item.style.contentVisibility = hasMediaClass ? 'visible' : 'hidden';
-        item.style.fontSize = hasMediaClass ? '' : '0';
+        item.classList.toggle('hidden-message', !hasMediaClass);
       } else if (visibleMessages.mention) {
-        item.style.contentVisibility = hasMentionClass ? 'visible' : 'hidden';
-        item.style.fontSize = hasMentionClass ? '' : '0';
+        item.classList.toggle('hidden-message', !hasMentionClass);
       } else {
-        item.style.contentVisibility = 'visible';
-        item.style.fontSize = '';
+        item.classList.remove('hidden-message');
       }
     });
     // Update toggle button active states using direct references
