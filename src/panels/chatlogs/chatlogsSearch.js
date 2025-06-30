@@ -135,48 +135,33 @@ export function filterMessages(query) {
     return false;
   }
 
+  // Compact matching logic
+  function getMatchTargets(normalizedUsername, normalizedMessageText) {
+    if (forceUser) return [normalizedUsername];
+    if (forceWord) return [normalizedMessageText];
+    return [normalizedUsername, normalizedMessageText];
+  }
+
+  function matchesQuery(targets, queryParts, useOrLogic) {
+    const matchFn = useOrLogic ? 'some' : 'every';
+    return queryParts[matchFn](part => 
+      targets.some(target => normalizedMatch(target, part))
+    );
+  }
+
   messageItems.forEach((item, index) => {
     const messageContainer = item.closest('.message-item');
     const messageDetailsItem = messageDetails[index];
-    let shouldDisplay = false;
-
+    
     const normalizedUsername = normalize(messageDetailsItem.username);
     const normalizedMessageText = normalize(messageDetailsItem.messageText);
-
-    if (isEmptyQuery) {
-      shouldDisplay = true;
-    } else if (forceUser) {
-      // Forced username search
-      if (useOrLogic) {
-        // OR logic: any username part matches
-        shouldDisplay = queryParts.some(part => normalizedMatch(normalizedUsername, part));
-      } else {
-        // AND logic: all parts must match in username
-        shouldDisplay = queryParts.every(part => normalizedMatch(normalizedUsername, part));
-      }
-    } else if (forceWord) {
-      // Forced message/word search
-      if (useOrLogic) {
-        // OR logic: any word part matches in message
-        shouldDisplay = queryParts.some(part => normalizedMatch(normalizedMessageText, part));
-      } else {
-        // AND logic: all parts must match in message
-        shouldDisplay = queryParts.every(part => normalizedMatch(normalizedMessageText, part));
-      }
-    } else if (queryParts.length > 0) {
-      // Default search in both username and message
-      if (useOrLogic) {
-        // OR logic: any part matches in either username or message
-        shouldDisplay = queryParts.some(part =>
-          normalizedMatch(normalizedUsername, part) || normalizedMatch(normalizedMessageText, part)
-        );
-      } else {
-        // AND logic: all parts must be present somewhere (username or message)
-        shouldDisplay = queryParts.every(part =>
-          normalizedMatch(normalizedUsername, part) || normalizedMatch(normalizedMessageText, part)
-        );
-      }
-    }
+    
+    const shouldDisplay = isEmptyQuery || 
+      matchesQuery(
+        getMatchTargets(normalizedUsername, normalizedMessageText),
+        queryParts,
+        useOrLogic
+      );
 
     messageContainer.classList.toggle('hidden-message', !shouldDisplay);
   });
