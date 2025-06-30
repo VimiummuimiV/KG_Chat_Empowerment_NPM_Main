@@ -252,8 +252,20 @@ export function getMessageTextWithImgTitles(element) {
     if (node.nodeType === Node.TEXT_NODE) {
       result += node.textContent;
     } else if (node.nodeType === Node.ELEMENT_NODE) {
+      // Skip video-wrapper and its children except for .media anchors
+      if (node.classList && node.classList.contains('video-wrapper')) {
+        // Only extract href from <a class="media"> inside video-wrapper
+        const mediaLinks = node.querySelectorAll('a.media');
+        mediaLinks.forEach(link => {
+          if (link.href) result += link.href + ' ';
+        });
+        continue;
+      }
       if (node.tagName === 'IMG') {
         result += node.title || node.alt || '';
+      } else if (node.tagName === 'A') {
+        // For <a> tags, use href if present, otherwise fallback to text
+        result += node.href ? node.href : node.textContent;
       } else {
         result += getMessageTextWithImgTitles(node);
       }

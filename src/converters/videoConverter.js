@@ -137,7 +137,7 @@ export function convertVideoLinksToPlayer(containerType) {
   const selectors = {
     generalMessages: '.messages-content div',
     chatlogsMessages: '.chat-logs-container',
-    personalMessages: '.messages-container-wrapper'
+    personalMessages: '.messages-container'
   };
 
   // Validate selector for given containerType

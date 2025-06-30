@@ -204,7 +204,7 @@ export function convertImageLinksToImage(containerType) {
   const containerSelectors = {
     generalMessages: ".messages-content div",
     chatlogsMessages: ".chat-logs-container",
-    personalMessages: ".messages-container-wrapper"
+    personalMessages: ".messages-container"
   };
 
   const container = document.querySelector(containerSelectors[containerType]);
