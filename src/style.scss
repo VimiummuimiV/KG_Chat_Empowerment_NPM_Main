@@ -472,8 +472,8 @@
 .panel-control-buttons {
   display: flex;
 
-  > div:not(:first-child) {
-    margin-left: 0.5em;
+  > div:not(:last-child) {
+    margin-right: 0.5em;
   }
 }
 
