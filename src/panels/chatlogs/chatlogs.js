@@ -20,7 +20,7 @@ import {
 } from "../../icons.js";
 
 import { handleExportClick } from "../../helpers/messagesFormatter.js";
-import { localizedMessage, getFullMessageContent } from "../../helpers/helpers.js";
+import { localizedMessage } from "../../helpers/helpers.js";
 
 // helpers
 import {
@@ -64,6 +64,7 @@ import { addChatlogsMessageToPersonal } from './chatlogsToMessages.js';
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
 import { ensureUsernameColorsAndIds } from '../../helpers/colorUtils.js';
+import { filterMessages } from './chatlogsSearch.js';
 
 const { ignored } = settingsState;
 
@@ -390,7 +391,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
   panelHeaderContainer.appendChild(chatlogsSearchContainer);
 
   // Add input event listener to filter items as the user types
-  chatlogsSearchInput.addEventListener('input', () => filterItems(chatlogsSearchInput.value));
+  chatlogsSearchInput.addEventListener('input', () => filterMessages(chatlogsSearchInput.value));
 
   // Clears the input when the left mouse button (LMB) is clicked while holding the Ctrl key
   // Also updates the filtered items accordingly
@@ -398,7 +399,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
     if (event.ctrlKey) {
       chatlogsSearchInput.value = '';
       // Call the function to update the filtered items based on the cleared input
-      filterItems(chatlogsSearchInput.value);
+      filterMessages(chatlogsSearchInput.value);
     }
   });
 
@@ -961,7 +962,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
       // Call the function to load the total message count once
       loadTotalMessageCount();
       // Call the filter function with the updated input value
-      chatlogsSearchInput.value.length > 0 && filterItems(chatlogsSearchInput.value);
+      chatlogsSearchInput.value.length > 0 && filterMessages(chatlogsSearchInput.value);
 
       // Apply current visibility settings without toggling
       toggleMessagesVisibility(null, false);
@@ -994,102 +995,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
       ru: `Текущая дата: ${selectedDate}`
     }); // Update the tooltip with the selected date
   });
-
-  // Retrieves details from message items including usernames and message text.
-  function getMessageDetails(messageItems) {
-    // Cache message details including text, username, and message content
-    return messageItems.map(item => {
-      const usernameElement = item.querySelector('.message-username');
-      const username = usernameElement ? usernameElement.textContent.toLowerCase().trim() : '';
-      const messageTextElement = item.querySelector('.message-text');
-      const messageText = messageTextElement ? getFullMessageContent(messageTextElement).toLowerCase().trim() : '';
-      return { username, messageText };
-    });
-  }
-
-  // Filters message items based on the provided query and displays matching messages.
-  function filterItems(query) {
-    // If the query contains only digits, hyphens, or colons, do nothing
-    if (/^[\d-:]+$/.test(query.trim())) return;
-
-    // Helper function to replace underscores and hyphens with spaces and convert to lowercase
-    function normalizeText(text) {
-      return text.replace(/[_-]/g, ' ').toLowerCase(); // Replaces _ and - with spaces
-    }
-
-    // Normalize query by removing underscores and hyphens, then trimming spaces
-    const queryWithoutSymbols = normalizeText(query).trim();
-
-    // Retrieve message and date items within the filterItems function
-    const allElements = Array.from(
-      document.querySelectorAll(
-        '.chat-logs-container > .date-item, ' +
-        '.chat-logs-container > .message-item'
-      )
-    );
-    const messageItems = allElements.filter(el => el.classList.contains('message-item'));
-
-    const messageDetails = getMessageDetails(messageItems); // Get the message details
-    const isEmptyQuery = !queryWithoutSymbols;
-
-    // Split query by commas and trim parts
-    const queryParts = queryWithoutSymbols.split(',').map(part => part.trim()).filter(Boolean);
-
-    // Count matching usernames
-    const matchingUsernamesCount = queryParts.filter(part =>
-      messageDetails.some(detail => normalizeText(detail.username) === part)
-    ).length;
-
-    // Determine if User Mode is active (2 or more matching usernames)
-    const isUserMode = matchingUsernamesCount >= 2;
-
-    // Filter message items based on the query
-    messageItems.forEach((item, index) => {
-      const messageContainer = item.closest('.message-item');
-      const messageDetailsItem = messageDetails[index];
-
-      let shouldDisplay = false;
-
-      // Normalize underscores and hyphens in the username and message text
-      const normalizedUsername = normalizeText(messageDetailsItem.username);
-      const normalizedMessageText = normalizeText(messageDetailsItem.messageText);
-
-      if (isEmptyQuery) {
-        // Display all messages if the query is empty
-        shouldDisplay = true;
-      } else if (isUserMode) {
-        // User Mode: Match only by username
-        shouldDisplay = queryParts.some(part => normalizedUsername === part);
-      } else {
-        // Simple Mode: Treat the entire query (including commas) as part of the text search
-        shouldDisplay = normalizedUsername.includes(queryWithoutSymbols) ||
-          normalizedMessageText.includes(queryWithoutSymbols);
-      }
-
-      // Use a class to hide/show messages
-      messageContainer.classList.toggle('hidden-message', !shouldDisplay);
-    });
-
-    // --- Hide date headers with no visible messages (class-based) ---
-    // Find all date-item elements
-    const dateItems = allElements.filter(el => el.classList.contains('date-item'));
-    for (let i = 0; i < dateItems.length; i++) {
-      const dateItem = dateItems[i];
-      // Find all message-items between this dateItem and the next dateItem
-      let nextDateIndex = allElements.indexOf(dateItem) + 1;
-      let hasVisibleMessage = false;
-      while (nextDateIndex < allElements.length && !allElements[nextDateIndex].classList.contains('date-item')) {
-        const el = allElements[nextDateIndex];
-        if (el.classList.contains('message-item') && !el.classList.contains('hidden-message')) {
-          hasVisibleMessage = true;
-          break;
-        }
-        nextDateIndex++;
-      }
-      // Show or hide the date header using a class
-      dateItem.classList.toggle('hidden-date', !hasVisibleMessage);
-    }
-  }
 
   // Define the event handler function for chat logs panel
   panelsEvents.handleChatLogsKeydown = (event) => { // Assign the function to the object
@@ -1333,6 +1238,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
     toggleMentionMessages.classList.remove('active');
     toggleMediaMessages.classList.remove('active');
     chatlogsSearchInput.value = '';
-    filterItems('');
+    filterMessages('');
   }
 }
