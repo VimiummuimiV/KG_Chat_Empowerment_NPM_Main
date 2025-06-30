@@ -378,10 +378,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
     en: ` 
       [Ctrl + Click] clear input and reset filtered items
       [Valid date + Enter] load chat logs for the date in input field (e.g. 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)
+      [Search by name]: name(, name2…); prefix: name (partial) or prefix:: name (exact), e.g. name: iv / name:: Ivan. Prefixes: user, username, nick, name, nickname.
+      [Search by word]: word(, or(\\/|) word2…); prefix: word (partial) or prefix:: word (exact), e.g. word: priv / word:: privet. Prefixes: msg, message, text, word, content.
     `,
     ru: ` 
       [Ctrl + Click] очистить поле и сбросить фильтр
       [Корректная дата + Enter] загрузить чат-логи за выбранную дату (например, 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)
+      [Поиск по имени]: имя(, имя2…); приставка: имя (неполное) или приставка:: имя (точное), напр. имя: ив / имя:: Иван. Приставки: пользователь, ник, имя, никнейм.
+      [Поиск по слову]: слово(. или(\\/|) слово2…); приставка: слово (неполное) или приставка:: слово (точное), напр. слово: прив / слово:: привет. Приставки: сообщение, текст, слово, контент.
     `
   });
 

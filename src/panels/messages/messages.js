@@ -153,8 +153,16 @@ export async function showMessagesPanel() {
   messagesSearchInput.className = 'personal-messages-search-input';
   messagesSearchInput.type = 'search';
   createCustomTooltip(messagesSearchInput, {
-    en: '[Ctrl + Click] to clear search input and display all personal messages',
-    ru: '[Ctrl + Click] чтобы очистить поиск и показать все личные сообщения'
+    en: `
+      [Ctrl + Click] to clear search input and display all personal messages
+      [Search by name]: name(, name2…); prefix: name (partial) or prefix:: name (exact), e.g. name: iv / name:: Ivan. Prefixes: user, username, nick, name, nickname.
+      [Search by word]: word(, or(\\/|) word2…); prefix: word (partial) or prefix:: word (exact), e.g. word: priv / word:: privet. Prefixes: msg, message, text, word, content.
+    `,
+    ru: `
+      [Ctrl + Click] чтобы очистить поиск и показать все личные сообщения
+      [Поиск по имени]: имя(, имя2…); приставка: имя (неполное) или приставка:: имя (точное), напр. имя: ив / имя:: Иван. Приставки: пользователь, ник, имя, никнейм.
+      [Поиск по слову]: слово(. или(\\/|) слово2…); приставка: слово (неполное) или приставка:: слово (точное), напр. слово: прив / слово:: привет. Приставки: сообщение, текст, слово, контент. 
+    `
   });
 
   messagesSearchContainer.appendChild(messagesSearchInput);

@@ -191,11 +191,11 @@ export function filterMessages(query) {
   // Define search prefixes without colons
   const searchPrefixes = {
     user: {
-      en: ['user', 'username', 'nickname', 'name', 'nick'],
+      en: ['user', 'username', 'nick', 'name', 'nickname'],
       ru: ['пользователь', 'ник', 'имя', 'никнейм']
     },
     word: {
-      en: ['msg', 'message', 'content', 'word', 'text'],
+      en: ['msg', 'message', 'text', 'word', 'content'],
       ru: ['сообщение', 'текст', 'слово', 'контент']
     }
   };
