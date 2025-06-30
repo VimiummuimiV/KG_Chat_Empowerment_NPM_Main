@@ -38,10 +38,126 @@ function normalize(text) {
   return text.replace(/[_\-\s]/g, '').toLowerCase();
 }
 
+// Fixed highlighting function that properly handles multiple matches
+function highlightMatches(element, queryParts, exactMatch) {
+  if (!queryParts.length) return;
+  
+  // Clear existing search highlights
+  element.querySelectorAll('.search-match').forEach(span => {
+    span.replaceWith(document.createTextNode(span.textContent));
+  });
+  element.normalize();
+  
+  // Process each query part separately to avoid stale node references
+  for (const part of queryParts) {
+    if (part.length < 2) continue;
+    
+    highlightSinglePart(element, part, exactMatch);
+  }
+}
+
+function highlightSinglePart(element, part, exactMatch) {
+  // Get fresh text nodes for each part
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  let fullText = '';
+  let node;
+  
+  while (node = walker.nextNode()) {
+    if (node.textContent.trim()) {
+      textNodes.push({ node, start: fullText.length, text: node.textContent });
+      fullText += node.textContent;
+    }
+  }
+  
+  if (!fullText.trim()) return;
+  
+  // Find all matches for this part
+  const matches = [];
+  const searchText = exactMatch ? fullText : fullText.toLowerCase();
+  const searchPart = exactMatch ? part : part.toLowerCase();
+  
+  // Find direct matches
+  let index = 0;
+  while ((index = searchText.indexOf(searchPart, index)) !== -1) {
+    matches.push({ start: index, end: index + searchPart.length });
+    index++;
+  }
+  
+  // For fuzzy matching, also try normalized matching
+  if (!exactMatch) {
+    const normalizedText = normalize(fullText);
+    const normalizedPart = normalize(part);
+    
+    for (let i = 0; i <= fullText.length - normalizedPart.length; i++) {
+      for (let len = normalizedPart.length; len <= Math.min(fullText.length - i, normalizedPart.length * 2); len++) {
+        if (normalize(fullText.substring(i, i + len)) === normalizedPart) {
+          matches.push({ start: i, end: i + len });
+          break;
+        }
+      }
+    }
+  }
+  
+  // Remove overlaps and sort
+  if (matches.length === 0) return;
+  
+  const sortedMatches = matches.sort((a, b) => a.start - b.start);
+  const uniqueMatches = sortedMatches
+    .filter((match, i) => {
+      return !sortedMatches.slice(0, i).some(prev => match.start < prev.end && match.end > prev.start);
+    })
+    .reverse(); // Process from end to avoid index shifting
+  
+  // Apply highlights
+  uniqueMatches.forEach(match => {
+    applyHighlightToMatch(textNodes, match);
+  });
+}
+
+function applyHighlightToMatch(textNodes, match) {
+  // Find text nodes that intersect with this match
+  const affectedNodes = textNodes.filter(nodeInfo => {
+    const nodeEnd = nodeInfo.start + nodeInfo.text.length;
+    return match.start < nodeEnd && match.end > nodeInfo.start;
+  });
+  
+  // Process affected nodes
+  affectedNodes.forEach(nodeInfo => {
+    const nodeEnd = nodeInfo.start + nodeInfo.text.length;
+    const localStart = Math.max(0, match.start - nodeInfo.start);
+    const localEnd = Math.min(nodeInfo.text.length, match.end - nodeInfo.start);
+    
+    if (localStart < localEnd && nodeInfo.node.parentNode) {
+      const text = nodeInfo.node.textContent;
+      const fragment = document.createDocumentFragment();
+      
+      // Add text before match
+      if (localStart > 0) {
+        fragment.appendChild(document.createTextNode(text.substring(0, localStart)));
+      }
+      
+      // Add highlighted match
+      const span = document.createElement('span');
+      span.className = 'search-match';
+      span.textContent = text.substring(localStart, localEnd);
+      fragment.appendChild(span);
+      
+      // Add text after match
+      if (localEnd < text.length) {
+        fragment.appendChild(document.createTextNode(text.substring(localEnd)));
+      }
+      
+      // Replace the node
+      nodeInfo.node.parentNode.replaceChild(fragment, nodeInfo.node);
+    }
+  });
+}
+
 /**
  * Retrieves details from message items including usernames and message text.
  * @param {Element[]} messageItems - Array of message item DOM elements
- * @returns {Array<{username: string, messageText: string}>}
+ * @returns {Array<{username: string, messageText: string, usernameElement: Element, messageTextElement: Element}>}
  */
 export function getMessageDetails(messageItems) {
   return messageItems.map(item => {
@@ -49,7 +165,14 @@ export function getMessageDetails(messageItems) {
     const username = usernameElement ? usernameElement.textContent.toLowerCase().trim() : '';
     const messageTextElement = item.querySelector('.message-text');
     const messageText = messageTextElement ? getFullMessageContent(messageTextElement).toLowerCase().trim() : '';
-    return { username, messageText };
+    return { 
+      username, 
+      messageText, 
+      usernameElement, 
+      messageTextElement,
+      originalUsername: usernameElement ? usernameElement.textContent.trim() : '',
+      originalMessageText: messageTextElement ? getFullMessageContent(messageTextElement).trim() : ''
+    };
   });
 }
 
@@ -58,9 +181,12 @@ export function getMessageDetails(messageItems) {
  * @param {string} query - The search query
  */
 export function filterMessages(query) {
-
   // If the query contains only digits, hyphens, or colons, do nothing
-  if (/^[\d-:]+$/.test(query.trim())) return;
+  if (/^[\d-:]+$/.test(query.trim())) {
+    // Clear any existing highlighting when query is cleared
+    clearAllHighlighting();
+    return;
+  }
 
   // Define search prefixes without colons
   const searchPrefixes = {
@@ -105,6 +231,7 @@ export function filterMessages(query) {
 
   // Determine separator and search logic
   let queryParts = [];
+  let originalQueryParts = []; // Keep original parts for highlighting
   let useOrLogic = false; // Default to AND logic
   
   if (queryStr.includes(',')) {
@@ -113,6 +240,7 @@ export function filterMessages(query) {
       const trimmed = part.trim();
       return exactMatch ? trimmed.toLowerCase() : normalize(trimmed);
     }).filter(Boolean);
+    originalQueryParts = queryStr.split(',').map(part => part.trim()).filter(Boolean);
     useOrLogic = true;
   } else if ([".", "|", "\\", "/"].some(sep => queryStr.includes(sep))) {
     // Dot, pipe, backslash, or slash separation: OR logic for word-only search
@@ -120,12 +248,14 @@ export function filterMessages(query) {
       const trimmed = part.trim();
       return exactMatch ? trimmed.toLowerCase() : normalize(trimmed);
     }).filter(Boolean);
+    originalQueryParts = queryStr.split(/[.|\\/]/).map(part => part.trim()).filter(Boolean);
     useOrLogic = true;
     forceWord = true; // Force word search when using these separators
   } else {
     // Single term or space-separated terms: AND logic
     const trimmed = queryStr.trim();
     queryParts = [exactMatch ? trimmed.toLowerCase() : normalize(trimmed)].filter(Boolean);
+    originalQueryParts = [trimmed].filter(Boolean);
     useOrLogic = false;
   }
 
@@ -141,6 +271,11 @@ export function filterMessages(query) {
   const messageDetails = getMessageDetails(messageItems); // Get the message details
   // Use the query parts for empty check
   const isEmptyQuery = !queryParts.length;
+
+  // Clear all highlighting if empty query
+  if (isEmptyQuery) {
+    clearAllHighlighting();
+  }
 
   // Username/text search: partial, fuzzy, and subsequence match (for fuzzy matching)
   function normalizedMatch(normalizedValue, part) {
@@ -209,6 +344,39 @@ export function filterMessages(query) {
       );
 
     messageContainer.classList.toggle('hidden-message', !shouldDisplay);
+
+    // Apply highlighting only to visible messages
+    if (shouldDisplay && !isEmptyQuery) {
+      // Highlight username if not forcing word search only
+      if (!forceWord && messageDetailsItem.usernameElement) {
+        highlightMatches(
+          messageDetailsItem.usernameElement, 
+          originalQueryParts, 
+          exactMatch
+        );
+      }
+      
+      // Highlight message text if not forcing user search only
+      if (!forceUser && messageDetailsItem.messageTextElement) {
+        highlightMatches(
+          messageDetailsItem.messageTextElement, 
+          originalQueryParts, 
+          exactMatch
+        );
+      }
+    } else if (!shouldDisplay) {
+      // Clear highlighting from hidden messages
+      if (messageDetailsItem.usernameElement) {
+        messageDetailsItem.usernameElement.querySelectorAll('.search-match').forEach(span => {
+          span.replaceWith(document.createTextNode(span.textContent));
+        });
+      }
+      if (messageDetailsItem.messageTextElement) {
+        messageDetailsItem.messageTextElement.querySelectorAll('.search-match').forEach(span => {
+          span.replaceWith(document.createTextNode(span.textContent));
+        });
+      }
+    }
   });
 
   // --- Hide date headers with no visible messages (class-based) ---
@@ -230,4 +398,11 @@ export function filterMessages(query) {
     // Show or hide the date header using a class
     dateItem.classList.toggle('hidden-date', !hasVisibleMessage);
   }
+}
+
+// Helper function to clear all highlighting
+function clearAllHighlighting() {
+  document.querySelectorAll('.search-match').forEach(span => {
+    span.replaceWith(document.createTextNode(span.textContent));
+  });
 }
