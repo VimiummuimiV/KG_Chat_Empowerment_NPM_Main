@@ -62,31 +62,45 @@ export function filterMessages(query) {
   // If the query contains only digits, hyphens, or colons, do nothing
   if (/^[\d-:]+$/.test(query.trim())) return;
 
-  // Support force search for user:/username:/nickname:/name:/nick: or msg:/message:/content:/word:/text: (and Russian equivalents) at the start of the query
+  // Define search prefixes without colons
   const searchPrefixes = {
     user: {
-      en: ['user:', 'username:', 'nickname:', 'name:', 'nick:'],
-      ru: ['пользователь:', 'ник:', 'имя:', 'никнейм:']
+      en: ['user', 'username', 'nickname', 'name', 'nick'],
+      ru: ['пользователь', 'ник', 'имя', 'никнейм']
     },
     word: {
-      en: ['msg:', 'message:', 'content:', 'word:', 'text:'],
-      ru: ['сообщение:', 'текст:', 'слово:', 'контент:']
+      en: ['msg', 'message', 'content', 'word', 'text'],
+      ru: ['сообщение', 'текст', 'слово', 'контент']
     }
   };
 
   const userPrefixes = [...searchPrefixes.user.en, ...searchPrefixes.user.ru];
   const wordPrefixes = [...searchPrefixes.word.en, ...searchPrefixes.word.ru];
-  const userPrefixRegex = new RegExp(`^(${userPrefixes.join('|')})`, 'i');
-  const wordPrefixRegex = new RegExp(`^(${wordPrefixes.join('|')})`, 'i');
+  
+  // Create regex patterns for exact match (::) and fuzzy match (:)
+  const userExactRegex = new RegExp(`^(${userPrefixes.join('|')})::`, 'i');
+  const userFuzzyRegex = new RegExp(`^(${userPrefixes.join('|')}):(?!:)`, 'i');
+  const wordExactRegex = new RegExp(`^(${wordPrefixes.join('|')})::`, 'i');
+  const wordFuzzyRegex = new RegExp(`^(${wordPrefixes.join('|')}):(?!:)`, 'i');
 
-  let forceUser = false, forceWord = false;
+  let forceUser = false, forceWord = false, exactMatch = false;
   let queryStr = query.trim();
-  if (userPrefixRegex.test(queryStr)) {
+  
+  // Check for exact match prefixes first (double colon)
+  if (userExactRegex.test(queryStr)) {
     forceUser = true;
-    queryStr = queryStr.replace(userPrefixRegex, '');
-  } else if (wordPrefixRegex.test(queryStr)) {
+    exactMatch = true;
+    queryStr = queryStr.replace(userExactRegex, '');
+  } else if (wordExactRegex.test(queryStr)) {
     forceWord = true;
-    queryStr = queryStr.replace(wordPrefixRegex, '');
+    exactMatch = true;
+    queryStr = queryStr.replace(wordExactRegex, '');
+  } else if (userFuzzyRegex.test(queryStr)) {
+    forceUser = true;
+    queryStr = queryStr.replace(userFuzzyRegex, '');
+  } else if (wordFuzzyRegex.test(queryStr)) {
+    forceWord = true;
+    queryStr = queryStr.replace(wordFuzzyRegex, '');
   }
 
   // Determine separator and search logic
@@ -95,16 +109,23 @@ export function filterMessages(query) {
   
   if (queryStr.includes(',')) {
     // Comma separation: OR logic for multiple users/terms
-    queryParts = queryStr.split(',').map(part => normalize(part.trim())).filter(Boolean);
+    queryParts = queryStr.split(',').map(part => {
+      const trimmed = part.trim();
+      return exactMatch ? trimmed.toLowerCase() : normalize(trimmed);
+    }).filter(Boolean);
     useOrLogic = true;
   } else if ([".", "|", "\\", "/"].some(sep => queryStr.includes(sep))) {
     // Dot, pipe, backslash, or slash separation: OR logic for word-only search
-    queryParts = queryStr.split(/[.|\\/]/).map(part => normalize(part.trim())).filter(Boolean);
+    queryParts = queryStr.split(/[.|\\/]/).map(part => {
+      const trimmed = part.trim();
+      return exactMatch ? trimmed.toLowerCase() : normalize(trimmed);
+    }).filter(Boolean);
     useOrLogic = true;
     forceWord = true; // Force word search when using these separators
   } else {
     // Single term or space-separated terms: AND logic
-    queryParts = [normalize(queryStr)].filter(Boolean);
+    const trimmed = queryStr.trim();
+    queryParts = [exactMatch ? trimmed.toLowerCase() : normalize(trimmed)].filter(Boolean);
     useOrLogic = false;
   }
 
@@ -118,10 +139,10 @@ export function filterMessages(query) {
   const messageItems = allElements.filter(el => el.classList.contains('message-item'));
 
   const messageDetails = getMessageDetails(messageItems); // Get the message details
-  // Use the normalized query for empty check (matches previous logic)
+  // Use the query parts for empty check
   const isEmptyQuery = !queryParts.length;
 
-  // Username/text search: partial, fuzzy, and subsequence match
+  // Username/text search: partial, fuzzy, and subsequence match (for fuzzy matching)
   function normalizedMatch(normalizedValue, part) {
     // Ignore too-short search parts (avoid matching single letters)
     if (part.length < 2) return false;
@@ -135,17 +156,39 @@ export function filterMessages(query) {
     return false;
   }
 
-  // Compact matching logic
-  function getMatchTargets(normalizedUsername, normalizedMessageText) {
-    if (forceUser) return [normalizedUsername];
-    if (forceWord) return [normalizedMessageText];
-    return [normalizedUsername, normalizedMessageText];
+  // Exact match function (case-insensitive but preserves spaces, hyphens, underscores)
+  function exactMatchFunction(originalValue, part, isUsername = false) {
+    if (isUsername) {
+      // For usernames, require complete match
+      return originalValue.toLowerCase() === part;
+    } else {
+      // For message content, allow partial match but with exact text (no normalization)
+      return originalValue.toLowerCase().includes(part);
+    }
   }
 
-  function matchesQuery(targets, queryParts, useOrLogic) {
+  // Compact matching logic
+  function getMatchTargets(username, messageText, normalizedUsername, normalizedMessageText) {
+    if (exactMatch) {
+      // For exact match, use original values (lowercased for case-insensitive comparison)
+      if (forceUser) return [username];
+      if (forceWord) return [messageText];
+      return [username, messageText];
+    } else {
+      // For fuzzy match, use normalized values
+      if (forceUser) return [normalizedUsername];
+      if (forceWord) return [normalizedMessageText];
+      return [normalizedUsername, normalizedMessageText];
+    }
+  }
+
+  function matchesQuery(targets, queryParts, useOrLogic, isExactMatch, isUserSearch = false) {
     const matchFn = useOrLogic ? 'some' : 'every';
+    const matchFunction = isExactMatch ? 
+      (target, part) => exactMatchFunction(target, part, isUserSearch) : 
+      normalizedMatch;
     return queryParts[matchFn](part => 
-      targets.some(target => normalizedMatch(target, part))
+      targets.some(target => matchFunction(target, part))
     );
   }
 
@@ -158,9 +201,16 @@ export function filterMessages(query) {
     
     const shouldDisplay = isEmptyQuery || 
       matchesQuery(
-        getMatchTargets(normalizedUsername, normalizedMessageText),
+        getMatchTargets(
+          messageDetailsItem.username,
+          messageDetailsItem.messageText,
+          normalizedUsername,
+          normalizedMessageText
+        ),
         queryParts,
-        useOrLogic
+        useOrLogic,
+        exactMatch,
+        forceUser
       );
 
     messageContainer.classList.toggle('hidden-message', !shouldDisplay);
