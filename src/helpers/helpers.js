@@ -245,8 +245,8 @@ export function isTextSelected() {
   return window.getSelection().toString().length > 0;
 }
 
-// Function to get message text with image titles
-export function getMessageTextWithImgTitles(element) {
+// Function to get full message content, including image titles (for emoticons/images)
+export function getFullMessageContent(element) {
   let result = '';
   for (const node of element.childNodes) {
     if (node.nodeType === Node.TEXT_NODE) {
@@ -267,7 +267,7 @@ export function getMessageTextWithImgTitles(element) {
         // For <a> tags, use href if present, otherwise fallback to text
         result += node.href ? node.href : node.textContent;
       } else {
-        result += getMessageTextWithImgTitles(node);
+        result += getFullMessageContent(node);
       }
     }
   }

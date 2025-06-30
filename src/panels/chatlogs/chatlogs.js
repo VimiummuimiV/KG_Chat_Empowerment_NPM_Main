@@ -20,7 +20,7 @@ import {
 } from "../../icons.js";
 
 import { handleExportClick } from "../../helpers/messagesFormatter.js";
-import { localizedMessage } from "../../helpers/helpers.js";
+import { localizedMessage, getFullMessageContent } from "../../helpers/helpers.js";
 
 // helpers
 import {
@@ -1000,9 +1000,9 @@ export async function showChatLogsPanel(personalMessagesDate) {
     // Cache message details including text, username, and message content
     return messageItems.map(item => {
       const usernameElement = item.querySelector('.message-username');
-      const username = usernameElement ? usernameElement.textContent.toLowerCase().trim() : ''; // Get username text, if available
+      const username = usernameElement ? usernameElement.textContent.toLowerCase().trim() : '';
       const messageTextElement = item.querySelector('.message-text');
-      const messageText = messageTextElement ? messageTextElement.textContent.toLowerCase().trim() : ''; // Get message text, if available
+      const messageText = messageTextElement ? getFullMessageContent(messageTextElement).toLowerCase().trim() : '';
       return { username, messageText };
     });
   }

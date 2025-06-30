@@ -1,5 +1,5 @@
 import { rgbToHex } from "./colorUtils.js";
-import { getCurrentLanguage, getMessageTextWithImgTitles } from "../helpers/helpers.js";
+import { getCurrentLanguage, getFullMessageContent } from "../helpers/helpers.js";
 
 const lang = getCurrentLanguage();
 
@@ -72,7 +72,7 @@ export function formatMessages(container, format, options = {}) {
       const username = el.querySelector('.message-username')?.textContent?.trim() || '';
       const messageTextElement = el.querySelector('.message-text');
       const message = messageTextElement ?
-        getMessageTextWithImgTitles(messageTextElement) : '';
+        getFullMessageContent(messageTextElement) : '';
 
       // Create message URL
       const effectiveDate = date || currentDate || new Date().toISOString().slice(0, 10);

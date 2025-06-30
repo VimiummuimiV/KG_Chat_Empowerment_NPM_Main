@@ -6,7 +6,7 @@ import {
 
 import { addJumpEffect } from '../../animations.js';
 import { today } from '../../definitions.js';
-import { getMessageTextWithImgTitles } from '../../helpers/helpers.js';
+import { getFullMessageContent } from '../../helpers/helpers.js';
 
 /**
  * Adds a message from chatlogs to personal messages localStorage and triggers UI effect.
@@ -16,7 +16,7 @@ import { getMessageTextWithImgTitles } from '../../helpers/helpers.js';
 export function addChatlogsMessageToPersonal(messageItem, dateInput) {
   const username = messageItem.querySelector('.message-username')?.textContent?.trim();
   const messageTextElement = messageItem.querySelector('.message-text');
-  const message = messageTextElement ? getMessageTextWithImgTitles(messageTextElement) : '';
+  const message = messageTextElement ? getFullMessageContent(messageTextElement) : '';
   const time = messageItem.querySelector('.message-time')?.textContent?.trim();
   // Find the date for this message
   let date = dateInput.value;

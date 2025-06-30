@@ -15,10 +15,7 @@ import {
 } from "../../icons.js";
 
 // helpers && helpers definitions
-import {
-  removePreviousPanel,
-  getMessageTextWithImgTitles
-} from '../../helpers/helpers.js';
+import { removePreviousPanel, getFullMessageContent } from '../../helpers/helpers.js';
 
 import {
   findGeneralChatMessage,
@@ -613,7 +610,7 @@ export async function showMessagesPanel() {
         const time = nextEl.querySelector('.message-time')?.textContent.toLowerCase().replace(/_/g, ' ') || '';
         const username = nextEl.querySelector('.message-username')?.textContent.toLowerCase().replace(/_/g, ' ') || '';
         const messageTextElement = nextEl.querySelector('.message-text');
-        const message = messageTextElement ? getMessageTextWithImgTitles(messageTextElement).toLowerCase().replace(/_/g, ' ') : '';
+        const message = messageTextElement ? getFullMessageContent(messageTextElement).toLowerCase().replace(/_/g, ' ') : '';
         const match = (time + ' ' + username + ' ' + message).includes(query);
 
         // Use class-based toggling for message visibility
