@@ -61,8 +61,35 @@ export function filterMessages(query) {
   // If the query contains only digits, hyphens, or colons, do nothing
   if (/^[\d-:]+$/.test(query.trim())) return;
 
+  // Support force search for user:/username:/nickname:/name:/nick: or msg:/message:/content:/word:/text: (and Russian equivalents) at the start of the query
+  const searchPrefixes = {
+    user: {
+      en: ['user:', 'username:', 'nickname:', 'name:', 'nick:'],
+      ru: ['пользователь:', 'ник:', 'имя:', 'никнейм:']
+    },
+    word: {
+      en: ['msg:', 'message:', 'content:', 'word:', 'text:'],
+      ru: ['сообщение:', 'текст:', 'слово:', 'контент:']
+    }
+  };
+
+  const userPrefixes = [...searchPrefixes.user.en, ...searchPrefixes.user.ru];
+  const wordPrefixes = [...searchPrefixes.word.en, ...searchPrefixes.word.ru];
+  const userPrefixRegex = new RegExp(`^(${userPrefixes.join('|')})`, 'i');
+  const wordPrefixRegex = new RegExp(`^(${wordPrefixes.join('|')})`, 'i');
+
+  let forceUser = false, forceWord = false;
+  let queryStr = query.trim();
+  if (userPrefixRegex.test(queryStr)) {
+    forceUser = true;
+    queryStr = queryStr.replace(userPrefixRegex, '');
+  } else if (wordPrefixRegex.test(queryStr)) {
+    forceWord = true;
+    queryStr = queryStr.replace(wordPrefixRegex, '');
+  }
+
   // Split query by commas for multi-username or multi-word search (do NOT normalize commas)
-  const queryParts = query.split(',').map(part => normalize(part.trim())).filter(Boolean);
+  const queryParts = queryStr.split(',').map(part => normalize(part.trim())).filter(Boolean);
 
   // Retrieve message and date items within the filterMessages function
   const allElements = Array.from(
@@ -77,7 +104,6 @@ export function filterMessages(query) {
   // Use the normalized query for empty check (matches previous logic)
   const isEmptyQuery = !queryParts.length;
 
-  // Username search: partial and fuzzy match
   // Username/text search: partial, fuzzy, and subsequence match
   function normalizedMatch(normalizedValue, part) {
     // Ignore too-short search parts (avoid matching single letters)
@@ -92,11 +118,6 @@ export function filterMessages(query) {
     return false;
   }
 
-  // If any part of the query matches a username (using normalizedMatch), treat as username search
-  const isUserMode = queryParts.some(part =>
-    messageDetails.some(detail => normalizedMatch(normalize(detail.username), part))
-  );
-
   messageItems.forEach((item, index) => {
     const messageContainer = item.closest('.message-item');
     const messageDetailsItem = messageDetails[index];
@@ -107,11 +128,14 @@ export function filterMessages(query) {
 
     if (isEmptyQuery) {
       shouldDisplay = true;
-    } else if (isUserMode) {
-      // Username search: match if any query part matches normalized username (partial/fuzzy/subsequence)
+    } else if (forceUser) {
+      // Forced username search: only check username
       shouldDisplay = queryParts.some(part => normalizedMatch(normalizedUsername, part));
+    } else if (forceWord) {
+      // Forced message/word search: only check message text
+      shouldDisplay = queryParts.some(part => normalizedMatch(normalizedMessageText, part));
     } else if (queryParts.length > 0) {
-      // Word search: all query parts must be present in username or message (AND logic, both fuzzy)
+      // Default: all query parts must be present in username or message (AND logic, both fuzzy)
       shouldDisplay = queryParts.every(word =>
         normalizedMatch(normalizedUsername, word) || normalizedMatch(normalizedMessageText, word)
       );
