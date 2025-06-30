@@ -616,14 +616,13 @@ export async function showMessagesPanel() {
         const message = messageTextElement ? getMessageTextWithImgTitles(messageTextElement).toLowerCase().replace(/_/g, ' ') : '';
         const match = (time + ' ' + username + ' ' + message).includes(query);
 
-        // Toggle visibility based on match using content visibility and font size
-        nextEl.style.contentVisibility = match ? 'visible' : 'hidden';
-        // Set font size to 0 for hidden messages to maintain layout or remove the font size property
-        nextEl.style.fontSize = match ? '' : '0';
+        // Use class-based toggling for message visibility
+        nextEl.classList.toggle('hidden-message', !match);
         showDateForGroup = showDateForGroup || match;
         nextEl = nextEl.nextElementSibling;
       }
-      dateEl.style.display = showDateForGroup ? '' : 'none';
+      // Use class-based toggling for date header visibility
+      dateEl.classList.toggle('hidden-date', !showDateForGroup);
     });
   });
 
