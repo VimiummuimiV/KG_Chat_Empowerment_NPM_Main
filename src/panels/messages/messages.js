@@ -15,7 +15,8 @@ import {
 } from "../../icons.js";
 
 // helpers && helpers definitions
-import { removePreviousPanel, getFullMessageContent } from '../../helpers/helpers.js';
+import { removePreviousPanel } from '../../helpers/helpers.js';
+import { filterMessages } from '../../helpers/messagesSearch.js';
 
 import {
   findGeneralChatMessage,
@@ -393,7 +394,7 @@ export async function showMessagesPanel() {
   cachedMessagesPanel.appendChild(panelHeaderContainer);
 
   const messagesContainer = document.createElement('div');
-  messagesContainer.className = 'messages-container';
+  messagesContainer.className = 'messages-container messages-search-container';
 
   function attachMutationObserver() {
     // Set up MutationObserver to monitor removal of child elements
@@ -599,28 +600,8 @@ export async function showMessagesPanel() {
   // It searches through messages grouped by date and displays the corresponding date
   // Only if there are matching messages in that group.
   messagesSearchInput.addEventListener('input', () => {
-    const query = messagesSearchInput.value.toLowerCase().replace(/_/g, ' ');
-
-    messagesContainer.querySelectorAll('.date-item').forEach(dateEl => {
-      let showDateForGroup = false;
-      let nextEl = dateEl.nextElementSibling;
-
-      // Iterate through messages in the current group (until the next date item)
-      while (nextEl && !nextEl.classList.contains('date-item')) {
-        const time = nextEl.querySelector('.message-time')?.textContent.toLowerCase().replace(/_/g, ' ') || '';
-        const username = nextEl.querySelector('.message-username')?.textContent.toLowerCase().replace(/_/g, ' ') || '';
-        const messageTextElement = nextEl.querySelector('.message-text');
-        const message = messageTextElement ? getFullMessageContent(messageTextElement).toLowerCase().replace(/_/g, ' ') : '';
-        const match = (time + ' ' + username + ' ' + message).includes(query);
-
-        // Use class-based toggling for message visibility
-        nextEl.classList.toggle('hidden-message', !match);
-        showDateForGroup = showDateForGroup || match;
-        nextEl = nextEl.nextElementSibling;
-      }
-      // Use class-based toggling for date header visibility
-      dateEl.classList.toggle('hidden-date', !showDateForGroup);
-    });
+    // Use the unified filterMessages for personal messages
+    filterMessages(messagesSearchInput.value);
   });
 
   // Focus on the search input using requestAnimationFrame

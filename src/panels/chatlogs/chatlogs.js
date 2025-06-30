@@ -64,7 +64,7 @@ import { addChatlogsMessageToPersonal } from './chatlogsToMessages.js';
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
 import { ensureUsernameColorsAndIds } from '../../helpers/colorUtils.js';
-import { filterMessages } from './chatlogsSearch.js';
+import { filterMessages } from '../../helpers/messagesSearch.js';
 
 const { ignored } = settingsState;
 
@@ -864,7 +864,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
   // Create a container for the chat logs
   const chatLogsContainer = document.createElement('div');
-  chatLogsContainer.className = 'chat-logs-container';
+  chatLogsContainer.className = 'chat-logs-container messages-search-container';
 
   // Append the header and chat logs container to the chat logs panel
   chatLogsPanel.appendChild(panelHeaderContainer);

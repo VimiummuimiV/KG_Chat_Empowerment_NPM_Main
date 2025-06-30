@@ -1,4 +1,4 @@
-import { getFullMessageContent } from "../../helpers/helpers.js";
+import { getFullMessageContent } from "./helpers.js";
 
 // Checks if `needle` is a subsequence of `haystack` (letters in order, possibly skipping some)
 function isSubsequence(needle, haystack) {
@@ -260,10 +260,10 @@ export function filterMessages(query) {
   }
 
   // Retrieve message and date items within the filterMessages function
+  const containerSelector = '.messages-search-container';
   const allElements = Array.from(
     document.querySelectorAll(
-      '.chat-logs-container > .date-item, ' +
-      '.chat-logs-container > .message-item'
+      `${containerSelector} > .date-item, ${containerSelector} > .message-item`
     )
   );
   const messageItems = allElements.filter(el => el.classList.contains('message-item'));
