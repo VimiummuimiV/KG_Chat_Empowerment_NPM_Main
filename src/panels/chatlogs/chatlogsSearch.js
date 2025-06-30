@@ -1,3 +1,5 @@
+import { getFullMessageContent } from "../../helpers/helpers.js";
+
 // Checks if `needle` is a subsequence of `haystack` (letters in order, possibly skipping some)
 function isSubsequence(needle, haystack) {
   let i = 0, j = 0;
@@ -30,7 +32,6 @@ function levenshtein(a, b) {
   }
   return matrix[b.length][a.length];
 }
-import { getFullMessageContent } from "../../helpers/helpers.js";
 
 // Unified normalize function: removes _, -, spaces (does NOT remove commas or dots)
 function normalize(text) {
@@ -88,8 +89,24 @@ export function filterMessages(query) {
     queryStr = queryStr.replace(wordPrefixRegex, '');
   }
 
-  // Split query by commas for multi-username or multi-word search (do NOT normalize commas)
-  const queryParts = queryStr.split(',').map(part => normalize(part.trim())).filter(Boolean);
+  // Determine separator and search logic
+  let queryParts = [];
+  let useOrLogic = false; // Default to AND logic
+  
+  if (queryStr.includes(',')) {
+    // Comma separation: OR logic for multiple users/terms
+    queryParts = queryStr.split(',').map(part => normalize(part.trim())).filter(Boolean);
+    useOrLogic = true;
+  } else if ([".", "|", "\\", "/"].some(sep => queryStr.includes(sep))) {
+    // Dot, pipe, backslash, or slash separation: OR logic for word-only search
+    queryParts = queryStr.split(/[.|\\/]/).map(part => normalize(part.trim())).filter(Boolean);
+    useOrLogic = true;
+    forceWord = true; // Force word search when using these separators
+  } else {
+    // Single term or space-separated terms: AND logic
+    queryParts = [normalize(queryStr)].filter(Boolean);
+    useOrLogic = false;
+  }
 
   // Retrieve message and date items within the filterMessages function
   const allElements = Array.from(
@@ -129,16 +146,36 @@ export function filterMessages(query) {
     if (isEmptyQuery) {
       shouldDisplay = true;
     } else if (forceUser) {
-      // Forced username search: only check username
-      shouldDisplay = queryParts.some(part => normalizedMatch(normalizedUsername, part));
+      // Forced username search
+      if (useOrLogic) {
+        // OR logic: any username part matches
+        shouldDisplay = queryParts.some(part => normalizedMatch(normalizedUsername, part));
+      } else {
+        // AND logic: all parts must match in username
+        shouldDisplay = queryParts.every(part => normalizedMatch(normalizedUsername, part));
+      }
     } else if (forceWord) {
-      // Forced message/word search: only check message text
-      shouldDisplay = queryParts.some(part => normalizedMatch(normalizedMessageText, part));
+      // Forced message/word search
+      if (useOrLogic) {
+        // OR logic: any word part matches in message
+        shouldDisplay = queryParts.some(part => normalizedMatch(normalizedMessageText, part));
+      } else {
+        // AND logic: all parts must match in message
+        shouldDisplay = queryParts.every(part => normalizedMatch(normalizedMessageText, part));
+      }
     } else if (queryParts.length > 0) {
-      // Default: all query parts must be present in username or message (AND logic, both fuzzy)
-      shouldDisplay = queryParts.every(word =>
-        normalizedMatch(normalizedUsername, word) || normalizedMatch(normalizedMessageText, word)
-      );
+      // Default search in both username and message
+      if (useOrLogic) {
+        // OR logic: any part matches in either username or message
+        shouldDisplay = queryParts.some(part =>
+          normalizedMatch(normalizedUsername, part) || normalizedMatch(normalizedMessageText, part)
+        );
+      } else {
+        // AND logic: all parts must be present somewhere (username or message)
+        shouldDisplay = queryParts.every(part =>
+          normalizedMatch(normalizedUsername, part) || normalizedMatch(normalizedMessageText, part)
+        );
+      }
     }
 
     messageContainer.classList.toggle('hidden-message', !shouldDisplay);

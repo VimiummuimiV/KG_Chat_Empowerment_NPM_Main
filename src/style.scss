@@ -10,66 +10,74 @@
   border: 1px solid #45474b;
 }
 
-// Input error indication
-.input-error {
-  transition: background-color 300ms ease-in-out;
-  background-color: #6b2f2f !important;
-}
-
-// Hide filtered messages efficiently
+// Hide filtered messages efficiently and style popup panel elements (properly nested)
 .popup-panel {
   .hidden-message,
   .hidden-date {
     display: none !important;
   }
-}
 
-.popup-panel .date-item {
-  position: relative;
-  font: 1em Montserrat, sans-serif;
-  color: burlywood;
-  background-color: rgba(222, 184, 135, 0.1);
-  width: fit-content;
-  margin: 2em 1em 1em;
-  padding: 0.4em 0.8em;
-  text-align: center;
-  border-radius: 0.4em !important;
-  left: 50%;
-  transform: translateX(-50%);
-}
+  // Input error indication
+  .input-error {
+    transition: background-color 300ms ease-in-out;
+    background-color: #6b2f2f !important;
+  }
 
-.popup-panel .search-messages-info,
-.popup-panel .search-results-info,
-.popup-panel .search-messages-date,
-.popup-panel .no-messages-info,
-.popup-panel .error-message-info {
-  padding: 0.5em;
-  border-radius: 0.4em !important;
-  width: fit-content;
-  margin: 0.5em;
-  grid-column: 1 / -1;
-}
+  .date-item {
+    position: relative;
+    font: 1em Montserrat, sans-serif;
+    color: burlywood;
+    background-color: rgba(222, 184, 135, 0.1);
+    width: fit-content;
+    margin: 2em 1em 1em;
+    padding: 0.4em 0.8em;
+    text-align: center;
+    border-radius: 0.4em !important;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 
-.popup-panel .search-messages-info,
-.popup-panel .search-results-info {
-  color: hsl(80, 60%, 70%);
-  background: hsla(80, 60%, 70%, 0.1);
-}
+  .search-messages-info,
+  .search-results-info,
+  .search-messages-date,
+  .no-messages-info,
+  .error-message-info {
+    padding: 0.5em;
+    border-radius: 0.4em !important;
+    width: fit-content;
+    margin: 0.5em;
+    grid-column: 1 / -1;
+  }
 
-.popup-panel .search-messages-date {
-  color: hsl(40, 60%, 70%);
-  background: hsla(40, 60%, 70%, 0.1);
-}
+  .search-messages-info,
+  .search-results-info {
+    color: hsl(80, 60%, 70%);
+    background: hsla(80, 60%, 70%, 0.1);
+  }
 
-.popup-panel .no-messages-info,
-.popup-panel .error-message-info {
-  color: hsl(0, 60%, 70%);
-  background: hsla(0, 60%, 70%, 0.1);
-}
+  .search-messages-date {
+    color: hsl(40, 60%, 70%);
+    background: hsla(40, 60%, 70%, 0.1);
+  }
 
-.popup-panel .search-match {
-  color: lightgreen;
-  text-decoration: underline;
+  .no-messages-info,
+  .error-message-info {
+    color: hsl(0, 60%, 70%);
+    background: hsla(0, 60%, 70%, 0.1);
+  }
+
+  .parse-match,
+  .search-match {
+    text-decoration: underline;
+  }
+
+  .parse-match {
+    color: hsl(120, 75%, 75%);
+  }
+
+  .search-match {
+    color: hsl(30, 75%, 75%);
+  }
 }
 
 // Chat length popup
