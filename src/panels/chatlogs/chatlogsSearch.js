@@ -158,13 +158,8 @@ export function filterMessages(query) {
 
   // Exact match function (case-insensitive but preserves spaces, hyphens, underscores)
   function exactMatchFunction(originalValue, part, isUsername = false) {
-    if (isUsername) {
-      // For usernames, require complete match
-      return originalValue.toLowerCase() === part;
-    } else {
-      // For message content, allow partial match but with exact text (no normalization)
-      return originalValue.toLowerCase().includes(part);
-    }
+    const val = originalValue.toLowerCase();
+    return isUsername ? val === part : val.includes(part);
   }
 
   // Compact matching logic
