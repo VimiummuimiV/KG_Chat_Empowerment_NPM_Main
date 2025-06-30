@@ -120,6 +120,8 @@ export async function showMessagesPanel() {
   let isFirstPanelRun = true;
   // Flag to track if messages are being imported
   let isMessagesImport = false;
+  let isConvertingContent = false;
+
   // Update the message count after panel load to reset the value if messages were not saved
   updateMessageCount();
   // Remove 'personalMessagesBackup' from localStorage if it exists
@@ -527,13 +529,21 @@ export async function showMessagesPanel() {
     messagesContainer.appendChild(fragment);
 
     requestAnimationFrame(() => {
+      // Set flag before conversions
+      isConvertingContent = true;
+
       convertImageLinksToImage('personalMessages');
       convertVideoLinksToPlayer('personalMessages');
       processEncodedLinks('personalMessages');
       highlightMentionWords('personalMessages');
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      attachMutationObserver();
-      setTimeout(() => { isMessagesImport = false; }, 500);
+
+      // Reset flags and attach observer after a reasonable delay
+      setTimeout(() => {
+        isConvertingContent = false;
+        isMessagesImport = false;
+        attachMutationObserver();
+      }, 500);
     });
 
     // Process the colorization logic in reverse order
