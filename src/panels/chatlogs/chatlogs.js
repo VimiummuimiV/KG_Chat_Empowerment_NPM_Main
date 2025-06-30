@@ -1115,7 +1115,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
         : (event.ctrlKey && !currentValue.includes(username))
           ? currentValue + usernameEntry
           : username;
-      filterItems(chatlogsSearchInput.value);
+      filterMessages(chatlogsSearchInput.value);
     }
   });
 
