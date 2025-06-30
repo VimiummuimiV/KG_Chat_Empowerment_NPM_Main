@@ -12,6 +12,11 @@
 
 // Hide filtered messages efficiently and style popup panel elements (properly nested)
 .popup-panel {
+  // Prevent performance issues with large chat logs
+  .message-item {
+    content-visibility: auto;
+  }
+
   .hidden-message,
   .hidden-date {
     display: none !important;

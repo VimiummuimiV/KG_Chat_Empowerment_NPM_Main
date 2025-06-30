@@ -274,6 +274,30 @@ export function getFullMessageContent(element) {
   return result.trim();
 }
 
+// Export helper: preserves highlights and smileys for all formats
+export function getExportMessageContent(element, format) {
+  if (!element) return '';
+  // 1. Replace <img ... title=":smile:"> with the title text (e.g. :smile:)
+  let html = element.innerHTML.replace(/<img[^>]*title=["']([^"']+)["'][^>]*>/gi, '$1');
+  // 2. Replace highlight spans with color markup
+  html = html
+    .replace(/<span class=["']parse-match["']>([\s\S]*?)<\/span>/gi, (m, text) => {
+      if (format === 'bbcode') return `[color=#32cd32]${text}[/color]`;
+      if (format === 'markdown') return `*${text}*`;
+      return text;
+    })
+    .replace(/<span class=["']search-match["']>([\s\S]*?)<\/span>/gi, (m, text) => {
+      if (format === 'bbcode') return `[color=#ffa500]${text}[/color]`;
+      if (format === 'markdown') return `*${text}*`;
+      return text;
+    });
+  // 3. Remove any other HTML tags
+  html = html.replace(/<[^>]+>/g, '');
+  // 4. For plain, just return textContent
+  if (format === 'plain') return element.textContent;
+  return html;
+}
+
 // Utility to get current language from settings (toggle section)
 export function getCurrentLanguage() {
   try {
