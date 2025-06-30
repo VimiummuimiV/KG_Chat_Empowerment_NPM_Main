@@ -58,6 +58,9 @@ import { addJumpEffect, addPulseEffect, addShakeEffect } from "../../animations.
 import { settingsState } from "../../panels/settings/settings.js";
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { setupChatLogsParser } from './chatlogsParser.js';
+
+import { addChatlogsMessageToPersonal } from './chatlogsToMessages.js';
+
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
 
@@ -377,7 +380,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
     ru: ` 
       [Ctrl + Click] очистить поле и сбросить фильтр
       [Корректная дата + Enter] загрузить чат-логи за выбранную дату (например, 2023-10-01, 2023:10:01, 231001, 2310, 2310:01)
-    ` 
+    `
   });
 
   // Append search input to the search container
@@ -1109,6 +1112,11 @@ export async function showChatLogsPanel(personalMessagesDate) {
     const usernameElement = event.target.closest('.message-username');
     const messageTextElement = event.target.closest('.message-text');
     if (messageItem || messageTextElement) {
+      // --- Ctrl+Click: Add to personal messages ---
+      if (event.ctrlKey && messageItem) {
+        addChatlogsMessageToPersonal(messageItem, dateInput);
+        return;
+      }
       resetMessagesVisibility();
       if (timeElement) {
         let date = dateInput.value;

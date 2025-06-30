@@ -177,7 +177,6 @@ export function removeMessage(messageElement, removalType = 'single') {
       const elementUsername = element.querySelector('.message-username').textContent;
 
       if (elementUsername === username) {
-        // Remove the DOM element
         element.remove();
 
         // Remove the corresponding entry from backupData
@@ -190,8 +189,15 @@ export function removeMessage(messageElement, removalType = 'single') {
     // Default: Remove only the specific message (single)
     const messageKey = `[${time}]_${username}`;
     if (modifiedBackupData[messageKey]) {
-      delete modifiedBackupData[messageKey]; // Remove from backupData
-      messageElement.remove(); // Remove the DOM element
+      delete modifiedBackupData[messageKey];
+      // Remove the message and its date header if it's the last for that date
+      let dateHeader = messageElement.previousElementSibling;
+      while (dateHeader && !dateHeader.classList.contains('date-item')) dateHeader = dateHeader.previousElementSibling;
+      messageElement.remove();
+      if (dateHeader && dateHeader.classList.contains('date-item') &&
+        (!dateHeader.nextElementSibling || dateHeader.nextElementSibling.classList.contains('date-item'))) {
+        dateHeader.remove();
+      }
     }
   }
 
