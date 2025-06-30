@@ -28,9 +28,11 @@ export async function parsePersonalMessages(date) {
 
   const result = await fetchChatLogs(date);
   if (!result?.chatlogs?.length) return;
+
   const chatlogEntries = result.chatlogs;
+
   // Build a set of keys for messages already stored, to avoid duplicates
-  const existingKeys = new Set(Object.values(personalMessages).map(m => `${m.date}|${m.time.replace(/[[\]]/g, '')}|${m.message}`));
+  const existingKeys = new Set(Object.values(personalMessages).map(m => `${m.date}|${m.time}|${m.message}`));
 
   // Load or initialize caches
   let usernameColorCache = JSON.parse(localStorage.getItem(USERNAME_COLOR_CACHE_KEY) || '{}');
@@ -43,6 +45,7 @@ export async function parsePersonalMessages(date) {
       return acc;
     }, [])
   )];
+
   // Load and cache username colors and ids
   const { colorCache, idCache } = await ensureUsernameColorsAndIds(
     allUsernames,
@@ -61,7 +64,7 @@ export async function parsePersonalMessages(date) {
       entry.message &&
       isMentionForMe(entry.message)
     ) {
-      const key = `${today}|${entry.time}|${entry.message}`;
+      const key = `${today}|[${entry.time}]|${entry.message}`;
       if (!existingKeys.has(key)) {
         const newId = `[${entry.time}]_${entry.username}`;
         personalMessages[newId] = {
@@ -84,6 +87,7 @@ export async function parsePersonalMessages(date) {
     let newMessagesCount = Number(localStorage.getItem('newMessagesCount')) || 0;
     newMessagesCount += newMentions;
     localStorage.setItem('newMessagesCount', String(newMessagesCount));
+
     const newMessageIndicator = document.querySelector('.personal-messages-button .new-message-count');
     if (newMessageIndicator) {
       newMessageIndicator.textContent = newMessagesCount;
