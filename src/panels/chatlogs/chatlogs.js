@@ -63,6 +63,7 @@ import { addChatlogsMessageToPersonal } from './chatlogsToMessages.js';
 
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
+import { ensureUsernameColorsAndIds } from '../../helpers/colorUtils.js';
 
 const { ignored } = settingsState;
 
@@ -665,7 +666,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
         isMessagesPanel: false,
         includeDateHeaders: true,
         includeMessageLinks: true,
-        hueStep: 15,
         prefix: 'chatlogs',
       });
       return;
@@ -740,7 +740,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
     if (newState === 'shown') {
       // Call renderActiveUsers to update the display of active users based on their message counts
-      renderActiveUsers(usernameMessageCountMap, chatLogsPanel, usernameHueMap);
+      renderActiveUsers(usernameMessageCountMap, chatLogsPanel);
     } else {
       // Remove the active users container if the state is hidden
       const activeUsersContainer = chatLogsPanel.querySelector('.active-users');
@@ -881,8 +881,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
   triggerDimmingElement('show');
 
   // Define an object to store the hue for each username
-  const usernameHueMap = {};
-  const hueStep = 15;
   // Initialize a map to track message counts for unique usernames
   const usernameMessageCountMap = new Map();
   // Store the current chat logs URL for clipboard copy.
@@ -938,14 +936,18 @@ export async function showChatLogsPanel(personalMessagesDate) {
     // Clear previous counts
     usernameMessageCountMap.clear();
 
+
+    // Ensure username colors/ids are loaded and cached before rendering
+    const allUsernames = [...new Set(chatlogs.map(e => e.username).filter(u => u && u !== 'SYSTEM'))];
+    await ensureUsernameColorsAndIds(allUsernames);
+
     // Use the renderer to render all messages and get the updated usernameMessageCountMap
-    const updatedMap = renderChatMessages(chatlogs, chatLogsContainer, usernameHueMap);
-    // Copy values to the main map for use elsewhere
+    const updatedMap = renderChatMessages(chatlogs, chatLogsContainer);
     usernameMessageCountMap.clear();
     for (const [k, v] of updatedMap.entries()) usernameMessageCountMap.set(k, v);
 
     // Call renderActiveUsers to update the display of active users based on their message counts
-    renderActiveUsers(usernameMessageCountMap, chatLogsPanel, usernameHueMap);
+    renderActiveUsers(usernameMessageCountMap, chatLogsPanel);
 
     requestAnimationFrame(() => {
       convertImageLinksToImage('chatlogsMessages');

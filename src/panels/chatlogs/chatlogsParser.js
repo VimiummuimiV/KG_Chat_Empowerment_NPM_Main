@@ -464,7 +464,6 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     let to = opts.to;
 
     // Prepare for rendering
-    const usernameHueMap = {};
     let allFiltered = [];
     const usernameMessageCountMap = new Map();
     // Clear the messages container before starting
@@ -541,14 +540,13 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
           renderChatMessages(
             filtered,
             messagesContainer,
-            usernameHueMap,
             true,
             dateStr,
             searchTerms,
             searchTerms && searchTerms.length > 0 // highlightSearch true if search terms present
           );
           if (stopRequested) break;
-          renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'), usernameHueMap);
+          renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'));
         }
         if (stopRequested) break;
         // Optional: add a small delay for smoother UI
@@ -586,7 +584,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     resetButton();
     // Always update userlist after parsing (even if stopped early)
     if (messagesContainer) {
-      renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'), usernameHueMap);
+      renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'));
     }
     // If parsing stopped automatically, update random button to today mode
     setRandomButtonToTodayMode();

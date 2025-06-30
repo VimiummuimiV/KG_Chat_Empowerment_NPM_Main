@@ -1,4 +1,4 @@
-import { getUsernameHue, hslToHex, rgbToHex } from "./colorUtils.js";
+import { rgbToHex } from "./colorUtils.js";
 import { getCurrentLanguage, getMessageTextWithImgTitles } from "../helpers/helpers.js";
 
 const lang = getCurrentLanguage();
@@ -16,13 +16,9 @@ export function formatMessages(container, format, options = {}) {
     isMessagesPanel = false,
     includeDateHeaders = true,
     includeMessageLinks = true,
-    hueStep = 15,
     prefix = '',
     messages = {}
   } = options;
-
-  // Hue map for consistent username colors
-  const usernameHueMap = {};
 
   // Gather visible elements
   const elements = Array.from(
@@ -36,10 +32,10 @@ export function formatMessages(container, format, options = {}) {
 
   let output = '';
   let isFirstLine = true;
-  
+
   // BBCode header
   if (format === 'bbcode') output += '[hide]\n';
-  
+
   // Track current date for grouping
   let currentDate = null;
 
@@ -47,14 +43,14 @@ export function formatMessages(container, format, options = {}) {
     if (el.classList.contains('date-item') && includeDateHeaders) {
       // Get date text without emoji icon
       const dateTextElement = el.querySelector('.date-text');
-      const dateText = dateTextElement ? 
-        dateTextElement.textContent : 
+      const dateText = dateTextElement ?
+        dateTextElement.textContent :
         el.textContent.replace(/[📅⏳]+$/, '').trim();
-      
+
       currentDate = dateText;
-      
+
       if (!isFirstLine) output += '\n';
-      
+
       if (format === 'bbcode') {
         output += `[b][color=gray]${dateText}[/color][/b]\n`;
       } else if (format === 'markdown') {
@@ -71,48 +67,48 @@ export function formatMessages(container, format, options = {}) {
       const time = el.querySelector('.message-time')?.textContent?.trim() || '';
       const username = el.querySelector('.message-username')?.textContent?.trim() || '';
       const messageTextElement = el.querySelector('.message-text');
-      const message = messageTextElement ? 
+      const message = messageTextElement ?
         getMessageTextWithImgTitles(messageTextElement) : '';
-      
+
       // Create message URL
-      const effectiveDate = date || currentDate || new Date().toISOString().slice(0,10);
-      const url = includeMessageLinks ? 
+      const effectiveDate = date || currentDate || new Date().toISOString().slice(0, 10);
+      const url = includeMessageLinks ?
         `https://klavogonki.ru/chatlogs/${effectiveDate}.html#${time.replace(/[\[\]]/g, '')}` : '';
-      
+
       // Get username color
       let color;
       if (isMessagesPanel) {
         // Use stored usernameColor from messages
-        const formattedTime = `[${time}]`; // Add square brackets to match personalMessages key
+        const formattedTime = `[${time}]`;
         const messageKey = `${formattedTime}_${username}`;
         const storedMessage = messages[messageKey];
-        color = storedMessage && storedMessage.usernameColor ? 
-          rgbToHex(storedMessage.usernameColor) : 
-          rgbToHex('rgb(128, 128, 128)'); // Fallback to gray
+        color = storedMessage && storedMessage.usernameColor ?
+          rgbToHex(storedMessage.usernameColor) :
+          '#808080'; // Fallback gray color
       } else {
-        // Use hue-based color for non-personal messages (e.g., chat logs)
-        const hue = getUsernameHue(username, hueStep, usernameHueMap);
-        color = hslToHex(hue, 80, 50);
+        // Use cached color for chat logs
+        const cache = JSON.parse(localStorage.getItem('usernameColorCache') || '{}');
+        color = cache[username] || '#808080'; // Fallback gray color
       }
-      
+
       if (format === 'bbcode') {
         const bbMessage = message
-          .replace(/(^|\s|\():(\w+):(?=\s|\.|,|!|\?|$)/g, 
+          .replace(/(^|\s|\():(\w+):(?=\s|\.|,|!|\?|$)/g,
             (m, pre, word) => `${pre}[img]https://klavogonki.ru/img/smilies/${word}.gif[/img]`);
-        
-        output += url ? 
-          `[url=${url}]${time}[/url] ` : 
+
+        output += url ?
+          `[url=${url}]${time}[/url] ` :
           `${time} `;
-          
+
         output += `[color=${color}]${username}[/color] ${bbMessage}\n`;
-      } 
+      }
       else if (format === 'markdown') {
-        output += url ? 
-          `[${time}](${url}) ` : 
+        output += url ?
+          `[${time}](${url}) ` :
           `${time} `;
-          
+
         output += `**${username}** ${message}\n`;
-      } 
+      }
       else {
         output += `[${time}] `;
         output += `(${username}) ${message}\n`;
@@ -134,13 +130,13 @@ export function formatMessages(container, format, options = {}) {
 export function handleExportClick(event, container, options = {}) {
   // Only handle Alt+Click events
   if (!event.altKey) return;
-  
+
   // Prompt for format
   const formatMap = { '1': 'bbcode', '2': 'markdown', '3': 'plain' };
-  const promptText = lang === 'ru' ? 
-    'Формат экспорта? (1 = BBCode, 2 = Markdown, 3 = Plain)' : 
+  const promptText = lang === 'ru' ?
+    'Формат экспорта? (1 = BBCode, 2 = Markdown, 3 = Plain)' :
     'Export format? (1 = BBCode, 2 = Markdown, 3 = Plain)';
-  
+
   let formatNum = prompt(promptText, '1');
   // Exit if user cancels the prompt
   if (formatNum === null) return;
@@ -157,16 +153,16 @@ export function handleExportClick(event, container, options = {}) {
     const blob = new Blob([output], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    
+
     // Generate filename
     const prefix = options.prefix;
     const datePart = options.date ? `_${options.date}` : '';
     a.download = `${prefix}_${datePart}_${format}.txt`;
-    
+
     document.body.appendChild(a);
     a.click();
     setTimeout(() => document.body.removeChild(a), 100);
-  } 
+  }
   // Alt+Click: Copy to clipboard
   else {
     navigator.clipboard.writeText(output).catch(() => {

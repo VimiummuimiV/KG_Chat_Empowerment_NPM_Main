@@ -2,9 +2,8 @@
  * Render the active users list based on their message counts.
  * @param {Map} usernameMessageCountMap - Map of username to message count
  * @param {HTMLElement} parentContainer - The panel or container to render the userlist into
- * @param {Object} usernameHueMap - Map of username to hue (for coloring)
  */
-export function renderActiveUsers(usernameMessageCountMap, parentContainer, usernameHueMap) {
+export function renderActiveUsers(usernameMessageCountMap, parentContainer) {
   if (localStorage.getItem('shouldShowActiveUsers') === 'shown') {
 
     let activeUsers = parentContainer.querySelector('.active-users');
@@ -19,7 +18,8 @@ export function renderActiveUsers(usernameMessageCountMap, parentContainer, user
       .sort(([, countA], [, countB]) => countB - countA);
     activeUsers.innerHTML = '';
 
-    // Batch DOM updates using a DocumentFragment
+    // Parse color cache once per render
+    const colorCache = JSON.parse(localStorage.getItem('usernameColorCache') || '{}');
     const fragment = document.createDocumentFragment();
     sortedUsernames.forEach(([username, count]) => {
       const userElement = document.createElement('div');
@@ -29,14 +29,15 @@ export function renderActiveUsers(usernameMessageCountMap, parentContainer, user
       nicknameElement.className = 'active-user-name';
       nicknameElement.textContent = username;
 
-      const userHue = usernameHueMap[username] || 0;
-      nicknameElement.style.color = `hsl(${userHue}, 80%, 50%)`;
+      // Use cached color for username
+      const color = colorCache[username] || '#808080';
+      nicknameElement.style.color = color;
 
       const messageCountElement = document.createElement('span');
       messageCountElement.className = 'active-user-messages-count';
       messageCountElement.textContent = count;
-      messageCountElement.style.color = `hsl(${userHue}, 80%, 50%)`;
-      messageCountElement.style.backgroundColor = `hsla(${userHue}, 80%, 50%, 0.2)`;
+      messageCountElement.style.color = color;
+      messageCountElement.style.backgroundColor = color + '20'; // add alpha for background
 
       userElement.appendChild(messageCountElement);
       userElement.appendChild(nicknameElement);

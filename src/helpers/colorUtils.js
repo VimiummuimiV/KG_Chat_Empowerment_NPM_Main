@@ -1,3 +1,6 @@
+import { extractHexColor } from "./apiData.js";
+import { getDataByName } from "./apiData.js";
+
 export function rgbToHsl(r, g, b) {
   r /= 255;
   g /= 255;
@@ -157,24 +160,36 @@ export function normalizeUsernameColor(inputColor, inputType = "rgb") {
 }
 
 /**
- * Generates consistent hue for username using step-based hashing
- * @param {string} username - Username to generate hue for
- * @param {number} hueStep - Hue increment step (default 15)
- * @param {Object} hueMap - Cache object for storing hues
- * @returns {number} - Hue value between 0-360
+ * Loads and caches username colors and IDs for a list of usernames.
+ * Updates localStorage caches USERNAME_COLOR_CACHE_KEY and USERNAME_ID_CACHE_KEY.
+ * Returns updated { colorCache, idCache } objects.
  */
-export function getUsernameHue(username, hueStep = 15, hueMap = {}) {
-  if (hueMap[username]) return hueMap[username];
-  
-  // Simple hash function
-  let hash = 0;
-  for (let i = 0; i < username.length; i++) {
-    hash = (hash << 5) - hash + username.charCodeAt(i);
-    hash |= 0;
+export async function ensureUsernameColorsAndIds(usernames, colorCacheKey = 'usernameColorCache', idCacheKey = 'usernameIdCache') {
+  let colorCache = JSON.parse(localStorage.getItem(colorCacheKey) || '{}');
+  let idCache = JSON.parse(localStorage.getItem(idCacheKey) || '{}');
+  const usernamesToFetch = usernames.filter(username =>
+    !(username in colorCache) || !(username in idCache)
+  );
+  if (usernamesToFetch.length) {
+    const userDataResults = await Promise.all(
+      usernamesToFetch.map(username => getDataByName(username, 'allUserData'))
+    );
+    usernamesToFetch.forEach((username, i) => {
+      const userData = userDataResults[i];
+      if (userData) {
+        const carColor = userData.car ? extractHexColor(userData.car.color) : null;
+        // Normalize and convert color to hex
+        colorCache[username] = carColor && carColor.startsWith('#')
+          ? normalizeUsernameColor(carColor, "hex")
+          : '#808080';
+        idCache[username] = userData.id || null;
+      } else {
+        colorCache[username] = '#808080'; // Fallback to gray if no data found
+        idCache[username] = null;
+      }
+    });
+    localStorage.setItem(colorCacheKey, JSON.stringify(colorCache));
+    localStorage.setItem(idCacheKey, JSON.stringify(idCache));
   }
-  
-  // Generate hue in 0-210 range with step increments
-  const hue = Math.abs(hash) % (210 / hueStep) * hueStep;
-  hueMap[username] = hue;
-  return hue;
+  return { colorCache, idCache };
 }
