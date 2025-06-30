@@ -39,6 +39,12 @@ export function formatMessages(container, format, options = {}) {
   // Track current date for grouping
   let currentDate = null;
 
+  // Load username color cache once (performance optimization)
+  let cache = {};
+  if (!isMessagesPanel) {
+    cache = JSON.parse(localStorage.getItem('usernameColorCache') || '{}');
+  }
+
   elements.forEach(el => {
     if (el.classList.contains('date-item') && includeDateHeaders) {
       // Get date text without emoji icon
@@ -86,8 +92,7 @@ export function formatMessages(container, format, options = {}) {
           rgbToHex(storedMessage.usernameColor) :
           '#808080'; // Fallback gray color
       } else {
-        // Use cached color for chat logs
-        const cache = JSON.parse(localStorage.getItem('usernameColorCache') || '{}');
+        // Use the pre-loaded cache
         color = cache[username] || '#808080'; // Fallback gray color
       }
 
