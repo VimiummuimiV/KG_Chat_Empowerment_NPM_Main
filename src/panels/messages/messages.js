@@ -543,8 +543,8 @@ export async function showMessagesPanel() {
       // Set flag before conversions
       isConvertingContent = true;
 
-      convertImageLinksToImage('personalMessages', false);
-      convertVideoLinksToPlayer('personalMessages', false);
+      convertImageLinksToImage('personalMessages');
+      convertVideoLinksToPlayer('personalMessages');
       processEncodedLinks('personalMessages');
       highlightMentionWords('personalMessages');
 
