@@ -109,6 +109,6 @@ export const timeColors = {
 
 export const messageColors = {
   private: 'coral',
-  mention: '#AF9D9D',
+  mention: 'hsl(0, 10%, 70%)',
   default: 'slategray'
 };
