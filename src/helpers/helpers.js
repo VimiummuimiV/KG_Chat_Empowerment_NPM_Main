@@ -281,12 +281,12 @@ export function getExportMessageContent(element, format) {
   let html = element.innerHTML.replace(/<img[^>]*title=["']([^"']+)["'][^>]*>/gi, '$1');
   // 2. Replace highlight spans with color markup
   html = html
-    .replace(/<span class=["']parse-match["']>([\s\S]*?)<\/span>/gi, (m, text) => {
+    .replace(/<span class=["']parse-match-message["']>([\s\S]*?)<\/span>/gi, (m, text) => {
       if (format === 'bbcode') return `[color=#32cd32]${text}[/color]`;
       if (format === 'markdown') return `*${text}*`;
       return text;
     })
-    .replace(/<span class=["']search-match["']>([\s\S]*?)<\/span>/gi, (m, text) => {
+    .replace(/<span class=["']search-match-message["']>([\s\S]*?)<\/span>/gi, (m, text) => {
       if (format === 'bbcode') return `[color=#ffa500]${text}[/color]`;
       if (format === 'markdown') return `*${text}*`;
       return text;

@@ -38,12 +38,12 @@ function normalize(text) {
   return text.replace(/[_\-\s]/g, '').toLowerCase();
 }
 
-// Fixed highlighting function that properly handles multiple matches
-function highlightMatches(element, queryParts, exactMatch) {
+// Fixed highlighting function that properly handles multiple matches with custom CSS class
+function highlightMatches(element, queryParts, exactMatch, cssClass = 'search-match') {
   if (!queryParts.length) return;
   
-  // Clear existing search highlights
-  element.querySelectorAll('.search-match').forEach(span => {
+  // Clear existing search highlights for this specific class
+  element.querySelectorAll(`.${cssClass}`).forEach(span => {
     span.replaceWith(document.createTextNode(span.textContent));
   });
   element.normalize();
@@ -52,11 +52,11 @@ function highlightMatches(element, queryParts, exactMatch) {
   for (const part of queryParts) {
     if (part.length < 2) continue;
     
-    highlightSinglePart(element, part, exactMatch);
+    highlightSinglePart(element, part, exactMatch, cssClass);
   }
 }
 
-function highlightSinglePart(element, part, exactMatch) {
+function highlightSinglePart(element, part, exactMatch, cssClass) {
   // Get fresh text nodes for each part
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
   const textNodes = [];
@@ -111,11 +111,11 @@ function highlightSinglePart(element, part, exactMatch) {
   
   // Apply highlights
   uniqueMatches.forEach(match => {
-    applyHighlightToMatch(textNodes, match);
+    applyHighlightToMatch(textNodes, match, cssClass);
   });
 }
 
-function applyHighlightToMatch(textNodes, match) {
+function applyHighlightToMatch(textNodes, match, cssClass) {
   // Find text nodes that intersect with this match
   const affectedNodes = textNodes.filter(nodeInfo => {
     const nodeEnd = nodeInfo.start + nodeInfo.text.length;
@@ -137,9 +137,9 @@ function applyHighlightToMatch(textNodes, match) {
         fragment.appendChild(document.createTextNode(text.substring(0, localStart)));
       }
       
-      // Add highlighted match
+      // Add highlighted match with custom CSS class
       const span = document.createElement('span');
-      span.className = 'search-match';
+      span.className = cssClass;
       span.textContent = text.substring(localStart, localEnd);
       fragment.appendChild(span);
       
@@ -345,34 +345,36 @@ export function filterMessages(query) {
 
     messageContainer.classList.toggle('hidden-message', !shouldDisplay);
 
-    // Apply highlighting only to visible messages
+    // Apply highlighting only to visible messages with specific CSS classes
     if (shouldDisplay && !isEmptyQuery) {
-      // Highlight username if not forcing word search only
+      // Highlight username if not forcing word search only - use 'search-match-username' class
       if (!forceWord && messageDetailsItem.usernameElement) {
         highlightMatches(
           messageDetailsItem.usernameElement, 
           originalQueryParts, 
-          exactMatch
+          exactMatch,
+          'search-match-username'
         );
       }
       
-      // Highlight message text if not forcing user search only
+      // Highlight message text if not forcing user search only - use 'search-match-message' class
       if (!forceUser && messageDetailsItem.messageTextElement) {
         highlightMatches(
           messageDetailsItem.messageTextElement, 
           originalQueryParts, 
-          exactMatch
+          exactMatch,
+          'search-match-message'
         );
       }
     } else if (!shouldDisplay) {
-      // Clear highlighting from hidden messages
+      // Clear highlighting from hidden messages - clear both types
       if (messageDetailsItem.usernameElement) {
-        messageDetailsItem.usernameElement.querySelectorAll('.search-match').forEach(span => {
+        messageDetailsItem.usernameElement.querySelectorAll('.search-match-username').forEach(span => {
           span.replaceWith(document.createTextNode(span.textContent));
         });
       }
       if (messageDetailsItem.messageTextElement) {
-        messageDetailsItem.messageTextElement.querySelectorAll('.search-match').forEach(span => {
+        messageDetailsItem.messageTextElement.querySelectorAll('.search-match-message').forEach(span => {
           span.replaceWith(document.createTextNode(span.textContent));
         });
       }
@@ -400,9 +402,9 @@ export function filterMessages(query) {
   }
 }
 
-// Helper function to clear all highlighting
+// Helper function to clear all highlighting - now clears both types
 function clearAllHighlighting() {
-  document.querySelectorAll('.search-match').forEach(span => {
+  document.querySelectorAll('.search-match-username, .search-match-message').forEach(span => {
     span.replaceWith(document.createTextNode(span.textContent));
   });
 }

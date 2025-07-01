@@ -43,7 +43,7 @@ export function renderChatMessages(chatlogs, messagesContainer, preserveMessages
     // Escape regex special chars in each term
     const escapedTerms = terms.map(term => term.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&'));
     const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
-    return message.replace(regex, '<span class="parse-match">$1</span>');
+    return message.replace(regex, '<span class="parse-match-message">$1</span>');
   }
 
   // Batch DOM updates using a DocumentFragment

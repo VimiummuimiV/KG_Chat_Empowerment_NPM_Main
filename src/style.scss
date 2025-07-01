@@ -71,16 +71,17 @@
     background: hsla(0, 60%, 70%, 0.1);
   }
 
-  .parse-match,
-  .search-match {
+  .parse-match-message,
+  .search-match-username,
+  .search-match-message {
     text-decoration: underline;
   }
 
-  .parse-match {
+  .parse-match-message {
     color: hsl(120, 75%, 75%);
   }
 
-  .search-match {
+  .search-match-message {
     color: hsl(30, 75%, 75%);
   }
 }
