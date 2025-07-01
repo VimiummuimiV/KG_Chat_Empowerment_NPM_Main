@@ -125,9 +125,10 @@ export function hexToRgb(hex) {
  * Normalizes a username color to ensure minimum lightness and consistent output.
  * @param {string|object} inputColor - The color value (HEX string, RGB string, or HSL object/string)
  * @param {"hex"|"rgb"|"hsl"} [inputType="rgb"] - The type of the input color
- * @returns {string} - Normalized RGB color string (e.g., "rgb(128, 128, 128)")
+ * @param {number} [minLightness=60] - Minimum lightness for contrast boost (0-100)
+ * @returns {string} - Normalized HEX color string (e.g., "#808080")
  */
-export function normalizeUsernameColor(inputColor, inputType = "rgb") {
+export function normalizeUsernameColor(inputColor, inputType = "rgb", minLightness = 65) {
   let r, g, b, h, s, l;
   if (inputType === "hex") {
     // Convert HEX to RGB
@@ -153,8 +154,8 @@ export function normalizeUsernameColor(inputColor, inputType = "rgb") {
     throw new Error("Unsupported inputType for normalizeUsernameColor: " + inputType);
   }
 
-  // Adjust lightness to ensure it's at least 50
-  const normalizedLightness = l < 50 ? 50 : l;
+  // Adjust lightness to ensure it's at least minLightness (default 60 for more contrast)
+  const normalizedLightness = l < minLightness ? minLightness : l;
   const rgbString = hslToRgb(h, s, normalizedLightness);
   return rgbToHex(rgbString);
 }
