@@ -14,6 +14,21 @@ import { chatlogsParserMessages } from "./chatlogsParserMessages.js";
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { deleteAllChatlogsFromIndexedDB } from "./chatlogsStorage.js";
 
+/**
+ * Helper function to calculate date range for latest N days
+ * @param {number} days - Number of days to go back from today
+ * @returns {object} - Object with 'from' and 'to' dates in YYYY-MM-DD format
+ */
+function getLatestNDaysRange(days) {
+  const today = new Date();
+  const fromDate = new Date(today);
+  fromDate.setDate(today.getDate() - days + 1); // +1 to include today
+  
+  return {
+    from: fromDate.toISOString().slice(0, 10),
+    to: today.toISOString().slice(0, 10)
+  };
+}
 
 /**
  * Helper function to get all mention terms including myNickname, its history, and mention keywords from localStorage
@@ -149,16 +164,38 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     } // promptDateRange END
 
     if (modeInput === '6') {
-      // Personal mentions mode: prompt for date(s), skip username prompt
+      // Personal mentions mode: prompt for date mode, then handle latest N days option
       let dateMode;
       while (true) {
         dateMode = prompt(chatlogsParserMessages.selectPersonalMentionsDateMode[lang], '1');
         if (dateMode === null) return null;
-        if (["1", "2", "3", "4"].includes(dateMode)) break;
+        if (["1", "2", "3", "4", "5"].includes(dateMode)) break;
         alert(chatlogsParserMessages.invalidSelection[lang]);
       }
-      const dateResult = await promptDateRange(dateMode);
-      if (dateResult === null) return null;
+
+      // Handle the new option 5 (Latest N days)
+      if (dateMode === '5') {
+        let daysInput;
+        while (true) {
+          daysInput = prompt(chatlogsParserMessages.enterLatestDays[lang], '7');
+          if (daysInput === null) return null;
+          
+          const days = parseInt(daysInput.trim());
+          if (isNaN(days) || days <= 0 || days > 365) {
+            alert(chatlogsParserMessages.invalidDaysNumber[lang]);
+            continue;
+          }
+          
+          const dateRange = getLatestNDaysRange(days);
+          opts.from = dateRange.from;
+          opts.to = dateRange.to;
+          break;
+        }
+      } else {
+        // Use existing date range logic for modes 1-4
+        const dateResult = await promptDateRange(dateMode);
+        if (dateResult === null) return null;
+      }
 
       // Get all mention terms including myNickname, usernamesHistory, and mentionKeywords
       const allMentionTerms = await getAllMentionTerms();

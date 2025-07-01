@@ -233,14 +233,16 @@ export const chatlogsParserMessages = {
       '1. Single date',
       '2. From date',
       '3. Date range',
-      '4. From start'
+      '4. From start',
+      '5. Last (N) days'
     ].join('\n'),
     ru: [
       `${INFO} Выберите режим дат для личных упоминаний`,
       '1. Одна дата',
       '2. С даты',
       '3. Диапазон дат',
-      '4. С самого начала'
+      '4. С самого начала',
+      '5. За последние (N) дней'
     ].join('\n')
   },
   enterMentionKeywords: {
@@ -250,5 +252,13 @@ export const chatlogsParserMessages = {
   noMentionKeywords: {
     en: `${WARN} No mention keywords provided. Please enter at least one keyword.`,
     ru: `${WARN} Не указаны ключевые слова для поиска упоминаний. Введите хотя бы одно слово.`
+  },
+  enterLatestDays: {
+    en: `${EDIT} Enter the number of latest days:`,
+    ru: `${EDIT} Введите количество последних дней:`
+  },
+  invalidDaysNumber: {
+    en: `${WARN} Please enter a valid number of days.`,
+    ru: `${WARN} Введите корректное число дней.`
   }
 };
