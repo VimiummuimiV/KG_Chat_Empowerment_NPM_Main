@@ -11,6 +11,7 @@ import {
 
 import { today } from "../../definitions.js";
 import { addJumpEffect } from "../../animations.js";
+import { localizedMessage } from "../../helpers/helpers.js";
 
 // New cache key to track the last successful parse date
 const LAST_PARSE_DATE_KEY = 'lastParseDate';
@@ -67,6 +68,13 @@ export async function parsePersonalMessages(currentDate = today) {
       datesToParse.push(currentDate);
     } else {
       datesToParse.push(...getDatesBetween(lastParseDate, currentDate));
+    }
+
+    if (datesToParse.length > 1) {
+      localizedMessage({
+        en: `Loading personal mentions for ${datesToParse.length} days. This may take a while. Please do not reload the page...`,
+        ru: `Загрузка личных упоминаний за ${datesToParse.length} дней. Это может занять некоторое время. Пожалуйста, не перезагружайте страницу...`
+      }, 'alert');
     }
   }
 
@@ -162,7 +170,14 @@ export async function parsePersonalMessages(currentDate = today) {
       newMessageIndicator.style.visibility = newMessagesCount > 0 ? 'visible' : 'hidden';
       addJumpEffect(newMessageIndicator, 50, 50);
     }
-    
+
+    if (datesToParse.length > 1) {
+      localizedMessage({
+        en: `Added ${totalNewMentions} new personal mentions across ${datesToParse.length} days!`,
+        ru: `Добавлено ${totalNewMentions} новых личных упоминаний за ${datesToParse.length} дней!`
+      }, 'alert');
+    }
+
     console.log(`Added ${totalNewMentions} total new mentions across ${datesToParse.length} days`);
   }
 
