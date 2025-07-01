@@ -804,41 +804,48 @@ export async function showChatLogsPanel(personalMessagesDate) {
     createCustomTooltip(dateInputToggle, tooltipContent);
   };
 
+  // Helper to perform auto search/filter and focus after day switch
+  function performAutoSearch() {
+    if (chatlogsSearchInput.value && chatlogsSearchInput.value.trim().length > 0) {
+      filterMessages(chatlogsSearchInput.value);
+    }
+    showDateInput(dateInput);
+    focusOnSearchField();
+  }
+
   // Event listener for the chevron left button
   oneDayBackward.addEventListener('click', async () => {
     const currentDate = getEffectiveDate(); // Get the effective date
     currentDate.setDate(currentDate.getDate() - 1); // Go one day back
-    await loadChatLogs(currentDate); // Load chat logs for the updated date
-    showDateInput(dateInput);
-    focusOnSearchField();
+    await loadChatLogs(currentDate, performAutoSearch);
   });
 
   // Event listener for the chevron right button
   oneDayForward.addEventListener('click', async () => {
     const currentDate = getEffectiveDate(); // Get the effective date
     currentDate.setDate(currentDate.getDate() + 1); // Go one day forward
-    await loadChatLogs(currentDate); // Load chat logs for the updated date
-    showDateInput(dateInput);
-    focusOnSearchField();
+    await loadChatLogs(currentDate, performAutoSearch);
   });
 
   // Event listener for the shuffle button (load today's logs after parsing done)
   randomDay.addEventListener('click', async () => {
     if (randomDay.dataset.mode === 'loadToday') {
-      await loadChatLogs(today);
-      randomDay.dataset.mode = '';
-      randomDay.classList.remove('today');
+      await loadChatLogs(today, () => {
+        performAutoSearch();
+        randomDay.dataset.mode = '';
+        randomDay.classList.remove('today');
+        randomDay.innerHTML = shuffleSVG;
+        createCustomTooltip(randomDay, {
+          en: 'Random Date',
+          ru: 'Случайная дата'
+        });
+      });
     } else {
       const randomDate = getRandomDateInRange();
-      await loadChatLogs(randomDate);
+      await loadChatLogs(randomDate, () => {
+        performAutoSearch();
+      });
     }
-    randomDay.innerHTML = shuffleSVG;
-    createCustomTooltip(randomDay, {
-      en: 'Random Date',
-      ru: 'Случайная дата'
-    });
-    showDateInput(dateInput);
-    focusOnSearchField();
   });
 
   // Append buttons to the control buttons container
@@ -901,7 +908,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
   }
 
   // Function to load and display chat logs into the container
-  const loadChatLogs = async (date) => {
+  const loadChatLogs = async (date, afterRenderCallback) => {
     // Normalize date input to 'yyyy-mm-dd' format, supporting 'yyyy:mm:dd' format as well
     const normalizeDate = date => /^\d{4}:\d{2}:\d{2}$/.test(date) ? date.replace(/:/g, '-') : date;
     // Normalize and format the date
@@ -965,11 +972,14 @@ export async function showChatLogsPanel(personalMessagesDate) {
       updateMediaAndMentionCounters();
       // Call the function to load the total message count once
       loadTotalMessageCount();
-      // Call the filter function with the updated input value
-      chatlogsSearchInput.value.length > 0 && filterMessages(chatlogsSearchInput.value);
 
       // Apply current visibility settings without toggling
       toggleMessagesVisibility(null, false);
+
+      // Call afterRenderCallback if provided (for post-render actions like filtering)
+      if (typeof afterRenderCallback === 'function') {
+        afterRenderCallback();
+      }
     });
 
   };
