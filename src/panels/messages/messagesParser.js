@@ -1,5 +1,5 @@
 import "./messagesParser.scss";
-import { fetchChatLogs } from "../chatlogs/chatlogs.js";
+import { fetchChatLogs } from "../chatlogs/chatlogsLoader.js";
 import { isMentionForMe } from "../../helpers/getLatestMessageData.js";
 import { ensureUsernameColorsAndIds } from "../../helpers/colorUtils.js";
 

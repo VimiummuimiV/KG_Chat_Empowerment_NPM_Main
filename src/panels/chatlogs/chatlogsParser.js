@@ -1,14 +1,14 @@
 import { playSVG, pauseSVG, shuffleSVG, sunSVG } from "../../icons.js";
 import { minimalChatlogsDate, myNickname } from "../../definitions.js";
-import { fetchChatLogs } from './chatlogs.js';
-import { renderChatMessages } from './chatlogsMessages.js';
-import { renderActiveUsers } from './chatlogsUserlist.js';
+import { fetchChatLogs } from "./chatlogsLoader.js";
+import { renderChatMessages } from "./chatlogsMessages.js";
+import { renderActiveUsers } from "./chatlogsUserlist.js";
 import { getCurrentLanguage, normalizeDate } from "../../helpers/helpers.js";
 
 import {
   getExactUserIdByName,
   getDataByName
-} from '../../helpers/apiData.js';
+} from "../../helpers/apiData.js";
 
 import { chatlogsParserMessages } from "./chatlogsParserMessages.js";
 import { createCustomTooltip } from "../../components/tooltip.js";
@@ -23,7 +23,7 @@ function getLatestNDaysRange(days) {
   const today = new Date();
   const fromDate = new Date(today);
   fromDate.setDate(today.getDate() - days + 1); // +1 to include today
-  
+
   return {
     from: fromDate.toISOString().slice(0, 10),
     to: today.toISOString().slice(0, 10)
@@ -179,13 +179,13 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         while (true) {
           daysInput = prompt(chatlogsParserMessages.enterLatestDays[lang], '7');
           if (daysInput === null) return null;
-          
+
           const days = parseInt(daysInput.trim());
           if (isNaN(days) || days <= 0 || days > 365) {
             alert(chatlogsParserMessages.invalidDaysNumber[lang]);
             continue;
           }
-          
+
           const dateRange = getLatestNDaysRange(days);
           opts.from = dateRange.from;
           opts.to = dateRange.to;
@@ -215,7 +215,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
           finalMentionKeywords = splitKeywords
             .map(s => s ? s.trim() : '')
             .filter(Boolean);
-          
+
           // Remove duplicates safely
           const uniqueKeywords = [];
           finalMentionKeywords.forEach(keyword => {
@@ -258,7 +258,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       usernamesInput = prompt(chatlogsParserMessages.enterUsernames[lang], usernamesInput || "");
       if (usernamesInput === null) return null;
       if (!usernamesInput || !usernamesInput.trim()) return [];
-      
+
       let usernames = [];
       if (usernamesInput && usernamesInput.trim()) {
         const splitUsernames = usernamesInput.split(',');
@@ -268,9 +268,9 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
             .filter(Boolean);
         }
       }
-      
+
       if (usernames.length === 0) return [];
-      
+
       const validUsernames = [];
       for (const username of usernames) {
         const userId = await getExactUserIdByName(username);
@@ -296,7 +296,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
               const allUsernames = [validUsernames[0], ...historyUsernames.filter(u => u !== validUsernames[0])];
               const confirmed = prompt(chatlogsParserMessages.confirmUsernames[lang], allUsernames.join(', '));
               if (!confirmed) return null;
-              
+
               let confirmedUsernames = [];
               if (confirmed && confirmed.trim()) {
                 const splitConfirmed = confirmed.split(',');
@@ -328,7 +328,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         }
         return [];
       }
-      
+
       let searchTerms = [];
       if (searchInput && searchInput.trim()) {
         const splitTerms = searchInput.split(',');
