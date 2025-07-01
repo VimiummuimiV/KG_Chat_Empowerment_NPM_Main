@@ -1,3 +1,4 @@
+import "./messagesParser.scss";
 import { fetchChatLogs } from "../chatlogs/chatlogs.js";
 import { isMentionForMe } from "../../helpers/getLatestMessageData.js";
 import { ensureUsernameColorsAndIds } from "../../helpers/colorUtils.js";
@@ -26,12 +27,12 @@ function getDatesBetween(startDate, endDate) {
   const dates = [];
   const currentDate = new Date(startDate);
   const end = new Date(endDate);
-  
+
   while (currentDate <= end) {
     dates.push(formatDate(currentDate));
     currentDate.setDate(currentDate.getDate() + 1);
   }
-  
+
   return dates;
 }
 
@@ -48,13 +49,13 @@ export async function parsePersonalMessages(currentDate = today) {
   localStorage.setItem(ABSENT_MENTIONS_CACHE_KEY, String(now));
 
   const personalMessages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY)) || {};
-  
+
   // Get the last parse date, default to today if never parsed before
   const lastParseDate = localStorage.getItem(LAST_PARSE_DATE_KEY) || currentDate;
-  
+
   // Determine which dates need to be parsed
   const datesToParse = [];
-  
+
   if (lastParseDate === currentDate) {
     // Same day, only parse today
     datesToParse.push(currentDate);
@@ -62,7 +63,7 @@ export async function parsePersonalMessages(currentDate = today) {
     // Different dates, parse from last parse date to current date
     const startDate = new Date(lastParseDate);
     const endDate = new Date(currentDate);
-    
+
     // If last parse date is in the future (shouldn't happen but safety check)
     if (startDate > endDate) {
       datesToParse.push(currentDate);
@@ -89,9 +90,44 @@ export async function parsePersonalMessages(currentDate = today) {
 
   let totalNewMentions = 0;
 
+  // Progress UI for multi-day parsing
+  let progressContainer, dateIndicator, progressBar, progressBarInner, progressLabel;
+
+  if (datesToParse.length > 1) {
+    progressContainer = document.createElement('div');
+    progressContainer.className = 'messages-parser-progress-container';
+
+    dateIndicator = document.createElement('div');
+    dateIndicator.className = 'messages-parser-date-indicator';
+
+    progressBar = document.createElement('div');
+    progressBar.className = 'messages-parser-progress-bar';
+
+    progressBarInner = document.createElement('div');
+    progressBarInner.className = 'messages-parser-progress-bar-inner';
+    progressBarInner.style.width = '0%';
+
+    progressBar.appendChild(progressBarInner);
+
+    progressLabel = document.createElement('div');
+    progressLabel.className = 'messages-parser-progress-label';
+    progressLabel.textContent = '';
+
+    progressContainer.append(dateIndicator, progressBar, progressLabel);
+    document.body.appendChild(progressContainer);
+  }
+
   // Process each date
+  let dateIndex = 0;
+
   for (const date of datesToParse) {
     try {
+      if (progressContainer) {
+        dateIndicator.textContent = date;
+        const percent = Math.round((dateIndex / datesToParse.length) * 100);
+        progressBarInner.style.width = percent + '%';
+        progressLabel.textContent = `${dateIndex + 1} / ${datesToParse.length}`;
+      }
       const result = await fetchChatLogs(date);
       if (!result?.chatlogs?.length) continue;
 
@@ -145,16 +181,23 @@ export async function parsePersonalMessages(currentDate = today) {
       }
 
       console.log(`Found ${newMentionsForDate} new mentions for ${date}`);
-      
+
       // Small delay between API calls to be respectful
       if (datesToParse.indexOf(date) < datesToParse.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-      
+
     } catch (error) {
       console.error(`Error parsing messages for date ${date}:`, error);
       // Continue with other dates even if one fails
     }
+    dateIndex++;
+  }
+
+  // Remove progress UI after parsing
+  if (progressContainer) {
+    progressBarInner.style.width = '100%';
+    progressContainer.remove();
   }
 
   // Update localStorage and UI if new mentions were added

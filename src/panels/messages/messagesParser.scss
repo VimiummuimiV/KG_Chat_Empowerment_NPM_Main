@@ -1,0 +1,70 @@
+// Styles for messagesParser progress indicator
+%progress-indicator-base {
+  transition: 0.2s ease-in-out;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.5em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  padding: 8px 12px;
+  min-width: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: default;
+  border-radius: 0.2em !important;
+}
+
+.messages-parser-progress-container {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  top: 50px;
+  right: 5px;
+  gap: 10px;
+  user-select: none;
+  pointer-events: none;
+  z-index: 3000;
+  background: none;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 1em;
+  border-radius: 0.5em !important;
+}
+
+.messages-parser-date-indicator {
+  @extend %progress-indicator-base;
+  color: hsl(88, 50%, 55%);
+  background-color: hsl(88, 40%, 20%);
+  border: 1px solid hsl(88, 45%, 35%);
+  min-width: 120px;
+  justify-content: flex-start;
+}
+
+.messages-parser-progress-bar {
+  height: 18px;
+  width: 100%;
+  background: hsl(50, 0%, 15%);
+  border: 1px solid hsl(50, 0%, 30%);
+  border-radius: 0.2em !important;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.messages-parser-progress-bar-inner {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    hsl(88, 50%, 55%) 0%,
+    hsl(208, 50%, 70%) 100%
+  );
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0.2em !important;
+}
+
+.messages-parser-progress-label {
+  display: inline-flex;
+  justify-content: center;
+  color: hsl(88, 50%, 55%);
+  font-size: 1em;
+  font-weight: 400;
+}
