@@ -405,11 +405,6 @@ export async function showMessagesPanel() {
   messagesContainer.className = 'messages-container messages-search-container';
 
   // Add scroll event listener to save scroll position only if mouse is over the container
-  messagesContainer.addEventListener('scroll', function() {
-    if (messagesContainer.matches(':hover')) {
-      localStorage.setItem('messagesLastScrollPosition', messagesContainer.scrollTop.toString());
-    }
-  });
 
   cachedMessagesPanel.appendChild(messagesContainer);
 
@@ -484,6 +479,10 @@ export async function showMessagesPanel() {
       messageElement.className = 'message-item';
       messageElement.dataset.type = type;
 
+      // Use a simple key for last clicked message
+      const messageKey = `${date}|${time}|${username}`;
+      messageElement.setAttribute('data-message-key', messageKey);
+
       // Add margin-top if this is the first message of a new username group
       if (username !== lastUsername) {
         messageElement.style.marginTop = '0.6em';
@@ -535,6 +534,12 @@ export async function showMessagesPanel() {
       messageElement.appendChild(messageTextElement);
 
       // Append the message element to the fragment
+
+      // Add click handler to save last clicked message
+      messageElement.addEventListener('click', function (e) {
+        localStorage.setItem('lastClickedMessage', messageKey);
+      });
+
       fragment.appendChild(messageElement);
     });
 
@@ -550,19 +555,15 @@ export async function showMessagesPanel() {
       processEncodedLinks('personalMessages');
       highlightMentionWords('personalMessages');
 
-      // Restore saved scroll position or scroll to bottom
-      const savedScrollPosition = localStorage.getItem('messagesLastScrollPosition');
-      if (savedScrollPosition !== null) {
-        const scrollPos = parseFloat(savedScrollPosition);
-        if (!isNaN(scrollPos)) {
-          messagesContainer.scrollTop = scrollPos;
-        } else {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      // Highlight the last clicked message if present in localStorage
+      const lastClickedKey = localStorage.getItem('lastClickedMessage');
+      if (lastClickedKey) {
+        const lastMessage = messagesContainer.querySelector(`[data-message-key="${lastClickedKey}"]`);
+        if (lastMessage) {
+          lastMessage.classList.add('previous-message');
+          lastMessage.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }
-      } else {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
       }
-
       // Reset flags and attach observer after a reasonable delay
       setTimeout(() => {
         isConvertingContent = false;
