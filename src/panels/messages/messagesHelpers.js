@@ -10,6 +10,18 @@ export function extractMessageText(pElem) {
   return clone.textContent.trim();
 }
 
+// Helper to get the date from the closest previous .date-item element
+function getDateForMessageElement(element) {
+  let prev = element.previousElementSibling;
+  while (prev && !prev.classList.contains('date-item')) {
+    prev = prev.previousElementSibling;
+  }
+  if (prev && prev.classList.contains('date-item')) {
+    return prev.dataset.date;
+  }
+  return null;
+}
+
 // Find chat message by username and message text (backup)
 export async function findGeneralChatMessage(targetMessageText, targetUsername, allowScroll) {
   const parent = document.querySelector('.messages-content'); // Chat container
@@ -134,9 +146,11 @@ export function calibrateToMoscowTime(time) {
  * @param {string} removalType - The type of removal: 'single', 'all', or 'from'.
  */
 export function removeMessage(messageElement, removalType = 'single') {
-  // Extract time and username from the message element
+  // Extract time, username, and date from the message element
   const time = messageElement.querySelector('.message-time').textContent;
   const username = messageElement.querySelector('.message-username').textContent;
+  // Get the date for this message element
+  const date = getDateForMessageElement(messageElement);
 
   // Retrieve localStorage personalMessagesBackup data
   let backupData = JSON.parse(localStorage.getItem('personalMessagesBackup')) || {};
@@ -155,12 +169,12 @@ export function removeMessage(messageElement, removalType = 'single') {
     // Remove all messages from the same user
     document.querySelectorAll('.message-item').forEach((element) => {
       const elementUsername = element.querySelector('.message-username').textContent;
-      if (elementUsername === username) {
+      const elementDate = getDateForMessageElement(element);
+      if (elementUsername === username && elementDate) {
         element.remove(); // Remove the DOM element
-
         // Remove the corresponding entry from backupData
         const elementTime = element.querySelector('.message-time').textContent;
-        const messageKey = `[${elementTime}]_${elementUsername}`;
+        const messageKey = `[${elementTime}]_${elementUsername}_${elementDate}`;
         delete modifiedBackupData[messageKey];
       }
     });
@@ -175,28 +189,29 @@ export function removeMessage(messageElement, removalType = 'single') {
     for (let i = currentIndex; i < messageElements.length; i++) {
       const element = messageElements[i];
       const elementUsername = element.querySelector('.message-username').textContent;
-
-      if (elementUsername === username) {
+      const elementDate = getDateForMessageElement(element);
+      if (elementUsername === username && elementDate) {
         element.remove();
-
         // Remove the corresponding entry from backupData
         const elementTime = element.querySelector('.message-time').textContent;
-        const messageKey = `[${elementTime}]_${elementUsername}`;
+        const messageKey = `[${elementTime}]_${elementUsername}_${elementDate}`;
         delete modifiedBackupData[messageKey];
       }
     }
   } else {
     // Default: Remove only the specific message (single)
-    const messageKey = `[${time}]_${username}`;
-    if (modifiedBackupData[messageKey]) {
-      delete modifiedBackupData[messageKey];
-      // Remove the message and its date header if it's the last for that date
-      let dateHeader = messageElement.previousElementSibling;
-      while (dateHeader && !dateHeader.classList.contains('date-item')) dateHeader = dateHeader.previousElementSibling;
-      messageElement.remove();
-      if (dateHeader && dateHeader.classList.contains('date-item') &&
-        (!dateHeader.nextElementSibling || dateHeader.nextElementSibling.classList.contains('date-item'))) {
-        dateHeader.remove();
+    if (date) {
+      const messageKey = `[${time}]_${username}_${date}`;
+      if (modifiedBackupData[messageKey]) {
+        delete modifiedBackupData[messageKey];
+        // Remove the message and its date header if it's the last for that date
+        let dateHeader = messageElement.previousElementSibling;
+        while (dateHeader && !dateHeader.classList.contains('date-item')) dateHeader = dateHeader.previousElementSibling;
+        messageElement.remove();
+        if (dateHeader && dateHeader.classList.contains('date-item') &&
+          (!dateHeader.nextElementSibling || dateHeader.nextElementSibling.classList.contains('date-item'))) {
+          dateHeader.remove();
+        }
       }
     }
   }

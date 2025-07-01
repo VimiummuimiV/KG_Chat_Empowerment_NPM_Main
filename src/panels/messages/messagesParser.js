@@ -12,8 +12,30 @@ import {
 import { today } from "../../definitions.js";
 import { addJumpEffect } from "../../animations.js";
 
+// New cache key to track the last successful parse date
+const LAST_PARSE_DATE_KEY = 'lastParseDate';
+
+// Helper function to format date as YYYY-MM-DD
+function formatDate(date) {
+  return date.toISOString().split('T')[0];
+}
+
+// Helper function to get dates between two dates (inclusive)
+function getDatesBetween(startDate, endDate) {
+  const dates = [];
+  const currentDate = new Date(startDate);
+  const end = new Date(endDate);
+  
+  while (currentDate <= end) {
+    dates.push(formatDate(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return dates;
+}
+
 // Function to parse personal messages from chat logs and update localStorage
-export async function parsePersonalMessages(date) {
+export async function parsePersonalMessages(currentDate = today) {
   // Caching logic: only fetch if last fetch was more than 1 minute ago
   const now = Date.now();
   const lastFetch = Number(localStorage.getItem(ABSENT_MENTIONS_CACHE_KEY)) || 0;
@@ -25,11 +47,30 @@ export async function parsePersonalMessages(date) {
   localStorage.setItem(ABSENT_MENTIONS_CACHE_KEY, String(now));
 
   const personalMessages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY)) || {};
+  
+  // Get the last parse date, default to today if never parsed before
+  const lastParseDate = localStorage.getItem(LAST_PARSE_DATE_KEY) || currentDate;
+  
+  // Determine which dates need to be parsed
+  const datesToParse = [];
+  
+  if (lastParseDate === currentDate) {
+    // Same day, only parse today
+    datesToParse.push(currentDate);
+  } else {
+    // Different dates, parse from last parse date to current date
+    const startDate = new Date(lastParseDate);
+    const endDate = new Date(currentDate);
+    
+    // If last parse date is in the future (shouldn't happen but safety check)
+    if (startDate > endDate) {
+      datesToParse.push(currentDate);
+    } else {
+      datesToParse.push(...getDatesBetween(lastParseDate, currentDate));
+    }
+  }
 
-  const result = await fetchChatLogs(date);
-  if (!result?.chatlogs?.length) return;
-
-  const chatlogEntries = result.chatlogs;
+  console.log(`Parsing messages for dates: ${datesToParse.join(', ')}`);
 
   // Build a set of keys for messages already stored, using date and message for uniqueness
   const existingKeys = new Set(Object.values(personalMessages).map(m => `${m.date}|${m.message}`));
@@ -38,57 +79,81 @@ export async function parsePersonalMessages(date) {
   let usernameColorCache = JSON.parse(localStorage.getItem(USERNAME_COLOR_CACHE_KEY) || '{}');
   let usernameIdCache = JSON.parse(localStorage.getItem(USERNAME_ID_CACHE_KEY) || '{}');
 
-  // Get all unique, non-SYSTEM usernames from today's chatlog
-  const allUsernames = [...new Set(
-    chatlogEntries.reduce((acc, e) => {
-      if (e.username && e.username.trim() !== 'SYSTEM') acc.push(e.username);
-      return acc;
-    }, [])
-  )];
+  let totalNewMentions = 0;
 
-  // Load and cache username colors and ids
-  const { colorCache, idCache } = await ensureUsernameColorsAndIds(
-    allUsernames,
-    USERNAME_COLOR_CACHE_KEY,
-    USERNAME_ID_CACHE_KEY
-  );
-  usernameColorCache = colorCache;
-  usernameIdCache = idCache;
+  // Process each date
+  for (const date of datesToParse) {
+    try {
+      const result = await fetchChatLogs(date);
+      if (!result?.chatlogs?.length) continue;
 
-  // Process chatlog entries and add new mentions
-  let newMentions = 0;
-  for (const entry of chatlogEntries) {
-    if (
-      entry.username &&
-      entry.username !== 'SYSTEM' &&
-      entry.message &&
-      isMentionForMe(entry.message)
-    ) {
-      // Check uniqueness based on date and message only
-      const uniqueKey = `${today}|${entry.message}`;
-      if (!existingKeys.has(uniqueKey)) {
-        const newId = `[${entry.time}]_${entry.username}`;
-        personalMessages[newId] = {
-          time: `[${entry.time}]`,
-          date: today,
-          username: entry.username,
-          usernameColor: usernameColorCache[entry.username] || '#808080',
-          message: entry.message,
-          type: 'mention',
-          userId: usernameIdCache[entry.username] || ''
-        };
-        // Add to existing keys set to prevent duplicates within the same batch
-        existingKeys.add(uniqueKey);
-        newMentions++;
+      const chatlogEntries = result.chatlogs;
+
+      // Get all unique, non-SYSTEM usernames from this date's chatlog
+      const allUsernames = [...new Set(
+        chatlogEntries.reduce((acc, e) => {
+          if (e.username && e.username.trim() !== 'SYSTEM') acc.push(e.username);
+          return acc;
+        }, [])
+      )];
+
+      // Load and cache username colors and ids
+      const { colorCache, idCache } = await ensureUsernameColorsAndIds(
+        allUsernames,
+        USERNAME_COLOR_CACHE_KEY,
+        USERNAME_ID_CACHE_KEY
+      );
+      usernameColorCache = { ...usernameColorCache, ...colorCache };
+      usernameIdCache = { ...usernameIdCache, ...idCache };
+
+      // Process chatlog entries and add new mentions
+      let newMentionsForDate = 0;
+      for (const entry of chatlogEntries) {
+        if (
+          entry.username &&
+          entry.username !== 'SYSTEM' &&
+          entry.message &&
+          isMentionForMe(entry.message)
+        ) {
+          // Check uniqueness based on date and message only
+          const uniqueKey = `${date}|${entry.message}`;
+          if (!existingKeys.has(uniqueKey)) {
+            const newId = `[${entry.time}]_${entry.username}_${date}`;
+            personalMessages[newId] = {
+              time: `[${entry.time}]`,
+              date: date,
+              username: entry.username,
+              usernameColor: usernameColorCache[entry.username] || '#808080',
+              message: entry.message,
+              type: 'mention',
+              userId: usernameIdCache[entry.username] || ''
+            };
+            // Add to existing keys set to prevent duplicates within the same batch
+            existingKeys.add(uniqueKey);
+            newMentionsForDate++;
+            totalNewMentions++;
+          }
+        }
       }
+
+      console.log(`Found ${newMentionsForDate} new mentions for ${date}`);
+      
+      // Small delay between API calls to be respectful
+      if (datesToParse.indexOf(date) < datesToParse.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+    } catch (error) {
+      console.error(`Error parsing messages for date ${date}:`, error);
+      // Continue with other dates even if one fails
     }
   }
 
   // Update localStorage and UI if new mentions were added
-  if (newMentions > 0) {
+  if (totalNewMentions > 0) {
     localStorage.setItem(PERSONAL_MESSAGES_KEY, JSON.stringify(personalMessages));
     let newMessagesCount = Number(localStorage.getItem('newMessagesCount')) || 0;
-    newMessagesCount += newMentions;
+    newMessagesCount += totalNewMentions;
     localStorage.setItem('newMessagesCount', String(newMessagesCount));
 
     const newMessageIndicator = document.querySelector('.personal-messages-button .new-message-count');
@@ -97,5 +162,10 @@ export async function parsePersonalMessages(date) {
       newMessageIndicator.style.visibility = newMessagesCount > 0 ? 'visible' : 'hidden';
       addJumpEffect(newMessageIndicator, 50, 50);
     }
+    
+    console.log(`Added ${totalNewMentions} total new mentions across ${datesToParse.length} days`);
   }
+
+  // Update the last parse date to current date after successful parsing
+  localStorage.setItem(LAST_PARSE_DATE_KEY, currentDate);
 }
