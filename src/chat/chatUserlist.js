@@ -19,7 +19,6 @@ import { settingsState } from "../panels/settings/settings.js"
 const { usersToTrack, ignored, moderator } = settingsState
 
 import { getRandomEmojiAvatar } from "../helpers/helpers.js";
-import { isCtrlKeyPressed } from "../helpers/hotkeyState.js";
 import { getUserProfileData } from "../helpers/userProfileData.js";
 
 import { createCustomTooltip } from "../components/tooltip.js";
@@ -194,10 +193,6 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
 
   const newNameElement = document.createElement('a');
   newNameElement.classList.add('name');
-  createCustomTooltip(newNameElement, {
-    en: 'Send private message',
-    ru: 'Отправить приватное сообщение'
-  });
   newNameElement.dataset.user = userId;
   newNameElement.textContent = userName;
 
@@ -206,7 +201,7 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
   const newProfileElement = document.createElement('a');
   newProfileElement.classList.add('profile');
   const title = `${rankIcon} ${mainTitle} - ${bestSpeed}`;
-  createCustomTooltip(newProfileElement, title);
+  newProfileElement.setAttribute('data-title', title);
   newProfileElement.target = '_blank';
   newProfileElement.href = `/profile/${userId}/`;
   let circularProgress = createCircularProgress(calculatePercentage(bestSpeed), rankColor, isRevoked);
@@ -217,40 +212,6 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
     const animateElement = newProfileElement.querySelector('.animateProfileProgress');
     if (animateElement) animateElement.beginElement();
   }, 10);
-  // Add event listener click with Hold Ctrl Key to open profile into iframe
-  newProfileElement.addEventListener('click', function (event) {
-    event.preventDefault();
-    if (isCtrlKeyPressed) {
-      // Open the profile in a new tab
-      window.open(profileBaseUrl + userId, '_blank');
-    } else {
-      // Load the profile into the iframe
-      loadProfileIntoIframe(profileBaseUrl + userId);
-    }
-  });
-
-  // Construct the URL for the messaging interface between two users
-  const messageInProfile = `${profileBaseUrl}${myUserId}/messages/${userId}/`;
-
-  // Attach a click event listener to the newNameElement element
-  newNameElement.addEventListener('click', function (event) {
-    // Check if both Ctrl and Shift keys are pressed during the click event
-    if (event.ctrlKey && event.shiftKey) {
-      // If both keys are pressed, open the messaging URL in a new tab
-      const newTab = window.open(messageInProfile, '_blank');
-      if (newTab) newTab.focus(); // Attempt to make the new tab active
-    }
-    // Check if only the Ctrl key is pressed
-    else if (event.ctrlKey) {
-      // If Ctrl is pressed, load the messaging interface URL into the iframe
-      loadProfileIntoIframe(messageInProfile);
-    }
-    // If neither Ctrl nor Shift is pressed, initiate a private chat message
-    else {
-      // The insertPrivate function handles sending a private message to the specified user
-      insertPrivate(userId);
-    }
-  });
 
   newUserElement.appendChild(newAvatarElement);
   newUserElement.appendChild(newNameElement);
@@ -263,10 +224,6 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
 
   if (userToTrack) {
     const trackedIcon = document.createElement('div');
-    createCustomTooltip(trackedIcon, {
-      en: 'Tracked user',
-      ru: 'Отслеживаемый пользователь'
-    });
     trackedIcon.classList.add('tracked');
     trackedIcon.innerHTML = trackedSVG;
     newUserElement.appendChild(trackedIcon);
@@ -278,10 +235,6 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
   // Create and hide a message element if the user is in ignored
   if (isIgnoredUser) {
     const ignoredIcon = document.createElement('div');
-    createCustomTooltip(ignoredIcon, {
-      en: 'Ignored user',
-      ru: 'Игнорируемый пользователь'
-    });
     ignoredIcon.classList.add('ignored');
     ignoredIcon.innerHTML = ignoredSVG;
     newUserElement.appendChild(ignoredIcon);
@@ -296,10 +249,6 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
   // If a moderator icon is found or the current user is in the moderator array, append the moderator icon.
   if (hasModeratorIcon || isModerator) {
     const moderatorIcon = document.createElement('div');
-    createCustomTooltip(moderatorIcon, {
-      en: 'Moderator',
-      ru: 'Модератор'
-    });
     moderatorIcon.classList.add('moderator');
     moderatorIcon.innerHTML = moderatorSVG; // Assuming 'moderatorSVG' contains the SVG for the icon
     newUserElement.appendChild(moderatorIcon);
@@ -439,8 +388,121 @@ export async function refreshUserList(retrievedLogin, actionType) {
 
     // Call updateUserCountText to refresh user count display
     updateUserCountText();
+    // Setup delegated events after user list is built
+    setupDelegatedEvents();
 
   } catch (error) {
     console.error('Error refreshing user list:', error);
   }
+}
+
+// Event delegation setup - Add this at the bottom of your module
+function setupDelegatedEvents() {
+  // Get the main container for event delegation
+  const userlistContainer = document.querySelector('.chat-user-list');
+
+  // Delegated tooltips for userlist elements
+  createCustomTooltip(
+    '.name,' +
+    '.profile,' +
+    '.tracked,' +
+    '.ignored,' +
+    '.moderator',
+    userlistContainer,
+    (el) => {
+      if (el.classList.contains('name')) {
+        const userName = el.textContent || '';
+        return {
+          en: `Private message${userName ? ' to ' + userName : ''}`,
+          ru: `Приватное сообщение${userName ? ' для ' + userName : ''}`
+        };
+      }
+      if (el.classList.contains('profile')) {
+        // Use data-title attribute for tooltip, fallback to title for compatibility
+        const tooltip = el.getAttribute('data-title');
+        return {
+          en: `
+            ${tooltip}
+            [Click] to open profile in iframe (summary)
+            [Ctrl + Click] to open profile in iframe (messages)
+            [Ctrl + Shift + Click] to open profile in a new tab (messages)
+          `,
+          ru: `
+            ${tooltip}
+            [Клик] открыть профиль в iframe (сводка)
+            [Ctrl + Клик] открыть профиль в iframe (сообщения)
+            [Ctrl + Shift + Клик] открыть профиль в новой вкладке (сообщения)
+          `
+        };
+      }
+      if (el.classList.contains('tracked')) {
+        return {
+          en: 'Tracked user',
+          ru: 'Отслеживаемый пользователь'
+        };
+      }
+      if (el.classList.contains('ignored')) {
+        return {
+          en: 'Ignored user',
+          ru: 'Игнорируемый пользователь'
+        };
+      }
+      if (el.classList.contains('moderator')) {
+        return {
+          en: 'Moderator',
+          ru: 'Модератор'
+        };
+      }
+      return { en: '', ru: '' };
+    },
+    true
+  );
+
+  if (!userlistContainer) {
+    console.warn('Userlist element not found for event delegation');
+    return;
+  }
+
+  // Check if event delegation is already set up to avoid duplicate listeners
+  if (userlistContainer.dataset.delegatedEvents) {
+    return;
+  }
+
+  // Delegated event handler for all user interactions
+  userlistContainer.addEventListener('click', function (event) {
+    // Handle profile element clicks
+    if (event.target.closest('.profile')) {
+      event.preventDefault();
+      const profileElement = event.target.closest('.profile');
+      const userId = profileElement.parentElement.querySelector('.name').dataset.user;
+
+      if (event.ctrlKey && event.shiftKey) {
+        // If both Ctrl and Shift keys are pressed, open the profile in a new tab (messages)
+        const messageInProfile = `${profileBaseUrl}${myUserId}/messages/${userId}/`;
+        const newTab = window.open(messageInProfile, '_blank');
+        if (newTab) newTab.focus(); // Attempt to make the new tab active
+        return;
+      } else if (event.ctrlKey) {
+        // If only Ctrl is pressed, open the profile into the iframe (messages)
+        const messageInProfile = `${profileBaseUrl}${myUserId}/messages/${userId}/`;
+        loadProfileIntoIframe(messageInProfile);
+        return;
+      } else {
+        // If neither Ctrl nor Shift is pressed, load the profile into the iframe (summary)
+        loadProfileIntoIframe(profileBaseUrl + userId);
+        return;
+      }
+    }
+
+    // Private message handling
+    if (event.target.closest('.name')) {
+      const nameElement = event.target.closest('.name');
+      const userId = nameElement.getAttribute('data-user');
+      insertPrivate(userId);
+      return;
+    }
+  });
+
+  // Mark that event delegation has been set up
+  userlistContainer.dataset.delegatedEvents = 'true';
 }

@@ -97,14 +97,14 @@ export function setupCacheTooltips(sortButtonsContainer, fetchedUsersContainer) 
       if (el.classList.contains('login')) {
         return {
           en: ` 
-          [Click] to open profile in iframe (summary)
-          [Ctrl + Click] to open profile in iframe (messages)
-          [Ctrl + Shift + Click] to open profile in a new tab (messages)
+            [Click] to open profile in iframe (summary)
+            [Ctrl + Click] to open profile in iframe (messages)
+            [Ctrl + Shift + Click] to open profile in a new tab (messages)
           `,
           ru: ` 
-          [Клик] открыть профиль в iframe (сводка)
-          [Ctrl + Клик] открыть профиль в iframe (сообщения)
-          [Ctrl + Shift + Клик] открыть профиль в новой вкладке (сообщения)
+            [Клик] открыть профиль в iframe (сводка)
+            [Ctrl + Клик] открыть профиль в iframe (сообщения)
+            [Ctrl + Shift + Клик] открыть профиль в новой вкладке (сообщения)
           `
         }
       }
