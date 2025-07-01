@@ -40,9 +40,10 @@
     @include scrollbar();
   }
 
-  .previous-message {
-    background-color: #adff2f0d !important; 
-    border: 1px solid #adff2f1c !important;
+  .previous-message,
+  .focused-message {
+    background-color: hsla(60, 80%, 60%, 0.05) !important; 
+    border: 1px solid hsla(60, 80%, 60%, 0.1) !important;
     border-radius: 0.2em !important;
   }
 

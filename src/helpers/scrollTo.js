@@ -40,5 +40,9 @@ export async function scrollToMiddle(parent, element) {
   });
   await new Promise(resolve => setTimeout(resolve, 500));
   parent.style.scrollBehavior = 'auto';
+  // Remove previous highlight and focused-message
+  const prev = parent.querySelector('.focused-message');
+  if (prev) prev.classList.remove('focused-message');
   addShakeEffect(element);
+  element.classList.add('focused-message');
 }
