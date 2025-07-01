@@ -40,11 +40,6 @@
     @include scrollbar();
   }
 
-  // Prevent performance issues with large chat logs
-  .message-item {
-    content-visibility: auto;
-  }
-
   .hidden-message,
   .hidden-date {
     display: none !important;

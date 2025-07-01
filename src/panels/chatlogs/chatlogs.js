@@ -966,7 +966,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
       convertVideoLinksToPlayer('chatlogsMessages');
       processEncodedLinks('chatlogsMessages'); // Decodes links within the chat logs section.
       highlightMentionWords('chatlogsMessages');
-      chatLogsContainer.scrollTop = chatLogsContainer.scrollHeight; // Scroll to the very bottom
 
       // Update the media and mention counters
       updateMediaAndMentionCounters();
@@ -980,9 +979,9 @@ export async function showChatLogsPanel(personalMessagesDate) {
       if (typeof afterRenderCallback === 'function') {
         afterRenderCallback();
       }
+      chatLogsContainer.scrollTop = chatLogsContainer.scrollHeight; // Scroll to the very bottom
     });
-
-  };
+  }
 
   // Load chat logs based on the provided date or default to today's date
   const dateToLoad = personalMessagesDate || today; // Use personalMessagesDate if available

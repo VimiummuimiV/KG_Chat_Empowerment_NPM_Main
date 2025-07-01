@@ -404,6 +404,13 @@ export async function showMessagesPanel() {
   const messagesContainer = document.createElement('div');
   messagesContainer.className = 'messages-container messages-search-container';
 
+  // Add scroll event listener to save scroll position
+  messagesContainer.addEventListener('scroll', function() {
+    localStorage.setItem('messagesLastScrollPosition', messagesContainer.scrollTop.toString());
+  });
+
+  cachedMessagesPanel.appendChild(messagesContainer);
+
   function attachMutationObserver() {
     // Set up MutationObserver to monitor removal of child elements
     const observer = new MutationObserver(mutationsList => {
@@ -437,10 +444,8 @@ export async function showMessagesPanel() {
   // Create an array to store message elements for later appending
   const messageElements = [];
 
-
   // Load messages on initial panel open
   async function loadMessages(messages) {
-
     messagesContainer.children.length && messagesContainer.replaceChildren();
 
     // Use a DocumentFragment to batch DOM updates
@@ -538,11 +543,23 @@ export async function showMessagesPanel() {
       // Set flag before conversions
       isConvertingContent = true;
 
-      convertImageLinksToImage('personalMessages');
-      convertVideoLinksToPlayer('personalMessages');
+      convertImageLinksToImage('personalMessages', false);
+      convertVideoLinksToPlayer('personalMessages', false);
       processEncodedLinks('personalMessages');
       highlightMentionWords('personalMessages');
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      // Restore saved scroll position or scroll to bottom
+      const savedScrollPosition = localStorage.getItem('messagesLastScrollPosition');
+      if (savedScrollPosition !== null) {
+        const scrollPos = parseFloat(savedScrollPosition);
+        if (!isNaN(scrollPos)) {
+          messagesContainer.scrollTop = scrollPos;
+        } else {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+      } else {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
 
       // Reset flags and attach observer after a reasonable delay
       setTimeout(() => {
@@ -584,8 +601,6 @@ export async function showMessagesPanel() {
   }
 
   await loadMessages(messages);
-
-  cachedMessagesPanel.appendChild(messagesContainer);
 
   document.body.appendChild(cachedMessagesPanel);
 
