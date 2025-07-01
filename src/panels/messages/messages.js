@@ -555,20 +555,21 @@ export async function showMessagesPanel() {
       processEncodedLinks('personalMessages');
       highlightMentionWords('personalMessages');
 
-      // Highlight the last clicked message if present in localStorage
-      const lastClickedKey = localStorage.getItem('lastClickedMessage');
-      if (lastClickedKey) {
-        const lastMessage = messagesContainer.querySelector(`[data-message-key="${lastClickedKey}"]`);
-        if (lastMessage) {
-          lastMessage.classList.add('previous-message');
-          lastMessage.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }
-      }
       // Reset flags and attach observer after a reasonable delay
       setTimeout(() => {
         isConvertingContent = false;
         isMessagesImport = false;
         attachMutationObserver();
+
+        // Highlight the last clicked message if present in localStorage
+        const lastClickedKey = localStorage.getItem('lastClickedMessage');
+        if (lastClickedKey) {
+          const lastMessage = messagesContainer.querySelector(`[data-message-key="${lastClickedKey}"]`);
+          if (lastMessage) {
+            lastMessage.classList.add('previous-message');
+            lastMessage.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          }
+        }
       }, 500);
     });
 
