@@ -31,8 +31,8 @@ export async function parsePersonalMessages(date) {
 
   const chatlogEntries = result.chatlogs;
 
-  // Build a set of keys for messages already stored, to avoid duplicates
-  const existingKeys = new Set(Object.values(personalMessages).map(m => `${m.date}|${m.time}|${m.message}`));
+  // Build a set of keys for messages already stored, using date and message for uniqueness
+  const existingKeys = new Set(Object.values(personalMessages).map(m => `${m.date}|${m.message}`));
 
   // Load or initialize caches
   let usernameColorCache = JSON.parse(localStorage.getItem(USERNAME_COLOR_CACHE_KEY) || '{}');
@@ -64,8 +64,9 @@ export async function parsePersonalMessages(date) {
       entry.message &&
       isMentionForMe(entry.message)
     ) {
-      const key = `${today}|[${entry.time}]|${entry.message}`;
-      if (!existingKeys.has(key)) {
+      // Check uniqueness based on date and message only
+      const uniqueKey = `${today}|${entry.message}`;
+      if (!existingKeys.has(uniqueKey)) {
         const newId = `[${entry.time}]_${entry.username}`;
         personalMessages[newId] = {
           time: `[${entry.time}]`,
@@ -76,6 +77,8 @@ export async function parsePersonalMessages(date) {
           type: 'mention',
           userId: usernameIdCache[entry.username] || ''
         };
+        // Add to existing keys set to prevent duplicates within the same batch
+        existingKeys.add(uniqueKey);
         newMentions++;
       }
     }
