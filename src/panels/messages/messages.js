@@ -404,9 +404,11 @@ export async function showMessagesPanel() {
   const messagesContainer = document.createElement('div');
   messagesContainer.className = 'messages-container messages-search-container';
 
-  // Add scroll event listener to save scroll position
+  // Add scroll event listener to save scroll position only if mouse is over the container
   messagesContainer.addEventListener('scroll', function() {
-    localStorage.setItem('messagesLastScrollPosition', messagesContainer.scrollTop.toString());
+    if (messagesContainer.matches(':hover')) {
+      localStorage.setItem('messagesLastScrollPosition', messagesContainer.scrollTop.toString());
+    }
   });
 
   cachedMessagesPanel.appendChild(messagesContainer);
