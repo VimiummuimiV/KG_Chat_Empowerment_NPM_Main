@@ -10,8 +10,36 @@
   border: 1px solid #45474b;
 }
 
-// Hide filtered messages efficiently and style popup panel elements (properly nested)
+// Mixin for custom scrollbar
+@mixin scrollbar(
+  $thumb: #2f2f2f,
+  $track: #1b1b1b,
+  $thumb-hover: #4f4f4f,
+  $width: 6px
+) {
+  scrollbar-width: thin !important;
+  scrollbar-color: #{$thumb} #{$track};
+  &::-webkit-scrollbar {
+    width: $width;
+    background: #{$track};
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #{$thumb};
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #{$thumb-hover};
+  }
+}
+
 .popup-panel {
+  .fetched-users,
+  .messages-container,
+  .chat-logs-container,
+  .active-users,
+  .settings-content-container {
+    @include scrollbar();
+  }
+
   // Prevent performance issues with large chat logs
   .message-item {
     content-visibility: auto;
