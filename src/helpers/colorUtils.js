@@ -160,37 +160,41 @@ export function normalizeUsernameColor(inputColor, inputType = "rgb", minLightne
   return rgbToHex(rgbString);
 }
 
+// Unified user data cache key
+export const USER_DATA_CACHE_KEY = 'userData';
+
 /**
  * Loads and caches username colors and IDs for a list of usernames.
- * Updates localStorage caches USERNAME_COLOR_CACHE_KEY and USERNAME_ID_CACHE_KEY.
- * Returns updated { colorCache, idCache } objects.
+ * Updates localStorage cache USER_DATA_CACHE_KEY.
+ * Returns updated userData object.
  */
-export async function ensureUsernameColorsAndIds(usernames, colorCacheKey = 'usernameColorCache', idCacheKey = 'usernameIdCache') {
-  let colorCache = JSON.parse(localStorage.getItem(colorCacheKey) || '{}');
-  let idCache = JSON.parse(localStorage.getItem(idCacheKey) || '{}');
+export async function cacheUserData(usernames, userDataKey = USER_DATA_CACHE_KEY) {
+  let userData = JSON.parse(localStorage.getItem(userDataKey) || '{}');
   const usernamesToFetch = usernames.filter(username =>
-    !(username in colorCache) || !(username in idCache)
+    !(username in userData) || !userData[username]?.id || !userData[username]?.color
   );
   if (usernamesToFetch.length) {
     const userDataResults = await Promise.all(
       usernamesToFetch.map(username => getDataByName(username, 'allUserData'))
     );
     usernamesToFetch.forEach((username, i) => {
-      const userData = userDataResults[i];
-      if (userData) {
-        const carColor = userData.car ? extractHexColor(userData.car.color) : null;
-        // Normalize and convert color to hex
-        colorCache[username] = carColor && carColor.startsWith('#')
-          ? normalizeUsernameColor(carColor, "hex")
-          : '#808080';
-        idCache[username] = userData.id || null;
+      const fetched = userDataResults[i];
+      if (fetched) {
+        const carColor = fetched.car ? extractHexColor(fetched.car.color) : null;
+        userData[username] = {
+          id: fetched.id || null,
+          color: carColor && carColor.startsWith('#')
+            ? normalizeUsernameColor(carColor, "hex")
+            : '#808080'
+        };
       } else {
-        colorCache[username] = '#808080'; // Fallback to gray if no data found
-        idCache[username] = null;
+        userData[username] = {
+          id: null,
+          color: '#808080'
+        };
       }
     });
-    localStorage.setItem(colorCacheKey, JSON.stringify(colorCache));
-    localStorage.setItem(idCacheKey, JSON.stringify(idCache));
+    localStorage.setItem(userDataKey, JSON.stringify(userData));
   }
-  return { colorCache, idCache };
+  return userData;
 }

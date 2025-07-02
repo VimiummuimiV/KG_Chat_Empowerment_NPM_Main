@@ -1,3 +1,5 @@
+import { USER_DATA_CACHE_KEY } from '../../helpers/colorUtils.js';
+
 /**
  * Render the active users list based on their message counts.
  * @param {Map} usernameMessageCountMap - Map of username to message count
@@ -18,8 +20,8 @@ export function renderActiveUsers(usernameMessageCountMap, parentContainer) {
       .sort(([, countA], [, countB]) => countB - countA);
     activeUsers.innerHTML = '';
 
-    // Parse color cache once per render
-    const colorCache = JSON.parse(localStorage.getItem('usernameColorCache') || '{}');
+    // Parse user data cache once per render
+    const userData = JSON.parse(localStorage.getItem(USER_DATA_CACHE_KEY) || '{}');
     const fragment = document.createDocumentFragment();
     sortedUsernames.forEach(([username, count]) => {
       const userElement = document.createElement('div');
@@ -30,7 +32,7 @@ export function renderActiveUsers(usernameMessageCountMap, parentContainer) {
       nicknameElement.textContent = username;
 
       // Use cached color for username
-      const color = colorCache[username] || '#808080';
+      const color = userData[username]?.color || '#808080';
       nicknameElement.style.color = color;
 
       const messageCountElement = document.createElement('span');

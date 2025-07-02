@@ -1,4 +1,4 @@
-import { USERNAME_COLOR_CACHE_KEY } from "../messages/messages.js";
+import { USER_DATA_CACHE_KEY } from "../../helpers/colorUtils.js";
 
 /**
  * Render chat messages into a container.
@@ -12,7 +12,7 @@ import { USERNAME_COLOR_CACHE_KEY } from "../messages/messages.js";
  */
 export function renderChatMessages(chatlogs, messagesContainer, preserveMessages, addDateHeader, searchTerms = [], highlightSearch = false) {
   // Parse color cache once per render
-  const colorCache = JSON.parse(localStorage.getItem(USERNAME_COLOR_CACHE_KEY) || '{}');
+  const userData = JSON.parse(localStorage.getItem(USER_DATA_CACHE_KEY) || '{}');
   let lastDisplayedUsername = null;
   const usernameMessageCountMap = new Map();
   if (!preserveMessages) messagesContainer.innerHTML = '';
@@ -61,7 +61,7 @@ export function renderChatMessages(chatlogs, messagesContainer, preserveMessages
     const usernameElement = document.createElement('span');
     usernameElement.className = 'message-username';
     usernameElement.textContent = username;
-    usernameElement.style.color = colorCache[username] || '#808080';
+    usernameElement.style.color = userData[username]?.color || '#808080';
 
     const messageTextElement = document.createElement('span');
     messageTextElement.className = 'message-text';

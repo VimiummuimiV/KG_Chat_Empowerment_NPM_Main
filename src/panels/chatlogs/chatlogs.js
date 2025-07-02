@@ -56,7 +56,7 @@ import { addChatlogsMessageToPersonal } from './chatlogsToMessages.js';
 
 import { renderChatMessages } from './chatlogsMessages.js';
 import { renderActiveUsers } from './chatlogsUserlist.js';
-import { ensureUsernameColorsAndIds } from '../../helpers/colorUtils.js';
+import { cacheUserData } from '../../helpers/colorUtils.js';
 import { filterMessages } from '../../helpers/messagesSearch.js';
 import { fetchChatLogs } from "./chatlogsLoader.js";
 import { getRandomDateInRange } from "./chatlogsHelpers.js";
@@ -721,7 +721,7 @@ export async function showChatLogsPanel(personalMessagesDate) {
 
     // Ensure username colors/ids are loaded and cached before rendering
     const allUsernames = [...new Set(chatlogs.map(e => e.username).filter(u => u && u !== 'SYSTEM'))];
-    await ensureUsernameColorsAndIds(allUsernames);
+    await cacheUserData(allUsernames);
 
     // Use the renderer to render all messages and get the updated usernameMessageCountMap
     const updatedMap = renderChatMessages(chatlogs, chatLogsContainer);

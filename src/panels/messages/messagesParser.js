@@ -1,7 +1,7 @@
 import "./messagesParser.scss";
 import { fetchChatLogs } from "../chatlogs/chatlogsLoader.js";
 import { isMentionForMe } from "../../helpers/getLatestMessageData.js";
-import { ensureUsernameColorsAndIds } from "../../helpers/colorUtils.js";
+import { cacheUserData } from "../../helpers/colorUtils.js";
 
 import {
   PERSONAL_MESSAGES_KEY,
@@ -142,13 +142,13 @@ export async function parsePersonalMessages(currentDate = today) {
       )];
 
       // Load and cache username colors and ids
-      const { colorCache, idCache } = await ensureUsernameColorsAndIds(
-        allUsernames,
-        USERNAME_COLOR_CACHE_KEY,
-        USERNAME_ID_CACHE_KEY
-      );
-      usernameColorCache = { ...usernameColorCache, ...colorCache };
-      usernameIdCache = { ...usernameIdCache, ...idCache };
+      const userData = await cacheUserData(allUsernames);
+      usernameColorCache = {};
+      usernameIdCache = {};
+      for (const username of allUsernames) {
+        usernameColorCache[username] = userData[username]?.color || '#808080';
+        usernameIdCache[username] = userData[username]?.id || '';
+      }
 
       // Process chatlog entries and add new mentions
       let newMentionsForDate = 0;
