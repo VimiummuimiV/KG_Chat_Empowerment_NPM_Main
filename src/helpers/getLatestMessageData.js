@@ -1,5 +1,6 @@
 import { normalizeUsernameColor } from './colorUtils.js';
 
+import { today } from '../definitions.js';
 import { settingsState } from '../panels/settings/settings.js';
 const {
   ignored,
@@ -191,7 +192,6 @@ export async function getLatestMessageData() {
 
   // Process localStorage: retrieve or initialize personalMessages.
   const personalMessages = JSON.parse(localStorage.getItem('personalMessages')) || {};
-  const getCurrentDate = () => new Date().toLocaleDateString('en-CA');
 
   // Extract message metadata.
   const time = messageElement.querySelector('.time')?.textContent || 'N/A';
@@ -200,7 +200,7 @@ export async function getLatestMessageData() {
   const extractedUsername = usernameDataElement ? usernameDataElement.textContent : 'SYSTEM';
   const usernameColor = usernameDataElement ? usernameDataElement.parentElement.style.color : 'rgb(180,180,180)';
   const normalizedColor = normalizeUsernameColor(usernameColor, "rgb");
-  const messageKey = `${time}_${extractedUsername}`;
+  const messageKey = `${time}_${extractedUsername}_${today}`;
 
   // Check if the message type is "mention" or "private", and if the username is not in the ignore list
   const shouldSaveMessage = (
@@ -212,7 +212,7 @@ export async function getLatestMessageData() {
   if (shouldSaveMessage) {
     personalMessages[messageKey] = {
       time,
-      date: getCurrentDate(),
+      date: today,
       username: extractedUsername,
       usernameColor: normalizedColor,
       message: finalMessageText,
