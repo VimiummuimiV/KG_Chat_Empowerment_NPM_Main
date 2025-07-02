@@ -156,6 +156,27 @@ if (locationHas('gamelist')) {
 // CHAT FOCUS && INSERT PRIVATE
 // ========================================================================
 
+// Helper to apply or remove private mode stylization
+function setPrivateModeStyles(enable) {
+  const textElement = document.querySelector('.chat .messages .text');
+  if (!textElement) return;
+  // Find parent form and tr
+  const formElement = textElement.closest('form');
+  const trElement = formElement?.closest('tr');
+
+  if (enable) {
+    textElement.style.setProperty('background-color', 'transparent', 'important');
+    textElement.style.setProperty('color', '#ff9393', 'important');
+    if (formElement) formElement.style.setProperty('background-color', '#ff000060', '');
+    if (trElement) trElement.style.setProperty('border', '1px solid #bf0000', 'important');
+  } else {
+    textElement.style.removeProperty('background-color');
+    textElement.style.removeProperty('color');
+    if (formElement) formElement.style.removeProperty('background-color');
+    if (trElement) trElement.style.removeProperty('border');
+  }
+}
+
 export function insertPrivate(userId) {
   // Always start <userName> for new user, toggle for same user
   insertPrivate._lastUserId = insertPrivate._lastUserId ?? null;
@@ -171,6 +192,7 @@ export function insertPrivate(userId) {
   textElement.value = insertPrivate._privateMode ? `<${userName}>` : `${userName},`;
   textElement.focus();
   textElement.selectionEnd = textElement.value.length;
+  setPrivateModeStyles(insertPrivate._privateMode);
 }
 
 // Function to set focus on the chat input field based on the active tab.
