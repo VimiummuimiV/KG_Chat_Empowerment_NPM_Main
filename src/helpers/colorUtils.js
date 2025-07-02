@@ -167,9 +167,7 @@ export function normalizeUsernameColor(inputColor, inputType = "rgb", minLightne
  */
 export async function cacheUserData(usernames, userDataKey = USER_DATA_CACHE_KEY) {
   let userData = JSON.parse(localStorage.getItem(userDataKey) || '{}');
-  const usernamesToFetch = usernames.filter(username =>
-    !(username in userData) || !userData[username]?.id || !userData[username]?.color
-  );
+  const usernamesToFetch = usernames.filter(username => !(username in userData));
   if (usernamesToFetch.length) {
     const userDataResults = await Promise.all(
       usernamesToFetch.map(username => getDataByName(username, 'allUserData'))
