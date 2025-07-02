@@ -157,12 +157,18 @@ if (locationHas('gamelist')) {
 // ========================================================================
 
 export function insertPrivate(userId) {
+  // Always start <userName> for new user, toggle for same user
+  insertPrivate._lastUserId = insertPrivate._lastUserId ?? null;
+  insertPrivate._privateMode = insertPrivate._privateMode ?? true;
+  if (insertPrivate._lastUserId !== userId) {
+    insertPrivate._privateMode = true;
+    insertPrivate._lastUserId = userId;
+  } else {
+    insertPrivate._privateMode = !insertPrivate._privateMode;
+  }
   const userName = document.querySelector(`.name[data-user="${userId}"]`).textContent;
-  const message = `<${userName}>`;
-
   const textElement = document.querySelector('.messages .text');
-  textElement.value = message;
-
+  textElement.value = insertPrivate._privateMode ? `<${userName}>` : `${userName},`;
   textElement.focus();
   textElement.selectionEnd = textElement.value.length;
 }

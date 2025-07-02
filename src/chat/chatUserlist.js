@@ -414,8 +414,14 @@ function setupDelegatedEvents() {
       if (el.classList.contains('name')) {
         const userName = el.textContent || '';
         return {
-          en: `Private message${userName ? ' to ' + userName : ''}`,
-          ru: `Приватное сообщение${userName ? ' для ' + userName : ''}`
+          en: `
+            [Click] Private chat message ${userName ? `for ${userName}` : ''}
+            [Repeat Click] General chat message ${userName ? `for ${userName}` : ''}
+          `,
+          ru: `
+            [Клик] Приватное сообщение ${userName ? `для ${userName}` : ''}
+            [Повторный клик] Сообщение в общем чате ${userName ? `для ${userName}` : ''}
+          `
         };
       }
       if (el.classList.contains('profile')) {
