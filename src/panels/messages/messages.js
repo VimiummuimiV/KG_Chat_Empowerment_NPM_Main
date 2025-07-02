@@ -34,7 +34,7 @@ import {
 } from "../../helpers/elementVisibility.js";
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js";
-import { localizedMessage } from "../../helpers/helpers.js";
+import { localizedMessage, normalizeDate } from "../../helpers/helpers.js";
 
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
@@ -209,12 +209,33 @@ export async function showMessagesPanel() {
   parseButton.className = 'large-button panel-header-parse-button';
   parseButton.innerHTML = playSVG;
   createCustomTooltip(parseButton, {
-    en: `
-      [Click] to parse Chat Logs for addressed messages
-    `,
-    ru: `
-      [Клик] спарсить логи чата на адресованные сообщения 
-    `
+    en: `[Click] to start parsing mentions`,
+    ru: `[Клик] начать парсинг упоминаний`
+  });
+
+  parseButton.addEventListener('click', () => {
+    const promptMsg = {
+      en: 'Enter a date for parsing start (formats: yyyy-mm-dd, yyyy:mm:dd, yyyymmdd, yymmdd, yy-mm-dd, yy:mm:dd):',
+      ru: 'Введите дату начала парсинга (форматы: гггг-мм-дд, гггг:мм:дд, ггггммдд, ггммдд, гг-мм-дд, гг:мм:дд):'
+    };
+
+    let normalized = null;
+    while (true) {
+      let input = localizedMessage(promptMsg, 'prompt', '');
+      if (!input) return;
+      normalized = normalizeDate(input.trim());
+      if (normalized) break;
+      localizedMessage({
+        en: 'Invalid date format or value. Please try again.',
+        ru: 'Некорректный формат или значение даты. Попробуйте еще раз.'
+      }, 'alert');
+    }
+    // Set the lastParseDate in localStorage
+    localStorage.setItem('lastParseDate', normalized);
+    localizedMessage({
+      en: `Start date for parsing set to: ${normalized}`,
+      ru: `Дата начала парсинга установлена: ${normalized}`
+    }, 'alert');
   });
 
   const importMessagesButton = document.createElement('div');
@@ -369,6 +390,8 @@ export async function showMessagesPanel() {
         en: 'No messages to delete.',
         ru: 'Нет сообщений для удаления.'
       }, 'alert');
+      // Reset lastParseDate to today
+      localStorage.setItem('lastParseDate', today);
       return;
     }
     // Clear the messages container
@@ -376,6 +399,8 @@ export async function showMessagesPanel() {
 
     // Set the 'personalMessages' key in localStorage to an empty object
     localStorage.setItem(PERSONAL_MESSAGES_KEY, JSON.stringify({}));
+    // Reset lastParseDate to today
+    localStorage.setItem('lastParseDate', today);
 
     // Fade out the cached messages panel when the clear cache button is clicked
     triggerTargetElement(cachedMessagesPanel, 'hide');

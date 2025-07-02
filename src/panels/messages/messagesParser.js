@@ -100,10 +100,11 @@ export async function parsePersonalMessages(currentDate = today) {
     }
 
     if (datesToParse.length > 1) {
-      localizedMessage({
-        en: `Loading personal mentions for ${datesToParse.length} days. This may take a while. Please do not reload the page...`,
-        ru: `Загрузка личных упоминаний за ${datesToParse.length} дней. Это может занять некоторое время. Пожалуйста, не перезагружайте страницу...`
-      }, 'alert');
+      const proceed = localizedMessage({
+        en: `Do you want to load personal mentions for the last ${datesToParse.length} days? This may take a while.`,
+        ru: `Желаете загрузить сообщения с упоминаниями о вас за последние ${datesToParse.length} дней? Это может занять некоторое время.`
+      }, 'confirm');
+      if (!proceed) return;
     }
   }
 
