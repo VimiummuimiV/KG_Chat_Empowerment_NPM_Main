@@ -35,6 +35,7 @@ import {
 
 import { addJumpEffect, addPulseEffect } from "../../animations.js";
 import { localizedMessage, normalizeDate } from "../../helpers/helpers.js";
+import { parsePersonalMessages } from "./messagesParser.js";
 
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
@@ -236,6 +237,9 @@ export async function showMessagesPanel() {
       en: `Start date for parsing set to: ${normalized}`,
       ru: `Дата начала парсинга установлена: ${normalized}`
     }, 'alert');
+    // Start parsing mentions from the selected date up to today
+    parsePersonalMessages(today);
+    removePreviousPanel(true); // Remove the panel after parsing with dimming element
   });
 
   const importMessagesButton = document.createElement('div');

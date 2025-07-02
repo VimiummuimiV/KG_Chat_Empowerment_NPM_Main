@@ -34,10 +34,14 @@ export function removeBigImageEventListeners() {
 }
 
 // Function to remove the previous panel if it exists
-export function removePreviousPanel() {
+export function removePreviousPanel(removeDimming = false) {
   removeAllPanelEventListeners();
   const existingPanel = document.querySelector('.popup-panel');
   if (existingPanel) existingPanel.remove();
+  if (removeDimming) {
+    const dimming = document.querySelector('.dimming-background');
+    if (dimming) dimming.remove();
+  }
 }
 
 export const debounce = (func, delay = 300) => {
