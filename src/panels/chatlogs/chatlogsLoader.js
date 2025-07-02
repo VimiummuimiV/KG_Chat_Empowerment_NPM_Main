@@ -6,7 +6,7 @@ import {
 
 import { getCurrentLanguage } from '../../helpers/helpers.js';
 import { settingsState } from "../settings/settings.js";
-import { randomParam } from './chatlogs.js';
+import { randomParam } from './chatlogsHelpers.js';
 import { today } from '../../definitions.js';
 
 const { ignored } = settingsState;

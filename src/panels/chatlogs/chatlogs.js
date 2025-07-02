@@ -59,9 +59,8 @@ import { renderActiveUsers } from './chatlogsUserlist.js';
 import { ensureUsernameColorsAndIds } from '../../helpers/colorUtils.js';
 import { filterMessages } from '../../helpers/messagesSearch.js';
 import { fetchChatLogs } from "./chatlogsLoader.js";
-
-// Generate a random 20-digit number
-export const randomParam = Math.floor(Math.random() * 10 ** 20);
+import { getRandomDateInRange } from "./chatlogsHelpers.js";
+import { randomParam } from "./chatlogsHelpers.js";
 
 // Define dynamic variables
 let {
@@ -87,25 +86,6 @@ export function createChatLogsButton(panel) {
   });
 
   panel.appendChild(showChatLogsButton);
-}
-
-function getRandomDateInRange() {
-  const startDate = new Date(minimalChatlogsDate); // Start date
-  const endDate = new Date(); // Current date
-
-  // Calculate the difference in milliseconds
-  const dateDifference = endDate - startDate;
-
-  // Generate a random number of milliseconds between 0 and dateDifference
-  const randomMilliseconds = Math.floor(Math.random() * dateDifference);
-
-  // Create a random date by adding the random milliseconds to the start date
-  const randomDate = new Date(startDate.getTime() + randomMilliseconds);
-
-  // Format the date to 'YYYY-MM-DD' using Intl.DateTimeFormat
-  const formattedDate = new Intl.DateTimeFormat('en-CA').format(randomDate);
-
-  return formattedDate;
 }
 
 // Function to get user ID by username (with caching in localStorage)
