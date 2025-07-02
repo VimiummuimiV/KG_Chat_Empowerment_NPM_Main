@@ -1,7 +1,14 @@
 import { minimalChatlogsDate } from "../../definitions.js";
+import { USER_DATA_CACHE_KEY } from "../../definitions.js";
 
 // Generate a random 20-digit number
 export const randomParam = Math.floor(Math.random() * 10 ** 20);
+
+// Function to get user ID by username (using unified user data cache)
+export async function getUserId(username) {
+  const userDataCache = JSON.parse(localStorage.getItem(USER_DATA_CACHE_KEY) || '{}');
+  if (userDataCache[username]?.id) return userDataCache[username].id;
+}
 
 // Generate random date in range for chat logs
 export function getRandomDateInRange() {
@@ -17,3 +24,10 @@ export function getRandomDateInRange() {
   const formattedDate = new Intl.DateTimeFormat('en-CA').format(randomDate);
   return formattedDate;
 }
+
+// Helper function to extract date from the URL
+export function extractDateFromUrl(url) {
+  const chatlogsDateRegex = /(\d{4}-\d{2}-\d{2})/;
+  const match = url.match(chatlogsDateRegex);
+  return match ? match[1] : null; // Return the date if match is found, else return null
+};

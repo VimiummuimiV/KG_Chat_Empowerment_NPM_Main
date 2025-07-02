@@ -1,5 +1,5 @@
-import { extractHexColor } from "./apiData.js";
-import { getDataByName } from "./apiData.js";
+import { extractHexColor, getDataByName } from "./apiData.js";
+import { USER_DATA_CACHE_KEY } from "../definitions.js";
 
 export function rgbToHsl(r, g, b) {
   r /= 255;
@@ -159,9 +159,6 @@ export function normalizeUsernameColor(inputColor, inputType = "rgb", minLightne
   const rgbString = hslToRgb(h, s, normalizedLightness);
   return rgbToHex(rgbString);
 }
-
-// Unified user data cache key
-export const USER_DATA_CACHE_KEY = 'userData';
 
 /**
  * Loads and caches username colors and IDs for a list of usernames.

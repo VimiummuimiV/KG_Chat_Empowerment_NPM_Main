@@ -1,9 +1,9 @@
-import { PERSONAL_MESSAGES_KEY } from '../messages/messages.js';
-import { USER_DATA_CACHE_KEY } from '../../helpers/colorUtils.js';
+import { PERSONAL_MESSAGES_KEY } from "../messages/messages.js";
+import { USER_DATA_CACHE_KEY } from "../../definitions.js";
 
-import { addJumpEffect } from '../../animations.js';
-import { today } from '../../definitions.js';
-import { getFullMessageContent } from '../../helpers/helpers.js';
+import { addJumpEffect } from "../../animations.js";
+import { today } from "../../definitions.js";
+import { getFullMessageContent } from "../../helpers/helpers.js";
 
 /**
  * Adds a message from chatlogs to personal messages localStorage and triggers UI effect.

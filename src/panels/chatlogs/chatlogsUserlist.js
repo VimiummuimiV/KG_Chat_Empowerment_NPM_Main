@@ -1,4 +1,4 @@
-import { USER_DATA_CACHE_KEY } from '../../helpers/colorUtils.js';
+import { USER_DATA_CACHE_KEY } from "../../definitions.js";
 
 /**
  * Render the active users list based on their message counts.

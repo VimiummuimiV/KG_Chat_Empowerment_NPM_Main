@@ -1,4 +1,4 @@
-import { USER_DATA_CACHE_KEY } from "./colorUtils.js";
+import { USER_DATA_CACHE_KEY } from "../definitions.js";
 import { rgbToHex } from "./colorUtils.js";
 import { getCurrentLanguage, getExportMessageContent } from "../helpers/helpers.js";
 

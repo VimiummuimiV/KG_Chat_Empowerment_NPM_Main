@@ -36,7 +36,6 @@ import {
   triggerDimmingElement
 } from "../../helpers/elementVisibility.js";
 
-import { getExactUserIdByName } from "../../helpers/apiData.js";
 import { scrollToMiddle } from "../../helpers/scrollTo.js";
 import { createScrollButtons } from "../../helpers/scrollButtons.js";
 import { highlightMentionWords } from "../../helpers/getLatestMessageData.js";
@@ -59,8 +58,13 @@ import { renderActiveUsers } from './chatlogsUserlist.js';
 import { cacheUserData } from '../../helpers/colorUtils.js';
 import { filterMessages } from '../../helpers/messagesSearch.js';
 import { fetchChatLogs } from "./chatlogsLoader.js";
-import { getRandomDateInRange } from "./chatlogsHelpers.js";
-import { randomParam } from "./chatlogsHelpers.js";
+
+import {
+  randomParam,
+  getUserId,
+  getRandomDateInRange,
+  extractDateFromUrl
+} from "./chatlogsHelpers.js";
 
 // Define dynamic variables
 let {
@@ -86,28 +90,6 @@ export function createChatLogsButton(panel) {
   });
 
   panel.appendChild(showChatLogsButton);
-}
-
-// Function to get user ID by username (with caching in localStorage)
-async function getUserId(username) {
-  const userIdsCache = JSON.parse(localStorage.getItem('userIdsCache') || '{}');
-
-  // If the user ID is cached, return it
-  if (userIdsCache[username]) return userIdsCache[username];
-
-  try {
-    // Fetch the user ID
-    const userId = await getExactUserIdByName(username);
-    if (userId) {
-      userIdsCache[username] = userId;
-      localStorage.setItem('userIdsCache', JSON.stringify(userIdsCache));
-      return userId;
-    }
-  } catch (error) {
-    console.error(`Error fetching user ID for ${username}:`, error);
-  }
-
-  return null; // Return null if no user found
 }
 
 //   Function to display the chat logs panel
@@ -370,13 +352,6 @@ export async function showChatLogsPanel(personalMessagesDate) {
       [Alt + Shift + Клик] сохранить чат-логи в BBCode, Markdown или Plain
     `
   });
-
-  // Helper function to extract date from the URL
-  const extractDateFromUrl = (url) => {
-    const chatlogsDateRegex = /(\d{4}-\d{2}-\d{2})/;
-    const match = url.match(chatlogsDateRegex);
-    return match ? match[1] : null; // Return the date if match is found, else return null
-  };
 
   // Function to create and populate chat log links
   function createChatLogLinks(savedChatlogs, chatLogsLinksContainer) {

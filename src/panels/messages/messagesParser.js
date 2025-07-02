@@ -8,11 +8,9 @@ import {
   ABSENT_MENTIONS_CACHE_KEY
 } from "./messages.js";
 
-import { today } from "../../definitions.js";
+import { today, USER_DATA_CACHE_KEY } from "../../definitions.js";
 import { addJumpEffect } from "../../animations.js";
 import { localizedMessage } from "../../helpers/helpers.js";
-
-import { USER_DATA_CACHE_KEY } from "../../helpers/colorUtils.js";
 
 // New cache key to track the last successful parse date
 const LAST_PARSE_DATE_KEY = 'lastParseDate';

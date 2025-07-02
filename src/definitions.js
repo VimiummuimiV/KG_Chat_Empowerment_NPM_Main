@@ -12,6 +12,9 @@ export const myUserId = document.querySelector('a.drop-btn.mail')?.href?.match(/
 export const today = new Intl.DateTimeFormat('en-CA').format(new Date());
 export const minimalChatlogsDate = '2012-12-02'; // Define the minimum date
 
+// Unified user data cache key
+export const USER_DATA_CACHE_KEY = 'userData';
+
 // Define voice speed limits
 export const minVoiceSpeed = 0;
 export const maxVoiceSpeed = 2.5;
