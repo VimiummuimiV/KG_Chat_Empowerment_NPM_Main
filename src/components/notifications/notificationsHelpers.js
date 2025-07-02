@@ -40,11 +40,11 @@ export function getUserChatDuration(username, actionTime) {
   const duration = calculateDuration(prev.timestamp, current.timestamp);
   return current.type === 'leave'
     ? (lang === 'en')
-      ? `${icons.stop} ${username} left the chat after ${duration}`
-      : `${icons.stop} ${username} покинул чат спустя ${duration}`
+      ? `${icons.stop} ${username} stayed in chat for ${duration}`
+      : `${icons.stop} ${username} присутствовал в чате ${duration}`
     : (lang === 'en')
-      ? `${icons.check} ${username} stayed in chat for ${duration}`
-      : `${icons.check} ${username} остался в чате на ${duration}`;
+      ? `${icons.check} ${username} was absent from chat for ${duration}`
+      : `${icons.check} ${username} отсутствовал в чате ${duration}`;
 }
 
 function calculateDuration(start, end) {
