@@ -67,6 +67,7 @@ function createCircularProgress(percentage, color, isRevoked) {
     width: size, height: size, viewBox: `0 0 ${size} ${size}`, xmlns: svgUrl
   }).forEach(([k, v]) => svg.setAttribute(k, v));
   svg.classList.add("circularProgress");
+  svg.style.pointerEvents = 'none';
 
   if (isRevoked || percentage === 0) {
     if (!isRevoked) {
