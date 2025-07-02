@@ -220,6 +220,11 @@ export async function getLatestMessageData() {
       userId
     };
     localStorage.setItem('personalMessages', JSON.stringify(personalMessages));
+    
+    // Update lastClickedMessage to point to the newly added message
+    // Create the same key format used in messages.js for consistency
+    const lastClickedMessageKey = `${today}|${time}|${extractedUsername}`;
+    localStorage.setItem('lastClickedMessage', lastClickedMessageKey);
   }
 
   // Extract username (defaulting to "SYSTEM") and build prefix.

@@ -31,6 +31,13 @@
   }
 }
 
+.previous-message,
+.focused-message {
+  background-color: hsla(60, 80%, 60%, 0.05) !important;
+  border: 1px solid hsla(60, 80%, 60%, 0.1) !important;
+  border-radius: 0.2em !important;
+}
+
 .popup-panel {
   .fetched-users,
   .messages-container,
@@ -38,13 +45,6 @@
   .active-users,
   .settings-content-container {
     @include scrollbar();
-  }
-
-  .previous-message,
-  .focused-message {
-    background-color: hsla(60, 80%, 60%, 0.05) !important; 
-    border: 1px solid hsla(60, 80%, 60%, 0.1) !important;
-    border-radius: 0.2em !important;
   }
 
   .hidden-message,
