@@ -5,8 +5,6 @@ import { cacheUserData } from "../../helpers/colorUtils.js";
 
 import {
   PERSONAL_MESSAGES_KEY,
-  USERNAME_COLOR_CACHE_KEY,
-  USERNAME_ID_CACHE_KEY,
   ABSENT_MENTIONS_CACHE_KEY
 } from "./messages.js";
 
@@ -14,8 +12,40 @@ import { today } from "../../definitions.js";
 import { addJumpEffect } from "../../animations.js";
 import { localizedMessage } from "../../helpers/helpers.js";
 
+import { USER_DATA_CACHE_KEY } from "../../helpers/colorUtils.js";
+
 // New cache key to track the last successful parse date
 const LAST_PARSE_DATE_KEY = 'lastParseDate';
+
+// Simple helper for safe JSON parsing from localStorage
+function safeParseJSON(item, fallback = {}) {
+  try {
+    return item ? JSON.parse(item) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+// Improved user data assignment function
+function assignUserDataFromCache(usernames, userDataCache) {
+  const usernameColorCache = {};
+  const usernameIdCache = {};
+  
+  for (const username of usernames) {
+    const userData = userDataCache[username];
+    
+    // Assign with fallbacks
+    usernameColorCache[username] = userData?.color || '#808080';
+    usernameIdCache[username] = userData?.id || '';
+    
+    // Optional: Log missing data for debugging
+    if (!userData) {
+      console.debug(`No cached data found for username: ${username}`);
+    }
+  }
+  
+  return { usernameColorCache, usernameIdCache };
+}
 
 // Helper function to format date as YYYY-MM-DD
 function formatDate(date) {
@@ -48,7 +78,7 @@ export async function parsePersonalMessages(currentDate = today) {
   }
   localStorage.setItem(ABSENT_MENTIONS_CACHE_KEY, String(now));
 
-  const personalMessages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY)) || {};
+  const personalMessages = safeParseJSON(localStorage.getItem(PERSONAL_MESSAGES_KEY));
 
   // Get the last parse date, default to today if never parsed before
   const lastParseDate = localStorage.getItem(LAST_PARSE_DATE_KEY) || currentDate;
@@ -84,9 +114,12 @@ export async function parsePersonalMessages(currentDate = today) {
   // Build a set of keys for messages already stored, using date and message for uniqueness
   const existingKeys = new Set(Object.values(personalMessages).map(m => `${m.date}|${m.message}`));
 
-  // Load or initialize caches
-  let usernameColorCache = JSON.parse(localStorage.getItem(USERNAME_COLOR_CACHE_KEY) || '{}');
-  let usernameIdCache = JSON.parse(localStorage.getItem(USERNAME_ID_CACHE_KEY) || '{}');
+  // Load user data cache once at the beginning
+  const userDataCache = safeParseJSON(localStorage.getItem(USER_DATA_CACHE_KEY));
+  
+  // Initialize caches
+  let usernameColorCache = {};
+  let usernameIdCache = {};
 
   let totalNewMentions = 0;
 
@@ -121,6 +154,8 @@ export async function parsePersonalMessages(currentDate = today) {
   let dateIndex = 0;
 
   for (const date of datesToParse) {
+    let newMentionsForDate = 0;
+    
     try {
       if (progressContainer) {
         dateIndicator.textContent = date;
@@ -128,6 +163,7 @@ export async function parsePersonalMessages(currentDate = today) {
         progressBarInner.style.width = percent + '%';
         progressLabel.textContent = `${dateIndex + 1} / ${datesToParse.length}`;
       }
+      
       const result = await fetchChatLogs(date);
       if (!result?.chatlogs?.length) continue;
 
@@ -135,23 +171,41 @@ export async function parsePersonalMessages(currentDate = today) {
 
       // Get all unique, non-SYSTEM usernames from this date's chatlog
       const allUsernames = [...new Set(
-        chatlogEntries.reduce((acc, e) => {
-          if (e.username && e.username.trim() !== 'SYSTEM') acc.push(e.username);
-          return acc;
-        }, [])
+        chatlogEntries
+          .filter(e => e.username && e.username.trim() !== 'SYSTEM')
+          .map(e => e.username)
       )];
 
-      // Load and cache username colors and ids
-      const userData = await cacheUserData(allUsernames);
-      usernameColorCache = {};
-      usernameIdCache = {};
-      for (const username of allUsernames) {
-        usernameColorCache[username] = userData[username]?.color || '#808080';
-        usernameIdCache[username] = userData[username]?.id || '';
+      // Check if we need to fetch new user data
+      const uncachedUsernames = allUsernames.filter(username => !userDataCache[username]);
+      
+      if (uncachedUsernames.length > 0) {
+        console.log(`Fetching data for ${uncachedUsernames.length} uncached users for date ${date}`);
+        
+        try {
+          // Fetch and cache new user data
+          const newUserData = await cacheUserData(uncachedUsernames);
+          
+          // Merge new data with existing cache
+          Object.assign(userDataCache, newUserData);
+          
+          // Update localStorage with new data
+          localStorage.setItem(USER_DATA_CACHE_KEY, JSON.stringify(userDataCache));
+        } catch (error) {
+          console.error(`Failed to fetch user data for uncached users:`, error);
+          // Continue with existing cache data
+        }
       }
 
+      // Assign user data from cache using the improved method
+      const { usernameColorCache: dateColorCache, usernameIdCache: dateIdCache } = 
+        assignUserDataFromCache(allUsernames, userDataCache);
+      
+      // Merge with existing caches (if processing multiple dates)
+      Object.assign(usernameColorCache, dateColorCache);
+      Object.assign(usernameIdCache, dateIdCache);
+
       // Process chatlog entries and add new mentions
-      let newMentionsForDate = 0;
       for (const entry of chatlogEntries) {
         if (
           entry.username &&
@@ -163,6 +217,8 @@ export async function parsePersonalMessages(currentDate = today) {
           const uniqueKey = `${date}|${entry.message}`;
           if (!existingKeys.has(uniqueKey)) {
             const newId = `[${entry.time}]_${entry.username}_${date}`;
+            
+            // Use the cached data with proper fallbacks
             personalMessages[newId] = {
               time: `[${entry.time}]`,
               date: date,
@@ -172,6 +228,7 @@ export async function parsePersonalMessages(currentDate = today) {
               type: 'mention',
               userId: usernameIdCache[entry.username] || ''
             };
+            
             // Add to existing keys set to prevent duplicates within the same batch
             existingKeys.add(uniqueKey);
             newMentionsForDate++;
@@ -203,6 +260,7 @@ export async function parsePersonalMessages(currentDate = today) {
   // Update localStorage and UI if new mentions were added
   if (totalNewMentions > 0) {
     localStorage.setItem(PERSONAL_MESSAGES_KEY, JSON.stringify(personalMessages));
+    
     let newMessagesCount = Number(localStorage.getItem('newMessagesCount')) || 0;
     newMessagesCount += totalNewMentions;
     localStorage.setItem('newMessagesCount', String(newMessagesCount));

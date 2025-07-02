@@ -1,8 +1,5 @@
-import {
-  PERSONAL_MESSAGES_KEY,
-  USERNAME_COLOR_CACHE_KEY,
-  USERNAME_ID_CACHE_KEY
-} from '../messages/messages.js';
+import { PERSONAL_MESSAGES_KEY } from '../messages/messages.js';
+import { USER_DATA_CACHE_KEY } from '../../helpers/colorUtils.js';
 
 import { addJumpEffect } from '../../animations.js';
 import { today } from '../../definitions.js';
@@ -34,17 +31,16 @@ export function addChatlogsMessageToPersonal(messageItem, dateInput) {
   }
   // Add to personal messages localStorage
   const personalMessages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY)) || {};
-  const usernameColorCache = JSON.parse(localStorage.getItem(USERNAME_COLOR_CACHE_KEY) || '{}');
-  const usernameIdCache = JSON.parse(localStorage.getItem(USERNAME_ID_CACHE_KEY) || '{}');
+  const userData = JSON.parse(localStorage.getItem(USER_DATA_CACHE_KEY) || '{}');
   const key = `[${time}]_${username}`;
   personalMessages[key] = {
     time: `[${time}]`,
     date: date || today,
     username,
-    usernameColor: usernameColorCache[username] || '#808080',
+    usernameColor: userData[username]?.color || '#808080',
     message,
     type: 'mention',
-    userId: usernameIdCache[username] || ''
+    userId: userData[username]?.id || ''
   };
   // Save the updated personal messages back to localStorage
   const keys = Object.keys(personalMessages);

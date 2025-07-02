@@ -58,8 +58,6 @@ let {
 export const PERSONAL_MESSAGES_KEY = 'personalMessages';
 const NEW_MESSAGES_COUNT_KEY = 'newMessagesCount';
 const PERSONAL_MESSAGES_BACKUP_KEY = 'personalMessagesBackup';
-export const USERNAME_COLOR_CACHE_KEY = 'usernameColorCache';
-export const USERNAME_ID_CACHE_KEY = 'usernameIdCache';
 export const ABSENT_MENTIONS_CACHE_KEY = 'absentMentionsLastFetch';
 
 // Function to create the button for opening personal messages

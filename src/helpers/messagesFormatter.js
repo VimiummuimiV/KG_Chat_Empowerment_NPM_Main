@@ -1,3 +1,4 @@
+import { USER_DATA_CACHE_KEY } from "./colorUtils.js";
 import { rgbToHex } from "./colorUtils.js";
 import { getCurrentLanguage, getExportMessageContent } from "../helpers/helpers.js";
 
@@ -39,10 +40,10 @@ export function formatMessages(container, format, options = {}) {
   // Track current date for grouping
   let currentDate = null;
 
-  // Load username color cache once (performance optimization)
+  // Load user data cache once (performance optimization)
   let cache = {};
   if (!isMessagesPanel) {
-    cache = JSON.parse(localStorage.getItem('usernameColorCache') || '{}');
+    cache = JSON.parse(localStorage.getItem(USER_DATA_CACHE_KEY) || '{}');
   }
 
   elements.forEach(el => {
@@ -91,7 +92,7 @@ export function formatMessages(container, format, options = {}) {
           '#808080'; // Fallback gray color
       } else {
         // Use the pre-loaded cache
-        color = cache[username] || '#808080'; // Fallback gray color
+        color = cache[username]?.color || '#808080'; // Fallback gray color
       }
 
       if (format === 'bbcode') {
