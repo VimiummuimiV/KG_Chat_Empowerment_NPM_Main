@@ -160,34 +160,38 @@ if (locationHas('gamelist')) {
 function setPrivateModeStyles(enable) {
   const textElement = document.querySelector('.chat .messages .text');
   if (!textElement) return;
+  
   // Find parent form and tr
   const formElement = textElement.closest('form');
   const trElement = formElement?.closest('tr');
 
-  // Use a single persistent handler to avoid duplicates
+  // Create handler if it doesn't exist
   if (!setPrivateModeStyles._privateInputHandler) {
     setPrivateModeStyles._privateInputHandler = function (e) {
       if (e.target.value === '') {
         setPrivateModeStyles(false);
-        e.target.removeEventListener('input', setPrivateModeStyles._inputToPrivateHandler);
       }
     };
-    setPrivateModeStyles._inputToPrivateHandler = function (e) {
-      setPrivateModeStyles._privateInputHandler(e);
-    };
-    // Attach only once
-    textElement.addEventListener('input', setPrivateModeStyles._inputToPrivateHandler);
   }
+
   if (enable) {
+    // Apply private mode styles
     textElement.style.setProperty('background-color', 'transparent', 'important');
     textElement.style.setProperty('color', '#ff9393', 'important');
     if (formElement) formElement.style.setProperty('background-color', '#ff000060', '');
     if (trElement) trElement.style.setProperty('border', '1px solid #bf0000', 'important');
+    
+    // Add listener only when private mode is active
+    textElement.addEventListener('input', setPrivateModeStyles._privateInputHandler);
   } else {
+    // Remove private mode styles
     textElement.style.removeProperty('background-color');
     textElement.style.removeProperty('color');
     if (formElement) formElement.style.removeProperty('background-color');
     if (trElement) trElement.style.removeProperty('border');
+    
+    // Remove listener when private mode is disabled
+    textElement.removeEventListener('input', setPrivateModeStyles._privateInputHandler);
   }
 }
 
