@@ -32,7 +32,7 @@ export function addChatlogsMessageToPersonal(messageItem, dateInput) {
   // Add to personal messages localStorage
   const personalMessages = JSON.parse(localStorage.getItem(PERSONAL_MESSAGES_KEY)) || {};
   const userData = JSON.parse(localStorage.getItem(USER_DATA_CACHE_KEY) || '{}');
-  const key = `[${time}]_${username}`;
+  const key = `[${time}]_${username}_${date}`;
   personalMessages[key] = {
     time: `[${time}]`,
     date: date || today,
