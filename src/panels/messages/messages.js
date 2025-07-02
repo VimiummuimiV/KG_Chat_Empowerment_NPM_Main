@@ -11,7 +11,8 @@ import {
   exportSVG,
   clipboardSVG,
   trashSVG,
-  closeSVG
+  closeSVG,
+  playSVG
 } from "../../icons.js";
 
 // helpers && helpers definitions
@@ -204,6 +205,18 @@ export async function showMessagesPanel() {
     }
   });
 
+  const parseButton = document.createElement('div');
+  parseButton.className = 'large-button panel-header-parse-button';
+  parseButton.innerHTML = playSVG;
+  createCustomTooltip(parseButton, {
+    en: `
+      [Click] to parse Chat Logs for addressed messages
+    `,
+    ru: `
+      [Клик] спарсить логи чата на адресованные сообщения 
+    `
+  });
+
   const importMessagesButton = document.createElement('div');
   importMessagesButton.className = "large-button panel-header-import-button";
   importMessagesButton.innerHTML = importSVG;
@@ -388,12 +401,15 @@ export async function showMessagesPanel() {
 
   panelHeaderContainer.appendChild(messagesSearchContainer);
 
-  panelControlButtons.appendChild(saveMessagesButton);
-  panelControlButtons.appendChild(importMessagesButton);
-  panelControlButtons.appendChild(exportMessagesButton);
-  panelControlButtons.appendChild(copyPersonalMessagesButton);
-  panelControlButtons.appendChild(clearCacheButton);
-  panelControlButtons.appendChild(closePanelButton);
+  panelControlButtons.append(
+    saveMessagesButton,
+    parseButton,
+    importMessagesButton,
+    exportMessagesButton,
+    copyPersonalMessagesButton,
+    clearCacheButton,
+    closePanelButton
+  )
 
   panelHeaderContainer.appendChild(panelControlButtons);
 
@@ -445,8 +461,6 @@ export async function showMessagesPanel() {
 
     // Use a DocumentFragment to batch DOM updates
     const fragment = document.createDocumentFragment();
-    let lastDate = null;
-    let lastUsername = null;
 
     Object.entries(messages).forEach(([, { time, date, username, usernameColor, message, type, userId }]) => {
       // If the current date is different from the last processed one, create a new date-item
