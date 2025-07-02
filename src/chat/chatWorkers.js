@@ -164,6 +164,20 @@ function setPrivateModeStyles(enable) {
   const formElement = textElement.closest('form');
   const trElement = formElement?.closest('tr');
 
+  // Use a single persistent handler to avoid duplicates
+  if (!setPrivateModeStyles._privateInputHandler) {
+    setPrivateModeStyles._privateInputHandler = function (e) {
+      if (e.target.value === '') {
+        setPrivateModeStyles(false);
+        e.target.removeEventListener('input', setPrivateModeStyles._inputToPrivateHandler);
+      }
+    };
+    setPrivateModeStyles._inputToPrivateHandler = function (e) {
+      setPrivateModeStyles._privateInputHandler(e);
+    };
+    // Attach only once
+    textElement.addEventListener('input', setPrivateModeStyles._inputToPrivateHandler);
+  }
   if (enable) {
     textElement.style.setProperty('background-color', 'transparent', 'important');
     textElement.style.setProperty('color', '#ff9393', 'important');
