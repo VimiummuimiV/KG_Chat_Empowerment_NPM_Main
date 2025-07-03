@@ -1,4 +1,5 @@
-import { addSVG, removeSVG, snowflakeSVG } from "../../icons.js";
+
+import { addSVG, removeSVG, refreshUsernameSVG, snowflakeSVG } from "../../icons.js";
 import { settingsTitles } from "./settingsTitles.js";
 import { getCurrentLanguage, localizedMessage, debounce } from "../../helpers/helpers.js";
 import { getDataById, getDataByName } from "../../helpers/apiData.js";
@@ -103,6 +104,29 @@ export function createRemoveButton(type, item) {
   return removeButton;
 }
 
+// Helper function to create a confirm button for tracked items
+export function createConfirmButton(user, onConfirm) {
+  const confirmButton = document.createElement('div');
+  confirmButton.className = 'settings-button confirm-settings-button';
+  confirmButton.innerHTML = refreshUsernameSVG;
+  confirmButton.addEventListener('click', () => {
+    let trackedUsers = [];
+    try { trackedUsers = JSON.parse(localStorage.getItem('usersToTrack')) || []; } catch {}
+    const trackedItem = confirmButton.closest('.tracked-item');
+    const usernameInput = trackedItem && trackedItem.querySelector('.tracked-username-field');
+    const newName = usernameInput && usernameInput.value;
+    const idx = trackedUsers.findIndex(u => u.id === user.id);
+    if (idx !== -1 && newName) {
+      trackedUsers[idx].name = newName;
+      localStorage.setItem('usersToTrack', JSON.stringify(trackedUsers));
+      usernameInput.classList.remove('input-warning');
+    }
+    confirmButton.remove();
+    if (typeof onConfirm === 'function') onConfirm();
+  });
+  return confirmButton;
+}
+
 // Helper function to create a snowflake button
 export function createSnowflakeButton(state = 'thawed', username) {
   const snowflakeButton = document.createElement('div');
@@ -137,7 +161,7 @@ export function createTrackedItem(user) {
         // Not found user by ID, clear username input
       } else {
         usernameInput.value = '';
-      usernameInput.placeholder = getPlaceholder('tracked', 'notFoundName');
+        usernameInput.placeholder = getPlaceholder('tracked', 'notFoundName');
       }
       // If no ID is entered, clear username input
     } else {
@@ -158,6 +182,25 @@ export function createTrackedItem(user) {
         }
       });
     }
+  }
+
+  // --- Always recheck login for each tracked item on creation ---
+  if (user.id) {
+    getDataById(user.id, 'currentLogin').then(currentLogin => {
+      const confirmBtn = snowflakeButton.parentNode && snowflakeButton.parentNode.querySelector('.confirm-settings-button');
+      if (currentLogin && currentLogin !== user.name) {
+        usernameInput.value = currentLogin;
+        usernameInput.placeholder = getPlaceholder('tracked', 'name');
+        usernameInput.classList.add('input-warning');
+        if (!confirmBtn) {
+          const confirmButton = createConfirmButton(user);
+          snowflakeButton.insertAdjacentElement('afterend', confirmButton);
+        }
+      } else {
+        usernameInput.classList.remove('input-warning');
+        if (confirmBtn) confirmBtn.remove();
+      }
+    });
   }
 
   const genderSelect = document.createElement('select');

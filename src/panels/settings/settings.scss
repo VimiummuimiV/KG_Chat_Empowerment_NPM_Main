@@ -125,19 +125,28 @@
     font-family: "Montserrat", sans-serif;
   }
 
+  .confirm-settings-button {
+    stroke: hsl(60, 40%, 80%);
+    background-color: hsl(60, 40%, 30%);
+    border: 1px solid hsl(60, 40%, 40%);
+  }
+
   .remove-settings-button {
-    stroke: #ee9090;
-    background-color: #6b2f2f;
+    stroke: hsl(0, 40%, 80%);
+    background-color: hsl(0, 40%, 30%);
+    border: 1px solid hsl(0, 40%, 40%);
   }
 
   .assigned-settings-button {
-    stroke: lightsteelblue;
-    background-color: steelblue;
+    stroke: hsl(215, 40%, 80%);
+    background-color: hsl(215, 40%, 30%);
+    border: 1px solid hsl(215, 40%, 40%);
   }
 
   .add-settings-button {
-    stroke: #d190ee;
-    background-color: #502f6b;
+    stroke: hsl(280, 40%, 80%);
+    background-color: hsl(280, 40%, 30%);
+    border: 1px solid hsl(280, 40%, 40%);
   }
 
   .toggle-item {

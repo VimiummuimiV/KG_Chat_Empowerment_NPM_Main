@@ -55,7 +55,17 @@
   // Input error indication
   .input-error {
     transition: background-color 300ms ease-in-out;
-    background-color: #6b2f2f !important;
+    background-color: hsl(0, 40%, 30%) !important;
+    color: hsl(0, 40%, 80%) !important;
+    border: 1px solid hsl(0, 40%, 40%) !important;
+  }
+
+  // Input warning indication
+  .input-warning {
+    transition: background-color 300ms ease-in-out;
+    background-color: hsl(60, 40%, 30%) !important;
+    color: hsl(60, 40%, 80%) !important;
+    border: 1px solid hsl(60, 40%, 40%) !important
   }
 
   .date-item {

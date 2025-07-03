@@ -635,6 +635,22 @@ export const removeSVG = `
     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
   </svg>`;
 
+// Inline SVG source for the "refresh" icon (username reload button)
+const refreshSVGStrokeColor = "hsl(60, 40%, 80%)";
+export const refreshUsernameSVG = `
+  <svg xmlns="${svgUrl}"
+      width="${iconSize - 12}"
+      height="${iconSize - 12}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="${refreshSVGStrokeColor}"
+      stroke-width="${iconStrokeWidth}"
+      stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw">
+    <polyline points="23 4 23 10 17 10"></polyline>
+    <polyline points="1 20 1 14 7 14"></polyline>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+  </svg>`;
+
 // Inline SVG source for the "snowflake" icon
 const snowflakeSVGStrokeColor = "rgb(176, 196, 222)";
 export const snowflakeSVG = `
