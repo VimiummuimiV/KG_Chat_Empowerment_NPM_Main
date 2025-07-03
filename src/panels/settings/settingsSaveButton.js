@@ -65,6 +65,7 @@ export function initializeSaveButtonLogic(saveButton) {
           idField.value = cleaned;
           idValue = cleaned;
           idField.classList.add('input-error');
+          addShakeEffect(idField);
           createCustomTooltip(idField, {
             en: 'ID must contain digits only.',
             ru: 'ID должен содержать только цифры.'
@@ -91,6 +92,7 @@ export function initializeSaveButtonLogic(saveButton) {
           [existingId, addedId].forEach(field => {
             if (field) {
               field.classList.add('input-error');
+              addShakeEffect(field);
               if (!field._customTooltipDuplicate) {
                 createCustomTooltip(field, duplicateTooltipContent);
                 field._customTooltipDuplicate = true;
