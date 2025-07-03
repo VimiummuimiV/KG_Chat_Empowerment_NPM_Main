@@ -207,7 +207,7 @@ export function insertPrivate(userId) {
   }
   const userName = document.querySelector(`.name[data-user="${userId}"]`).textContent;
   const textElement = document.querySelector('.messages .text');
-  textElement.value = insertPrivate._privateMode ? `<${userName}>` : `${userName},`;
+  textElement.value = insertPrivate._privateMode ? `<${userName}>` : `${userName}, `;
   textElement.focus();
   textElement.selectionEnd = textElement.value.length;
   setPrivateModeStyles(insertPrivate._privateMode);
