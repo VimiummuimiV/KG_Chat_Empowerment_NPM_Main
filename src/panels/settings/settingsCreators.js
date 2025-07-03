@@ -1,5 +1,5 @@
-
 import { addSVG, removeSVG, refreshUsernameSVG, snowflakeSVG } from "../../icons.js";
+import { createCustomTooltip, disableCustomTooltip } from "../../components/tooltip.js";
 import { settingsTitles } from "./settingsTitles.js";
 import { getCurrentLanguage, localizedMessage, debounce } from "../../helpers/helpers.js";
 import { getDataById, getDataByName } from "../../helpers/apiData.js";
@@ -101,6 +101,10 @@ export function createRemoveButton(type, item) {
   removeButton.className = `settings-button remove-settings-button remove-${type}-word`;
   removeButton.innerHTML = removeSVG;
   attachRemoveListener(removeButton, item);
+  createCustomTooltip(removeButton, {
+    en: 'Remove user',
+    ru: 'Удалить пользователя'
+  });
   return removeButton;
 }
 
@@ -109,6 +113,10 @@ export function createConfirmButton(user, onConfirm) {
   const confirmButton = document.createElement('div');
   confirmButton.className = 'settings-button confirm-settings-button';
   confirmButton.innerHTML = refreshUsernameSVG;
+  createCustomTooltip(confirmButton, {
+    en: 'Confirm username change',
+    ru: 'Подтвердить изменение имени'
+  });
   confirmButton.addEventListener('click', () => {
     let trackedUsers = [];
     try { trackedUsers = JSON.parse(localStorage.getItem('usersToTrack')) || []; } catch {}
@@ -120,6 +128,7 @@ export function createConfirmButton(user, onConfirm) {
       trackedUsers[idx].name = newName;
       localStorage.setItem('usersToTrack', JSON.stringify(trackedUsers));
       usernameInput.classList.remove('input-warning');
+      if (usernameInput) disableCustomTooltip(usernameInput);
     }
     confirmButton.remove();
     if (typeof onConfirm === 'function') onConfirm();
@@ -134,6 +143,10 @@ export function createSnowflakeButton(state = 'thawed', username) {
   snowflakeButton.style.opacity = state === 'thawed' ? '0.3' : '1';
   snowflakeButton.innerHTML = snowflakeSVG;
   attachSnowflakeListener(snowflakeButton, username);
+  createCustomTooltip(snowflakeButton, {
+    en: state === 'thawed' ? 'Freeze user' : 'Unfreeze user',
+    ru: state === 'thawed' ? 'Заморозить пользователя' : 'Разморозить пользователя'
+  });
   return snowflakeButton;
 }
 
@@ -148,6 +161,12 @@ export function createTrackedItem(user) {
   const removeButton = createRemoveButton('tracked', item);
   const initialState = (user.state === 'frozen') ? 'frozen' : 'thawed';
   const snowflakeButton = createSnowflakeButton(initialState, user.name);
+
+  // Tooltip message for username mismatch
+  const usernameWarningTooltip = {
+    en: `Username has changed. Previous name: ${user.name}`,
+    ru: `Имя пользователя изменилось. Прошлое имя: ${user.name}`
+  };
 
   // Debounced event for id input to fetch username
   idInput.addEventListener('input', debounce(async function (e) {
@@ -192,12 +211,14 @@ export function createTrackedItem(user) {
         usernameInput.value = currentLogin;
         usernameInput.placeholder = getPlaceholder('tracked', 'name');
         usernameInput.classList.add('input-warning');
+        createCustomTooltip(usernameInput, usernameWarningTooltip[getCurrentLanguage()] || usernameWarningTooltip.en);
         if (!confirmBtn) {
           const confirmButton = createConfirmButton(user);
           snowflakeButton.insertAdjacentElement('afterend', confirmButton);
         }
       } else {
         usernameInput.classList.remove('input-warning');
+        disableCustomTooltip(usernameInput);
         if (confirmBtn) confirmBtn.remove();
       }
     });
@@ -333,6 +354,10 @@ export function createAddButton(containerSelector, itemCreator) {
   // Set class, content, and style for the button
   addButton.className = `settings-button add-settings-button add-${middleWord}-item`;
   addButton.innerHTML = addSVG; // Add SVG icon to the button
+  createCustomTooltip(addButton, {
+    en: 'Add new user',
+    ru: 'Добавить пользователя'
+  });
 
   // On click, validate the last item and create a new one if valid
   addButton.addEventListener('click', () => {
