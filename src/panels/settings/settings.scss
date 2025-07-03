@@ -47,7 +47,6 @@
   }
 
   .settings-spoiler {
-
     button {
       display: inline-flex !important;
       position: relative;
@@ -67,6 +66,12 @@
         background-color: rgba(222, 184, 135, 0.25);
       }
     }
+  }
+
+  .replacement-item {
+    background-color: #111111 !important;
+    padding: 0.5em !important;
+    border-radius: 0.4em !important;
   }
 
   .settings-field {
@@ -170,8 +175,12 @@
     gap: 0.4em;
     display: inline-flex;
     flex-wrap: wrap;
-    align-items: start;
+    align-items: center;
     margin-bottom: 4em;
+  }
+
+  .settings-toggle-container {
+    align-items: start !important;
   }
 
   .settings-toggle-container {

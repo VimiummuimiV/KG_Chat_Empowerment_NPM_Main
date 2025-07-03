@@ -54,7 +54,26 @@ export function initializeSaveButtonLogic(saveButton) {
       const pronunciationField = item.querySelector('.tracked-pronunciation-field');
       const snowflakeButton = item.querySelector('.assigned-thawed-config, .assigned-frozen-config');
 
-      const idValue = idField ? idField.value.trim() : '';
+      let idValue = idField ? idField.value : '';
+      // Remove all non-digits and leading spaces from ID field
+      if (idField && idValue) {
+        // Remove all non-digits
+        let cleaned = idValue.replace(/[^\d]/g, '');
+        // Remove leading spaces (if any left, though above should remove all non-digits)
+        cleaned = cleaned.replace(/^\s+/, '');
+        if (idValue !== cleaned) {
+          idField.value = cleaned;
+          idValue = cleaned;
+          idField.classList.add('input-error');
+          createCustomTooltip(idField, {
+            en: 'ID must contain digits only.',
+            ru: 'ID должен содержать только цифры.'
+          });
+        } else {
+          idField.classList.remove('input-error');
+          disableCustomTooltip(idField);
+        }
+      }
       const usernameValue = usernameField ? usernameField.value.trim() : '';
       const genderValue = genderField ? genderField.value.trim() : '';
       const pronunciationValue = pronunciationField ? pronunciationField.value.trim() : '';
