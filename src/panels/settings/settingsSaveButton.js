@@ -39,7 +39,14 @@ export function initializeSaveButtonLogic(saveButton) {
       currentValues[config.key] = [];
     });
 
-    // Process tracked items
+    // Process tracked items and check for duplicate IDs using a single map
+    let hasDuplicateId = false;
+    const duplicateTooltipContent = {
+      en: 'Duplicate: this ID is already used.',
+      ru: 'Дубликат: этот ID уже используется.'
+    };
+
+    const idMap = new Map(); // key: idValue, value: array of idField(s)
     container.querySelectorAll('.settings-tracked-container .tracked-item').forEach(item => {
       const idField = item.querySelector('.tracked-id-field');
       const usernameField = item.querySelector('.tracked-username-field');
@@ -51,10 +58,35 @@ export function initializeSaveButtonLogic(saveButton) {
       const usernameValue = usernameField ? usernameField.value.trim() : '';
       const genderValue = genderField ? genderField.value.trim() : '';
       const pronunciationValue = pronunciationField ? pronunciationField.value.trim() : '';
-      // Determine the state based on the button's class
       const state = snowflakeButton.classList.contains('assigned-frozen-config') ? 'frozen' : 'thawed';
 
-      // Push current values to usersToTrack
+      if (idValue) {
+        if (!idMap.has(idValue)) {
+          idMap.set(idValue, [idField]);
+          idField.classList.remove('input-error');
+          disableCustomTooltip(idField);
+        } else {
+          // If the ID already exists, mark it as a duplicate
+          const existingId = idMap.get(idValue)[0];
+          const addedId = idField;
+          [existingId, addedId].forEach(field => {
+            if (field) {
+              field.classList.add('input-error');
+              if (!field._customTooltipDuplicate) {
+                createCustomTooltip(field, duplicateTooltipContent);
+                field._customTooltipDuplicate = true;
+              }
+            }
+          });
+          idMap.get(idValue).push(idField);
+          hasDuplicateId = true;
+        }
+      } else {
+        idField.classList.remove('input-error');
+        disableCustomTooltip(idField);
+        if (idField._customTooltipDuplicate) delete idField._customTooltipDuplicate;
+      }
+
       currentValues.usersToTrack.push({
         id: idValue,
         name: usernameValue,
@@ -167,8 +199,8 @@ export function initializeSaveButtonLogic(saveButton) {
     // Check if any values have changed compared to previous state
     const valuesChanged = JSON.stringify(previousValues) !== JSON.stringify(currentValues);
 
-    // Show or hide the save button based on whether values have changed
-    valuesChanged ? showButton() : hideButton();
+    // Show or hide the save button based on whether values have changed and no duplicate IDs
+    (valuesChanged && !hasDuplicateId) ? showButton() : hideButton();
 
     return currentValues; // Return current values for saving later
   };
