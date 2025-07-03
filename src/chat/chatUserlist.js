@@ -218,9 +218,9 @@ function createUserChatElement(userId, mainTitle, userName, bestSpeed, isRevoked
   newUserElement.appendChild(newNameElement);
   newUserElement.appendChild(newProfileElement);
 
-  // Check if there is a user in 'usersToTrack' array by their name and state
+  // Check if there is a user in 'usersToTrack' array by their id and state
   const userToTrack = usersToTrack.find((user) =>
-    user.name === userName && user.state === 'thawed'
+    user.id === userId && user.state === 'thawed'
   );
 
   if (userToTrack) {
@@ -341,7 +341,7 @@ export async function refreshUserList(retrievedLogin, actionType) {
           if (retrievedLogin === userName) {
             if (actionType === 'enter') {
               fetchedUsers[userId].visits = (fetchedUsers[userId].visits || 0) + 1;
-              fetchedUsers[userId].tracked = usersToTrack.some(u => u.name === retrievedLogin);
+              fetchedUsers[userId].tracked = usersToTrack.some(u => u.id === userId);
             }
           }
 
