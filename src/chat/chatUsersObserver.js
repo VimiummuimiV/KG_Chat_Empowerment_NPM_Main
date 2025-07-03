@@ -17,8 +17,8 @@ const { usersToTrack } = settingsState;
 
 const userList = getChatElements().userList.general;
 
-function getUserGender(userName) {
-  const user = usersToTrack.find((user) => user.name === userName);
+function getUserGender(userId) {
+  const user = usersToTrack.find((user) => user.id === userId);
   return user ? user.gender : null;
 }
 
@@ -127,8 +127,8 @@ const chatUsersObserver = new MutationObserver(debounce((mutations) => {
       // Common logic for processing both entered and left users
       function processUserAction(user, actionType) {
         const { userName, userId } = user;
-        const userGender = getUserGender(userName);
-        const isTracked = usersToTrack.some(u => u.name === userName && u.state === 'thawed');
+        const userGender = getUserGender(userId);
+        const isTracked = usersToTrack.some(u => u.id === userId && u.state === 'thawed');
 
         showUserAction(userName, actionType === "enter" ? enterSVG : leaveSVG, actionType === "enter");
         refreshUserList(userName, actionType);
