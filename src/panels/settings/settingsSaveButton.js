@@ -41,11 +41,13 @@ export function initializeSaveButtonLogic(saveButton) {
 
     // Process tracked items
     container.querySelectorAll('.settings-tracked-container .tracked-item').forEach(item => {
+      const idField = item.querySelector('.tracked-id-field');
       const usernameField = item.querySelector('.tracked-username-field');
       const genderField = item.querySelector('.tracked-gender-select');
       const pronunciationField = item.querySelector('.tracked-pronunciation-field');
       const snowflakeButton = item.querySelector('.assigned-thawed-config, .assigned-frozen-config');
 
+      const idValue = idField ? idField.value.trim() : '';
       const usernameValue = usernameField ? usernameField.value.trim() : '';
       const genderValue = genderField ? genderField.value.trim() : '';
       const pronunciationValue = pronunciationField ? pronunciationField.value.trim() : '';
@@ -54,6 +56,7 @@ export function initializeSaveButtonLogic(saveButton) {
 
       // Push current values to usersToTrack
       currentValues.usersToTrack.push({
+        id: idValue,
         name: usernameValue,
         gender: genderValue,
         pronunciation: pronunciationValue,

@@ -53,9 +53,17 @@ export const settingsTitles = {
   },
   placeholderTitles: {
     tracked: {
+      id: {
+        en: 'User ID',
+        ru: 'ID пользователя'
+      },
       name: {
         en: 'Username',
         ru: 'Пользователь'
+      },
+      notFoundName: {
+        en: 'User not found',
+        ru: 'Пользователь не найден'
       },
       pronunciation: {
         en: 'Pronunciation',

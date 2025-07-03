@@ -1,6 +1,7 @@
 import { addSVG, removeSVG, snowflakeSVG } from "../../icons.js";
 import { settingsTitles } from "./settingsTitles.js";
-import { getCurrentLanguage, localizedMessage } from "../../helpers/helpers.js";
+import { getCurrentLanguage, localizedMessage, debounce } from "../../helpers/helpers.js";
+import { getDataById, getDataByName } from "../../helpers/apiData.js";
 import { settingsConfig } from "./settingsConfig.js";
 
 // Helper function to get localized placeholder text
@@ -115,11 +116,49 @@ export function createSnowflakeButton(state = 'thawed', username) {
 // Creator function for a tracked item
 export function createTrackedItem(user) {
   const item = createContainer('tracked');
+  // Add id input as the first input, using the correct placeholder key
+  const idInput = createInput('tracked-id', user.id || '', getPlaceholder('tracked', 'id'));
   const usernameInput = createInput('tracked-username', user.name, getPlaceholder('tracked', 'name'));
+  usernameInput.disabled = true;
   const pronunciationInput = createInput('tracked-pronunciation', user.pronunciation, getPlaceholder('tracked', 'pronunciation'));
   const removeButton = createRemoveButton('tracked', item);
   const initialState = (user.state === 'frozen') ? 'frozen' : 'thawed';
   const snowflakeButton = createSnowflakeButton(initialState, user.name);
+
+  // Debounced event for id input to fetch username
+  idInput.addEventListener('input', debounce(async function (e) {
+    const idValue = e.target.value.trim();
+    if (idValue) {
+      const result = await getDataById(idValue, 'currentLogin');
+      // Found user by ID, set username input value
+      if (result) {
+        usernameInput.value = result;
+        usernameInput.placeholder = getPlaceholder('tracked', 'name');
+        // Not found user by ID, clear username input
+      } else {
+        usernameInput.value = '';
+      usernameInput.placeholder = getPlaceholder('tracked', 'notFoundName');
+      }
+      // If no ID is entered, clear username input
+    } else {
+      usernameInput.value = '';
+      usernameInput.placeholder = getPlaceholder('tracked', 'name');
+    }
+  }, 500));
+
+  // Fast fill: if id is empty but username is present, try to fetch id by usernameInput value
+  if ((!user.id || user.id === '') && user.name && user.name.trim() !== '') {
+    const username = usernameInput.value.trim();
+    if (username) {
+      getDataByName(username, 'userId').then(foundId => {
+        if (foundId && idInput.value.trim() === '') {
+          idInput.value = foundId;
+          // Optionally, trigger the input event to update username field as well
+          idInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+    }
+  }
 
   const genderSelect = document.createElement('select');
   genderSelect.className = 'tracked-gender-select';
@@ -135,6 +174,7 @@ export function createTrackedItem(user) {
     genderSelect.appendChild(option);
   });
 
+  item.appendChild(idInput);
   item.appendChild(usernameInput);
   item.appendChild(genderSelect);
   item.appendChild(pronunciationInput);
