@@ -37,6 +37,11 @@ export function attachSnowflakeListener(snowflakeButton, username) {
     snowflakeButton.classList.toggle('assigned-thawed-config');
     snowflakeButton.style.opacity = isFrozen ? '1' : '0.3';
     updateUserState(username, isFrozen ? 'frozen' : 'thawed');
+    // Update tooltip after state change
+    createCustomTooltip(snowflakeButton, {
+      en: isFrozen ? 'Unfreeze user' : 'Freeze user',
+      ru: isFrozen ? 'Разморозить пользователя' : 'Заморозить пользователя'
+    });
   });
 }
 
