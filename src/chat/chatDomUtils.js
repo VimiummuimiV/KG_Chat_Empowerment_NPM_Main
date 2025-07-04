@@ -38,6 +38,8 @@ export const getChatElements = () => {
 
   // Select all messages from both general and game chats
   const allMessages = document.querySelectorAll('.messages-content p');
+  // Get the latest message element (last <p> in .messages-content)
+  const latestMessage = allMessages.length > 0 ? allMessages[allMessages.length - 1] : null;
 
   // Query the messages container
   const messagesContainer = document.querySelector(messagesContainerSelector);
@@ -49,6 +51,7 @@ export const getChatElements = () => {
     nextChatTab,
     chatHidden: document.querySelector('#chat-wrapper.chat-hidden'),
     allMessages,
+    latestMessage,
     messagesContainer,
     userList
   };

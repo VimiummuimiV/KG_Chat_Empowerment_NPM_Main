@@ -20,6 +20,7 @@ import { usualMessageFrequencies, mentionMessageFrequencies, playBeep, beepVolum
 import { myNickname } from "../definitions.js";
 import { settingsState } from "../panels/settings/settings.js";
 import { scrollToBottom } from "../helpers/scrollTo.js";
+import { addTrackedIconsToUsernames } from "./chatTracked.js";
 
 const { ignored } = settingsState;
 
@@ -129,6 +130,7 @@ const newMessagesObserver = new MutationObserver(async mutations => {
             scrollToBottom('generalMessages', 350);
             showPopupMessage();
             updatePersonalMessageCounts(); // Rethink when to call
+            addTrackedIconsToUsernames('latest'); // Highlight tracked users messages for the latest message
           }
         }
       }

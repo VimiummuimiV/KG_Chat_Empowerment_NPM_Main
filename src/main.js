@@ -9,6 +9,7 @@ import { highlightMentionWords } from "./helpers/getLatestMessageData.js";
 import { processEncodedLinks } from "./helpers/urlUtils.js";
 import { refreshFetchedUsers } from "./panels/cache/cacheHelpers.js";
 import { removeIgnoredUserMessages } from "./chat/chatIgnore.js";
+import { addTrackedIconsToUsernames } from "./chat/chatTracked.js";
 import { parsePersonalMessages } from "./panels/messages/messagesParser.js";
 
 import {
@@ -129,6 +130,7 @@ export let isInitializedChat = false;
       if (messages.length >= 20) {
         waitForChatObserver.disconnect();
         removeIgnoredUserMessages();
+        addTrackedIconsToUsernames();
         convertImageLinksToImage('generalMessages');
         convertVideoLinksToPlayer('generalMessages');
         processEncodedLinks('generalMessages');

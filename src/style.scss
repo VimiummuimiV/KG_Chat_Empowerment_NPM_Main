@@ -1,3 +1,11 @@
+// Tracked marker for usernames
+.tracked-marker {
+  display: inline-flex;
+  width: 2px;
+  height: 10px;
+  border-radius: 1px !important;
+}
+
 // Empowerment button
 .empowerment-button {
   display: flex;
