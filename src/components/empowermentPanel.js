@@ -111,25 +111,24 @@ export function createEmpowermentPanel() {
   
   // Track key states
   document.addEventListener('keydown', e => {
-    const key = e.key.toLowerCase();
-    keyPressed.add(key);
+    keyPressed.add(e.code);
     
     // Handle mode switching during active mouse operation
     if (isMouseDown && !isDragging && !isScaling) {
       const rect = panel.getBoundingClientRect();
       const handleRect = handle.getBoundingClientRect();
       
-      if (key === 's') {
+      if (e.code === 'KeyS') {
         // Switch to scaling mode
         isScaling = true;
         initialScale = desiredScale;
         initialMouseY = window.lastMouseY || 0;
         panel.style.transformOrigin = `${handleRect.left + handleRect.width/2 - rect.left}px ${handleRect.top + handleRect.height/2 - rect.top}px`;
-      } else if (key === 'r') {
+      } else if (e.code === 'KeyR') {
         // Immediate reset
         resetPanel();
       }
-    } else if (isMouseDown && isDragging && key === 's') {
+    } else if (isMouseDown && isDragging && e.code === 'KeyS') {
       // Switch from dragging to scaling
       isDragging = false;
       isScaling = true;
@@ -138,17 +137,17 @@ export function createEmpowermentPanel() {
       const rect = panel.getBoundingClientRect();
       const handleRect = handle.getBoundingClientRect();
       panel.style.transformOrigin = `${handleRect.left + handleRect.width/2 - rect.left}px ${handleRect.top + handleRect.height/2 - rect.top}px`;
-    } else if (isMouseDown && isScaling && key === 'r') {
+    } else if (isMouseDown && isScaling && e.code === 'KeyR') {
       // Reset during scaling
       resetPanel();
-    } else if (isMouseDown && key === 'r') {
+    } else if (isMouseDown && e.code === 'KeyR') {
       // Reset during any operation
       resetPanel();
     }
   });
   
   document.addEventListener('keyup', e => {
-    keyPressed.delete(e.key.toLowerCase());
+    keyPressed.delete(e.code);
   });
   
   // Track mouse position globally
@@ -164,12 +163,12 @@ export function createEmpowermentPanel() {
     const handleRect = handle.getBoundingClientRect();
     
     // Check initial state based on keys pressed
-    if (keyPressed.has('s')) {
+    if (keyPressed.has('KeyS')) {
       isScaling = true;
       initialScale = desiredScale;
       initialMouseY = e.clientY;
       panel.style.transformOrigin = `${handleRect.left + handleRect.width/2 - rect.left}px ${handleRect.top + handleRect.height/2 - rect.top}px`;
-    } else if (keyPressed.has('r')) {
+    } else if (keyPressed.has('KeyR')) {
       // Immediate reset
       resetPanel();
       isMouseDown = false;
@@ -206,7 +205,7 @@ export function createEmpowermentPanel() {
   document.addEventListener('mouseup', e => {
     if (isMouseDown) {
       // Save the current state (unless it was just reset)
-      if (!keyPressed.has('r') && (isDragging || isScaling)) {
+      if (!keyPressed.has('KeyR') && (isDragging || isScaling)) {
         saveState();
       }
       
