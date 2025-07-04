@@ -222,13 +222,20 @@
 // Empowerment panel
 .empowerment-panel {
   position: fixed;
-  top: 50%;
-  transform: translateY(-100%);
+  width: 48px;
+  top: 200px;
   right: 15px;
   display: flex;
   flex-direction: column;
   z-index: 1000;
   gap: 0.2em;
+
+  .empowerment-panel-move-handle {
+    background-color: rgba(0,0,0,.2);
+    border-radius: 0.2em !important;
+    width: 20px;
+    height: 20px;
+  }
 }
 
 // Chat user count element

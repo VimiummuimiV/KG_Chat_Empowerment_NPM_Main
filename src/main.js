@@ -23,6 +23,7 @@ import {
 
 import { scrollToBottom } from "./helpers/scrollTo.js";
 import { setupFonts } from "./components/fonts.js";
+import { createEmpowermentPanel } from "./components/empowermentPanel.js";
 import { refreshUserList } from "./chat/chatUserlist.js";
 import ChatMessagesRemover from "./chat/chatMessagesRemover/chatMessagesRemover.js";
 import { pruneDeletedMessages } from "./chat/chatMessagesRemover/chatMessagesRemover.js";
@@ -56,13 +57,8 @@ export let isInitializedChat = false;
   // Initialize all fonts with one call
   setupFonts();
 
-  // Creates an empowerment panel and appends it to the document body
-  const empowermentPanel = (() => {
-    const panel = document.createElement('div');
-    panel.classList.add("empowerment-panel");
-    document.body.appendChild(panel);
-    return panel;
-  })();
+  // Creates an empowerment panel and appends it to the document body (now imported)
+  const empowermentPanel = createEmpowermentPanel();
 
   // 1 ======================================================================
   // Check if the current location is 'gmid' or 'gamelist'
