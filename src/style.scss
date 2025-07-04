@@ -65,7 +65,7 @@
     transition: background-color 300ms ease-in-out;
     background-color: hsl(60, 40%, 30%) !important;
     color: hsl(60, 40%, 80%) !important;
-    border: 1px solid hsl(60, 40%, 40%) !important
+    border: 1px solid hsl(60, 40%, 40%) !important;
   }
 
   .date-item {
@@ -236,7 +236,7 @@
     justify-content: center;
     align-items: center;
     opacity: 0;
-    background-color: rgba(0,0,0,.2);
+    background-color: rgba(0, 0, 0, 0.2);
     border-radius: 0.2em !important;
     width: 20px;
     height: 20px;
