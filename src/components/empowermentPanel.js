@@ -1,4 +1,6 @@
 import { moveSVG } from "../icons.js";
+import { createCustomTooltip } from "../components/tooltip.js";
+import { getCurrentLanguage } from "../helpers/helpers.js";
 
 /**
  * Creates the empowerment panel, restores its position from localStorage, and makes it draggable.
@@ -20,6 +22,13 @@ export function createEmpowermentPanel() {
   handle.classList.add('empowerment-panel-move-handle');
   handle.innerHTML = moveSVG;
   panel.appendChild(handle);
+
+  // Add tooltip to the move handle
+  const lang = getCurrentLanguage && typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+  const tooltipText = lang === 'ru'
+    ? '[Удерживайте] и перетаскивайте панель. [S] — масштаб, [R] — сброс.'
+    : '[Hold] and drag to move panel. [S] — scale, [R] — reset.';
+  createCustomTooltip(handle, tooltipText);
   
   // Restore position and scale from localStorage
   try {
