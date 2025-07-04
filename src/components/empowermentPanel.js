@@ -11,8 +11,9 @@ export function createEmpowermentPanel() {
   // Define margins once
   const MARGINS = { top: 45, right: 15, bottom: 15, left: 15 };
   
-  // Store the desired position (what user actually set)
+  // Store the desired position and scale (what user actually set)
   let desiredPosition = { x: null, y: null };
+  let desiredScale = 1;
   
   // Create move handle
   const handle = document.createElement('div');
@@ -20,14 +21,19 @@ export function createEmpowermentPanel() {
   handle.innerHTML = moveSVG;
   panel.appendChild(handle);
   
-  // Restore position from localStorage
+  // Restore position and scale from localStorage
   try {
-    const pos = JSON.parse(localStorage.getItem('empowermentPanelPos') || '{}');
-    if (pos.x !== undefined && pos.y !== undefined) {
-      desiredPosition.x = pos.x;
-      desiredPosition.y = pos.y;
-      panel.style.left = pos.x + 'px';
-      panel.style.top = pos.y + 'px';
+    const saved = JSON.parse(localStorage.getItem('empowermentPanelState') || '{}');
+    if (saved.x !== undefined && saved.y !== undefined) {
+      desiredPosition.x = saved.x;
+      desiredPosition.y = saved.y;
+      panel.style.left = saved.x + 'px';
+      panel.style.top = saved.y + 'px';
+    }
+    if (saved.scale !== undefined) {
+      desiredScale = saved.scale;
+      panel.style.transform = `scale(${saved.scale})`;
+      panel.style.transformOrigin = '0 0';
     }
   } catch {}
   
@@ -50,6 +56,28 @@ export function createEmpowermentPanel() {
     panel.style.top = newTop + 'px';
   };
   
+  // Save current state to localStorage
+  const saveState = () => {
+    localStorage.setItem('empowermentPanelState', JSON.stringify({
+      x: desiredPosition.x,
+      y: desiredPosition.y,
+      scale: desiredScale
+    }));
+  };
+  
+  // Reset position and scale
+  const resetPanel = () => {
+    desiredPosition.x = null;
+    desiredPosition.y = null;
+    desiredScale = 1;
+    panel.style.left = '';
+    panel.style.top = '';
+    panel.style.transform = '';
+    panel.style.transformOrigin = '';
+    localStorage.removeItem('empowermentPanelState');
+    requestAnimationFrame(() => constrainToViewport());
+  };
+  
   // Constrain to viewport after initial render
   requestAnimationFrame(() => constrainToViewport());
   
@@ -57,40 +85,119 @@ export function createEmpowermentPanel() {
   window.addEventListener('resize', constrainToViewport);
   
   // Drag state
+  let isMouseDown = false;
   let isDragging = false;
+  let isScaling = false;
   let offsetX, offsetY;
+  let initialScale, initialMouseY;
+  let keyPressed = new Set();
+  
+  // Track key states
+  document.addEventListener('keydown', e => {
+    const key = e.key.toLowerCase();
+    keyPressed.add(key);
+    
+    // Handle mode switching during active mouse operation
+    if (isMouseDown && !isDragging && !isScaling) {
+      const rect = panel.getBoundingClientRect();
+      const handleRect = handle.getBoundingClientRect();
+      
+      if (key === 's') {
+        // Switch to scaling mode
+        isScaling = true;
+        initialScale = desiredScale;
+        initialMouseY = window.lastMouseY || 0;
+        panel.style.transformOrigin = `${handleRect.left + handleRect.width/2 - rect.left}px ${handleRect.top + handleRect.height/2 - rect.top}px`;
+      } else if (key === 'r') {
+        // Immediate reset
+        resetPanel();
+      }
+    } else if (isMouseDown && isDragging && key === 's') {
+      // Switch from dragging to scaling
+      isDragging = false;
+      isScaling = true;
+      initialScale = desiredScale;
+      initialMouseY = window.lastMouseY || 0;
+      const rect = panel.getBoundingClientRect();
+      const handleRect = handle.getBoundingClientRect();
+      panel.style.transformOrigin = `${handleRect.left + handleRect.width/2 - rect.left}px ${handleRect.top + handleRect.height/2 - rect.top}px`;
+    } else if (isMouseDown && isScaling && key === 'r') {
+      // Reset during scaling
+      resetPanel();
+    } else if (isMouseDown && key === 'r') {
+      // Reset during any operation
+      resetPanel();
+    }
+  });
+  
+  document.addEventListener('keyup', e => {
+    keyPressed.delete(e.key.toLowerCase());
+  });
+  
+  // Track mouse position globally
+  document.addEventListener('mousemove', e => {
+    window.lastMouseY = e.clientY;
+  });
   
   handle.addEventListener('mousedown', e => {
     if (e.button !== 0) return;
-    isDragging = true;
+    
+    isMouseDown = true;
     const rect = panel.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
+    const handleRect = handle.getBoundingClientRect();
+    
+    // Check initial state based on keys pressed
+    if (keyPressed.has('s')) {
+      isScaling = true;
+      initialScale = desiredScale;
+      initialMouseY = e.clientY;
+      panel.style.transformOrigin = `${handleRect.left + handleRect.width/2 - rect.left}px ${handleRect.top + handleRect.height/2 - rect.top}px`;
+    } else if (keyPressed.has('r')) {
+      // Immediate reset
+      resetPanel();
+      isMouseDown = false;
+      return;
+    } else {
+      isDragging = true;
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+    }
+    
     document.body.style.userSelect = 'none';
+    e.preventDefault();
   });
   
   document.addEventListener('mousemove', e => {
-    if (!isDragging) return;
-    const newLeft = Math.max(MARGINS.left, Math.min(e.clientX - offsetX, window.innerWidth - panel.offsetWidth - MARGINS.right));
-    const newTop = Math.max(MARGINS.top, Math.min(e.clientY - offsetY, window.innerHeight - panel.offsetHeight - MARGINS.bottom));
-    panel.style.left = newLeft + 'px';
-    panel.style.top = newTop + 'px';
-    
-    // Update desired position during drag
-    desiredPosition.x = newLeft;
-    desiredPosition.y = newTop;
+    if (isDragging) {
+      const newLeft = Math.max(MARGINS.left, Math.min(e.clientX - offsetX, window.innerWidth - panel.offsetWidth - MARGINS.right));
+      const newTop = Math.max(MARGINS.top, Math.min(e.clientY - offsetY, window.innerHeight - panel.offsetHeight - MARGINS.bottom));
+      panel.style.left = newLeft + 'px';
+      panel.style.top = newTop + 'px';
+      
+      // Update desired position during drag
+      desiredPosition.x = newLeft;
+      desiredPosition.y = newTop;
+    } else if (isScaling) {
+      // Scale based on vertical mouse movement with higher sensitivity
+      const deltaY = initialMouseY - e.clientY; // Inverted: up = positive
+      const scaleFactor = Math.max(0.1, Math.min(3, initialScale + (deltaY * 0.01)));
+      desiredScale = scaleFactor;
+      panel.style.transform = `scale(${scaleFactor})`;
+    }
   });
   
-  document.addEventListener('mouseup', () => {
-    if (!isDragging) return;
-    isDragging = false;
-    document.body.style.userSelect = '';
-    
-    // Save the desired position to localStorage
-    localStorage.setItem('empowermentPanelPos', JSON.stringify({
-      x: desiredPosition.x,
-      y: desiredPosition.y
-    }));
+  document.addEventListener('mouseup', e => {
+    if (isMouseDown) {
+      // Save the current state (unless it was just reset)
+      if (!keyPressed.has('r') && (isDragging || isScaling)) {
+        saveState();
+      }
+      
+      isMouseDown = false;
+      isDragging = false;
+      isScaling = false;
+      document.body.style.userSelect = '';
+    }
   });
   
   return panel;
