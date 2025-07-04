@@ -98,14 +98,18 @@ export async function parsePersonalMessages(currentDate = today) {
     } else {
       datesToParse.push(...getDatesBetween(lastParseDate, currentDate));
     }
+  }
 
-    if (datesToParse.length > 1) {
-      const proceed = localizedMessage({
-        en: `Do you want to load personal mentions for the last ${datesToParse.length} days? This may take a while.`,
-        ru: `Желаете загрузить сообщения с упоминаниями о вас за последние ${datesToParse.length} дней? Это может занять некоторое время.`
-      }, 'confirm');
-      if (!proceed) return;
-    }
+  // Calculate days of absence based on ABSENT_MENTIONS_CACHE_KEY
+  const daysSinceLastActive = Math.floor((now - lastFetch) / (24 * 60 * 60 * 1000));
+  
+  // Only show confirmation if user was absent for more than 1 day AND we're parsing multiple days
+  if (datesToParse.length > 1 && daysSinceLastActive > 1) {
+    const proceed = localizedMessage({
+      en: `You've been absent for ${daysSinceLastActive} days. Do you want to load personal mentions for the last ${datesToParse.length} days? This may take a while.`,
+      ru: `Вы отсутствовали ${daysSinceLastActive} дней. Желаете загрузить сообщения с упоминаниями о вас за последние ${datesToParse.length} дней? Это может занять некоторое время.`
+    }, 'confirm');
+    if (!proceed) return;
   }
 
   console.log(`Parsing messages for dates: ${datesToParse.join(', ')}`);
@@ -122,10 +126,10 @@ export async function parsePersonalMessages(currentDate = today) {
 
   let totalNewMentions = 0;
 
-  // Progress UI for multi-day parsing
+  // Progress UI for multi-day parsing (only show if parsing multiple days AND user was absent)
   let progressContainer, dateIndicator, progressBar, progressBarInner, progressLabel;
 
-  if (datesToParse.length > 1) {
+  if (datesToParse.length > 1 && daysSinceLastActive > 1) {
     progressContainer = document.createElement('div');
     progressContainer.className = 'messages-parser-progress-container';
 
@@ -271,7 +275,8 @@ export async function parsePersonalMessages(currentDate = today) {
       addJumpEffect(newMessageIndicator, 50, 50);
     }
 
-    if (datesToParse.length > 1) {
+    // Only show multi-day success message if user was actually absent for multiple days
+    if (datesToParse.length > 1 && daysSinceLastActive > 1) {
       localizedMessage({
         en: `Added ${totalNewMentions} new personal mentions across ${datesToParse.length} days!`,
         ru: `Добавлено ${totalNewMentions} новых личных упоминаний за ${datesToParse.length} дней!`
