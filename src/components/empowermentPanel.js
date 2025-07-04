@@ -6,6 +6,9 @@ export function createEmpowermentPanel() {
   const panel = document.createElement('div');
   panel.classList.add('empowerment-panel');
   
+  // Define margins once
+  const MARGINS = { top: 45, right: 15, bottom: 15, left: 15 };
+  
   // Create move handle
   const handle = document.createElement('div');
   handle.classList.add('empowerment-panel-move-handle');
@@ -24,8 +27,25 @@ export function createEmpowermentPanel() {
   
   document.body.appendChild(panel);
   
+  // Constrain panel within viewport bounds with margins
+  const constrainToViewport = () => {
+    const rect = panel.getBoundingClientRect();
+    const maxLeft = window.innerWidth - rect.width - MARGINS.right;
+    const maxTop = window.innerHeight - rect.height - MARGINS.bottom;
+    const newLeft = Math.max(MARGINS.left, Math.min(rect.left, maxLeft));
+    const newTop = Math.max(MARGINS.top, Math.min(rect.top, maxTop));
+    
+    if (newLeft !== rect.left || newTop !== rect.top) {
+      panel.style.left = newLeft + 'px';
+      panel.style.top = newTop + 'px';
+    }
+  };
+  
   // Constrain to viewport after initial render
   requestAnimationFrame(() => constrainToViewport());
+  
+  // Add window resize listener to recalculate position
+  window.addEventListener('resize', constrainToViewport);
   
   // Drag state
   let isDragging = false;
@@ -40,26 +60,10 @@ export function createEmpowermentPanel() {
     document.body.style.userSelect = 'none';
   });
   
-  // Constrain panel within viewport bounds with margins
-  const constrainToViewport = () => {
-    const rect = panel.getBoundingClientRect();
-    const margins = { top: 40, right: 15, bottom: 15, left: 15 };
-    const maxLeft = window.innerWidth - rect.width - margins.right;
-    const maxTop = window.innerHeight - rect.height - margins.bottom;
-    const newLeft = Math.max(margins.left, Math.min(rect.left, maxLeft));
-    const newTop = Math.max(margins.top, Math.min(rect.top, maxTop));
-    
-    if (newLeft !== rect.left || newTop !== rect.top) {
-      panel.style.left = newLeft + 'px';
-      panel.style.top = newTop + 'px';
-    }
-  };
-  
   document.addEventListener('mousemove', e => {
     if (!isDragging) return;
-    const margins = { top: 40, right: 15, bottom: 15, left: 15 };
-    const newLeft = Math.max(margins.left, Math.min(e.clientX - offsetX, window.innerWidth - panel.offsetWidth - margins.right));
-    const newTop = Math.max(margins.top, Math.min(e.clientY - offsetY, window.innerHeight - panel.offsetHeight - margins.bottom));
+    const newLeft = Math.max(MARGINS.left, Math.min(e.clientX - offsetX, window.innerWidth - panel.offsetWidth - MARGINS.right));
+    const newTop = Math.max(MARGINS.top, Math.min(e.clientY - offsetY, window.innerHeight - panel.offsetHeight - MARGINS.bottom));
     panel.style.left = newLeft + 'px';
     panel.style.top = newTop + 'px';
   });
@@ -73,12 +77,6 @@ export function createEmpowermentPanel() {
       y: parseInt(panel.style.top)
     }));
   });
-  
-  
-  document.body.appendChild(panel);
-  
-  // Constrain to viewport after initial render
-  requestAnimationFrame(() => constrainToViewport());
   
   return panel;
 }
