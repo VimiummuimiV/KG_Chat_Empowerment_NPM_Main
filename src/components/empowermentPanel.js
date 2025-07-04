@@ -50,19 +50,27 @@ export function createEmpowermentPanel() {
   
   // Constrain panel within viewport bounds with margins
   const constrainToViewport = () => {
+    // Only constrain if we have a desired position set by user
+    if (desiredPosition.x === null || desiredPosition.y === null) return;
+    
     const rect = panel.getBoundingClientRect();
-    
-    // Use desired position if available, otherwise use current position
-    const targetX = desiredPosition.x !== null ? desiredPosition.x : rect.left;
-    const targetY = desiredPosition.y !== null ? desiredPosition.y : rect.top;
-    
     const maxLeft = window.innerWidth - rect.width - MARGINS.right;
     const maxTop = window.innerHeight - rect.height - MARGINS.bottom;
-    const newLeft = Math.max(MARGINS.left, Math.min(targetX, maxLeft));
-    const newTop = Math.max(MARGINS.top, Math.min(targetY, maxTop));
     
-    panel.style.left = newLeft + 'px';
-    panel.style.top = newTop + 'px';
+    // Check if desired position is still within bounds
+    const newLeft = Math.max(MARGINS.left, Math.min(desiredPosition.x, maxLeft));
+    const newTop = Math.max(MARGINS.top, Math.min(desiredPosition.y, maxTop));
+    
+    // Only update if the position actually needs to change due to viewport constraints
+    if (newLeft !== desiredPosition.x || newTop !== desiredPosition.y) {
+      panel.style.left = newLeft + 'px';
+      panel.style.top = newTop + 'px';
+      // Don't update desiredPosition - keep the user's intended position
+    } else {
+      // Restore to desired position if it fits
+      panel.style.left = desiredPosition.x + 'px';
+      panel.style.top = desiredPosition.y + 'px';
+    }
   };
   
   // Save current state to localStorage
