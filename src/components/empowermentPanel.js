@@ -1,3 +1,5 @@
+import { moveSVG } from "../icons";
+
 /**
  * Creates the empowerment panel, restores its position from localStorage, and makes it draggable.
  * @returns {HTMLDivElement} The empowerment panel element.
@@ -12,8 +14,7 @@ export function createEmpowermentPanel() {
   // Create move handle
   const handle = document.createElement('div');
   handle.classList.add('empowerment-panel-move-handle');
-  handle.style.height = '20px';
-  handle.title = 'Drag to move panel';
+  handle.innerHTML = moveSVG;
   panel.appendChild(handle);
   
   // Restore position and constrain to viewport

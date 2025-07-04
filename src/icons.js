@@ -721,3 +721,21 @@ export const pauseSVG = `
     <rect x="6" y="4" width="4" height="16"></rect>
     <rect x="14" y="4" width="4" height="16"></rect>
   </svg>`;
+
+// Inline SVG source for the "move" icon (used for the empowerment panel to move by X and Y)
+const moveSVGStrokeColor = "rgb(255, 228, 196)";
+export const moveSVG = `
+  <svg xmlns="${svgUrl}"
+      width="${iconSize - 14}"
+      height="${iconSize - 14}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="${moveSVGStrokeColor}"
+      stroke-width="${iconStrokeWidth}"
+      stroke-linecap="round" stroke-linejoin="round" class="feather feather-move">
+    <circle cx="5" cy="12" r="1"></circle>
+    <circle cx="12" cy="5" r="1"></circle>
+    <circle cx="19" cy="12" r="1"></circle>
+    <circle cx="12" cy="19" r="1"></circle>
+    <circle cx="12" cy="12" r="1"></circle>
+  </svg>`;

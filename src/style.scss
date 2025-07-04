@@ -229,12 +229,26 @@
   flex-direction: column;
   z-index: 1000;
   gap: 0.2em;
+  align-items: start;
 
   .empowerment-panel-move-handle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
     background-color: rgba(0,0,0,.2);
     border-radius: 0.2em !important;
     width: 20px;
     height: 20px;
+    cursor: pointer;
+    transition: opacity 0.2s, background-color 0.2s;
+    pointer-events: auto;
+  }
+
+  &:hover .empowerment-panel-move-handle,
+  .empowerment-panel-move-handle:focus,
+  .empowerment-panel-move-handle:hover {
+    opacity: 1;
   }
 }
 
