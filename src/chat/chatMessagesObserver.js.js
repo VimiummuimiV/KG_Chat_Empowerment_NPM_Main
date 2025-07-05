@@ -129,7 +129,7 @@ const newMessagesObserver = new MutationObserver(async mutations => {
             groupChatMessages();
             scrollToBottom('generalMessages', 350);
             showPopupMessage();
-            updatePersonalMessageCounts(); // Rethink when to call
+            updatePersonalMessageCounts();
             addTrackedIconsToUsernames('latest'); // Highlight tracked users messages for the latest message
           }
         }

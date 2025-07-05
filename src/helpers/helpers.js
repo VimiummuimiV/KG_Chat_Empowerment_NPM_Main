@@ -135,9 +135,6 @@ export const isTrustedDomain = url => {
   }
 };
 
-// Initialize previousTotalCount with the current personal messages count from localStorage
-let previousTotalCount =
-  (localStorage.personalMessages && Object.keys(JSON.parse(localStorage.personalMessages)).length) || 0;
 /**
  * Updates total and new personal message counts near the personal messages button.
  * - Increments new message count only when total message count increases.
@@ -151,8 +148,13 @@ export function updatePersonalMessageCounts() {
   const personalMessages = JSON.parse(localStorage.getItem('personalMessages')) || {};
   const totalCount = Object.keys(personalMessages).length;
 
+  // Static variable to track previous count across function calls
+  if (!updatePersonalMessageCounts.previousTotalCount) {
+    updatePersonalMessageCounts.previousTotalCount = totalCount;
+  }
+
   let newCount = Number(localStorage.getItem('newMessagesCount')) || 0;
-  if (totalCount > previousTotalCount) {
+  if (totalCount > updatePersonalMessageCounts.previousTotalCount) {
     newCount++;
     localStorage.setItem('newMessagesCount', newCount);
     addPulseEffect(newCountElement); // Apply pulse effect for new messages
@@ -167,9 +169,12 @@ export function updatePersonalMessageCounts() {
   newCountElement.style.visibility = newCount > 0 ? 'visible' : 'hidden';
 
   // Apply pulse effect if total count changes
-  if (totalCount !== previousTotalCount) addPulseEffect(totalCountElement);
+  if (totalCount !== updatePersonalMessageCounts.previousTotalCount) {
+    addPulseEffect(totalCountElement);
+  }
 
-  previousTotalCount = totalCount; // Update previous count
+  // Update previous count for next call
+  updatePersonalMessageCounts.previousTotalCount = totalCount;
 }
 
 // Function to play sound as a notification for system message banned
