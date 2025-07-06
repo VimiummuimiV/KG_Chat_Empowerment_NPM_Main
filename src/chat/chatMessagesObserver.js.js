@@ -16,13 +16,36 @@ import { convertVideoLinksToPlayer } from "../converters/videoConverter.js";
 import { showPopupMessage } from "../components/popupMessages.js";
 import { groupChatMessages } from "./chatWorkers.js";
 import { isInitializedChat } from "../main.js";
-import { playBeep, mentionMessageFrequencies, usualMessageFrequencies, beepVolume } from "../components/beepEngine.js";
+import { playBeep } from "../components/beepEngine.js";
 import { myNickname } from "../definitions.js";
 import { settingsState } from "../panels/settings/settings.js";
 import { scrollToBottom } from "../helpers/scrollTo.js";
 import { addTrackedIconsToUsernames } from "./chatTracked.js";
 
 const { ignored } = settingsState;
+
+// Get mention keywords from localStorage once and cache them
+let allMentionWords = [];
+
+function initializeMentionKeywords() {
+  const storedKeywords = localStorage.getItem('mentionKeywords');
+  const mentionKeywords = storedKeywords ? JSON.parse(storedKeywords) : [];
+  allMentionWords = [myNickname, ...mentionKeywords];
+}
+
+// Initialize mention keywords on load
+initializeMentionKeywords();
+
+// Function to check if message contains any mention words
+function checkForMentions(messageText) {
+  if (!messageText) return false;
+  
+  const messageTextLower = messageText.toLowerCase();
+  
+  return allMentionWords.some(word => 
+    messageTextLower.includes(word.toLowerCase())
+  );
+}
 
 // Set the flag as false for the mention beep sound to trigger at first usual beep sound for usual messages
 let isMention = false;
@@ -49,6 +72,9 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           const latestMessageData = await getLatestMessageData();
           const currentMessageText = latestMessageData?.messageText || null;
           const currentMessageUsername = latestMessageData?.usernameText || null;
+
+          // Check if the current message contains any mention words
+          isMention = checkForMentions(currentMessageText);
 
           // Check for a ban message and play sound if detected
           if (isBanMessage(currentMessageText)) {
@@ -114,8 +140,8 @@ const newMessagesObserver = new MutationObserver(async mutations => {
             if (currentMessageUsername && !currentMessageUsername.includes(myNickname)) {
               const shouldBeep = isEveryMessageMode || (isMentionMessageMode && isMention) || isPrivateMessage;
               if (shouldBeep) {
-                const useMentionFrequency = !isEveryMessageMode || isMention;
-                playBeep(useMentionFrequency ? mentionMessageFrequencies : usualMessageFrequencies, beepVolume);
+                const audioKey = (!isEveryMessageMode || isMention) ? 'mention' : 'message';
+                playBeep(audioKey);
                 if (isMention) isMention = false;
               }
             }

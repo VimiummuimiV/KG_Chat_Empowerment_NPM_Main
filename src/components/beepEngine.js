@@ -7,14 +7,14 @@ const { usersToTrack } = settingsState;
 
 // Audio file paths - GitHub raw file URLs
 const audioFiles = {
-  userEntered: 'https://raw.githubusercontent.com/yourusername/yourrepo/main/sounds/user-entered.mp3',
-  userLeft: 'https://raw.githubusercontent.com/yourusername/yourrepo/main/sounds/user-left.mp3',
-  newMessage: 'https://raw.githubusercontent.com/yourusername/yourrepo/main/sounds/new-message.mp3',
-  mention: 'https://raw.githubusercontent.com/yourusername/yourrepo/main/sounds/mention.mp3'
+  userEntered: 'https://raw.githubusercontent.com/VimiummuimiV/KG_Chat_Empowerment_NPM_Main/main/src/sounds/user-entered.mp3',
+  userLeft: 'https://raw.githubusercontent.com/VimiummuimiV/KG_Chat_Empowerment_NPM_Main/main/src/sounds/user-left.mp3',
+  message: 'https://raw.githubusercontent.com/VimiummuimiV/KG_Chat_Empowerment_NPM_Main/main/src/sounds/message.mp3',
+  mention: 'https://raw.githubusercontent.com/VimiummuimiV/KG_Chat_Empowerment_NPM_Main/main/src/sounds/mention.mp3'
 };
 
 // Volume settings
-export const audioVolume = 0.2;
+export const audioVolume = 1;
 
 // Audio cache to store loaded audio elements
 const audioCache = new Map();

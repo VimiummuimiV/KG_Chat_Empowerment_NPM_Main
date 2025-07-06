@@ -103,7 +103,7 @@ export async function textToSpeech(text, voiceSpeed = voiceSpeed) {
               const source = audioContext.createMediaElementSource(audio);
               const gainNode = audioContext.createGain();
 
-              gainNode.gain.value = 2.0; // Boost volume
+              gainNode.gain.value = 1.5; // Boost volume
 
               // Connect the audio source to the gain node and the gain node to the destination (speakers)
               source.connect(gainNode);
