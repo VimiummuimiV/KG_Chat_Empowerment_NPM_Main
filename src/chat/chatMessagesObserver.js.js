@@ -16,7 +16,7 @@ import { convertVideoLinksToPlayer } from "../converters/videoConverter.js";
 import { showPopupMessage } from "../components/popupMessages.js";
 import { groupChatMessages } from "./chatWorkers.js";
 import { isInitializedChat } from "../main.js";
-import { usualMessageFrequencies, mentionMessageFrequencies, playBeep, beepVolume } from "../components/voiceEngine.js";
+import { playBeep, mentionMessageFrequencies, usualMessageFrequencies, beepVolume } from "../components/beepEngine.js";
 import { myNickname } from "../definitions.js";
 import { settingsState } from "../panels/settings/settings.js";
 import { scrollToBottom } from "../helpers/scrollTo.js";

@@ -11,7 +11,7 @@ import { isInitializedChat } from "../main.js";
 import { addJumpEffect, addPulseEffect } from "../animations.js";
 import { showUserAction } from "../components/notifications/notifications.js";
 import { refreshUserList } from "./chatUserlist.js";
-import { userAction } from "../components/voiceEngine.js";
+import { userAction } from "../components/beepEngine.js";
 import { settingsState } from "../panels/settings/settings.js";
 const { usersToTrack } = settingsState;
 

@@ -1,82 +1,8 @@
 import { shouldEnable } from "../helpers/helpers.js";
-import { voiceSpeed, voicePitch } from "./mode/soundMode.js";
-
-import { settingsState } from "../panels/settings/settings.js";
-const { usersToTrack } = settingsState;
-
-// SOUND NOTIFICATION
-
-// Function to create the audio context and return a Promise that resolves when the context is ready
-function createAudioContext() {
-  const audioContext = new AudioContext();
-  return new Promise(resolve => {
-    audioContext.onstatechange = function () {
-      if (audioContext.state === 'running') {
-        resolve(audioContext);
-      }
-    };
-  });
-}
-
-// Create the audio context and wait for it to be ready
-const audioContextPromise = createAudioContext();
-
-// List of frequencies to play for "User Left" && "User Entered" && "New Messages"
-const userEnteredFrequencies = [300, 600];
-const userLeftFrequencies = [600, 300];
-export const usualMessageFrequencies = [500];
-export const mentionMessageFrequencies = [600, 800];
+import { voicePitch } from "./mode/soundMode.js";
 
 // Volume of the reader voice
 const voiceVolume = 1;
-// Volume of the beep signal
-export const beepVolume = 0.2;
-// Duration for each frequency
-const duration = 80;
-// Smooth inception and termination for each note
-const fade = 10;
-// Space between each note to make noticeable pauses
-const delay = 100;
-
-// Function to play a beep given a list of frequencies
-export function playBeep(frequencies, volume) {
-  audioContextPromise.then(audioContext => {
-    for (let i = 0; i < frequencies.length; i++) {
-      const frequency = frequencies[i];
-      if (frequency === 0) {
-        // Rest note
-        setTimeout(() => { }, duration);
-      } else {
-        // Play note
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        oscillator.connect(gain);
-        oscillator.frequency.value = frequency;
-        oscillator.type = "sine";
-
-        // Create low pass filter to cut frequencies below 250Hz
-        const lowPassFilter = audioContext.createBiquadFilter();
-        lowPassFilter.type = 'lowpass';
-        lowPassFilter.frequency.value = 250;
-        oscillator.connect(lowPassFilter);
-
-        // Create high pass filter to cut frequencies above 16kHz
-        const highPassFilter = audioContext.createBiquadFilter();
-        highPassFilter.type = 'highpass';
-        highPassFilter.frequency.value = 16000;
-        lowPassFilter.connect(highPassFilter);
-
-        gain.connect(audioContext.destination);
-        gain.gain.setValueAtTime(0, audioContext.currentTime);
-        gain.gain.linearRampToValueAtTime(volume, audioContext.currentTime + fade / 1000);
-        oscillator.start(audioContext.currentTime + i * delay / 1000);
-        oscillator.stop(audioContext.currentTime + (i * delay + duration) / 1000);
-        gain.gain.setValueAtTime(volume, audioContext.currentTime + (i * delay + (duration - fade)) / 1000);
-        gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + (i * delay + duration) / 1000);
-      }
-    }
-  });
-}
 
 // Create a promise that will resolve when the list of available voices is populated
 const awaitVoices = new Promise(resolve => {
@@ -197,24 +123,4 @@ export async function textToSpeech(text, voiceSpeed = voiceSpeed) {
     // If Google TTS isn't enabled, fallback to Web Speech API
     await webTextToSpeech(text, voiceSpeed);
   }
-}
-
-const verbs = {
-  Male: { enter: 'зашёл', leave: 'вышел' },
-  Female: { enter: 'зашла', leave: 'вышла' }
-};
-
-// Handles user entering and leaving actions
-export function userAction(user, actionType, userGender) {
-  const shouldPlayAction = shouldEnable('sound', 'presence');
-  // If neither beep and voice is enabled, exit early.
-  if (!shouldPlayAction) return;
-
-  const gender = userGender || 'Male'; // Default to 'Male' if no gender provided
-  const userToTrack = usersToTrack.find(userToTrack => userToTrack.name === user);
-  const action = actionType === "enter" ? verbs[gender].enter : verbs[gender].leave;
-  const frequencies = actionType === "enter" ? userEnteredFrequencies : userLeftFrequencies;
-
-  playBeep(frequencies, beepVolume);
-  setTimeout(() => textToSpeech(`${userToTrack.pronunciation} ${action}`, voiceSpeed), 300);
 }
