@@ -54,6 +54,10 @@ import {
 export let isInitializedChat = false;
 
 (() => { // This is the recommended way for safety and isolation
+  // Prevent running the script inside an iframe
+  if (window.self !== window.top) {
+    return;
+  }
 
   // Initialize all fonts with one call
   setupFonts();
