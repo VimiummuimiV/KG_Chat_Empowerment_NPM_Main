@@ -73,8 +73,13 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           const currentMessageText = latestMessageData?.messageText || null;
           const currentMessageUsername = latestMessageData?.usernameText || null;
 
-          // Check if the current message contains any mention words
-          isMention = checkForMentions(currentMessageText);
+          // Check if the message contains a private indicator
+          const privateMessageIndicator = '[шепчет вам]';
+          const privateMessageContainer = node.querySelector('.room.private');
+          const isPrivateMessage = privateMessageContainer && privateMessageContainer.textContent.includes(privateMessageIndicator);
+
+          // Check if the current message contains any mention words OR if it's a private message
+          isMention = checkForMentions(currentMessageText) || isPrivateMessage;
 
           // Check for a ban message and play sound if detected
           if (isBanMessage(currentMessageText)) {
@@ -118,16 +123,11 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           const isEveryMessageMode = messageMode && messageMode.id === 'every-message';
           const isMentionMessageMode = messageMode && messageMode.id === 'mention-message';
 
-          // Check if the message contains a private indicator
-          const privateMessageIndicator = '[шепчет вам]';
-          const privateMessageContainer = node.querySelector('.room.private');
-          const isPrivateMessage = privateMessageContainer && privateMessageContainer.textContent.includes(privateMessageIndicator);
-
           // If voice mode is enabled and the message is new, trigger text-to-speech
           if (isVoice && isInitializedChat && currentMessageText && currentMessageText !== previousMessageText) {
             localStorage.setItem('previousMessageText', currentMessageText);
             if (currentMessageUsername && !currentMessageUsername.includes(myNickname)) {
-              const shouldRead = isEveryMessageMode || (isMentionMessageMode && isMention) || isPrivateMessage;
+              const shouldRead = isEveryMessageMode || (isMentionMessageMode && isMention);
               if (shouldRead) {
                 addMessageToQueue(currentMessageText);
               }
@@ -138,7 +138,7 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           if (isBeep && isInitializedChat && currentMessageText && currentMessageText !== previousMessageText) {
             localStorage.setItem('previousMessageText', currentMessageText);
             if (currentMessageUsername && !currentMessageUsername.includes(myNickname)) {
-              const shouldBeep = isEveryMessageMode || (isMentionMessageMode && isMention) || isPrivateMessage;
+              const shouldBeep = isEveryMessageMode || (isMentionMessageMode && isMention);
               if (shouldBeep) {
                 const audioKey = (!isEveryMessageMode || isMention) ? 'mention' : 'message';
                 playBeep(audioKey);
