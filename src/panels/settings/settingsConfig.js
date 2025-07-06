@@ -25,6 +25,13 @@ export const toggleSettingsConfig = [
   },
   {
     emoji: '🔊',
+    description: 'Play sound and voice notifications, messages only when the tab is inactive',
+    image: 'https://i.imgur.com/6PXFIES.jpeg',
+    category: 'sound',
+    type: 'activity'
+  },
+  {
+    emoji: '🔊',
     description: 'Play a beep sound and speak feedback when the user enters or leaves the chat',
     image: 'https://i.imgur.com/6PXFIES.jpeg',
     category: 'sound',

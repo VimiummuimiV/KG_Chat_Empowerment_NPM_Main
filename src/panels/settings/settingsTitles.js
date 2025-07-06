@@ -13,7 +13,7 @@ export const settingsTitles = {
       ru: { show: 'Показать замены имен пользователей', hide: 'Скрыть замены имен пользователей' }
     },
     moderator: {
-      en: { show: 'Show moderator', hide: 'Hide moderators' },
+      en: { show: 'Show moderators', hide: 'Hide moderators' },
       ru: { show: 'Показать модераторов', hide: 'Скрыть модераторов' }
     },
     ignored: {
@@ -27,19 +27,23 @@ export const settingsTitles = {
   },
   toggleTitles: {
     static: {
-      en: 'Show chat static notifications',
+      en: 'Show static chat notifications',
       ru: 'Показывать статические уведомления чата'
     },
     dynamic: {
       en: 'Show global dynamic notifications',
       ru: 'Показывать глобальные динамические уведомления'
     },
+    activity: {
+      en: 'Play sound and voice notifications, messages only when the tab is inactive',
+      ru: 'Воспроизводить звук и голосовые уведомления, сообщения только когда вкладка неактивна'
+    },
     presence: {
-      en: 'Play a beep sound and speak feedback when the user enters or leaves the chat',
-      ru: 'Воспроизводить звук и озвучивать, когда пользователь входит или выходит из чата'
+      en: 'Play sound and voice feedback when a user enters or leaves the chat',
+      ru: 'Воспроизводить звук и проговаривать, когда пользователь заходит или выходит из чата'
     },
     gTTS: {
-      en: 'Switch to google TTS engine if available',
+      en: 'Switch to Google TTS engine if available',
       ru: 'Переключиться на Google TTS, если доступно'
     },
     counter: {

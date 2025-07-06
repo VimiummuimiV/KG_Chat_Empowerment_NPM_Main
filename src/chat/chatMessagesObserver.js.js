@@ -2,7 +2,8 @@ import {
   updatePersonalMessageCounts,
   normalizeAndResetUsernames,
   isBanMessage,
-  playSound
+  playSound,
+  shouldEnable
 } from "../helpers/helpers.js";
 
 import { convertRussianUsernameToLatin } from "./chatIgnore.js";
@@ -39,10 +40,10 @@ initializeMentionKeywords();
 // Function to check if message contains any mention words
 function checkForMentions(messageText) {
   if (!messageText) return false;
-  
+
   const messageTextLower = messageText.toLowerCase();
-  
-  return allMentionWords.some(word => 
+
+  return allMentionWords.some(word =>
     messageTextLower.includes(word.toLowerCase())
   );
 }
@@ -123,8 +124,12 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           const isEveryMessageMode = messageMode && messageMode.id === 'every-message';
           const isMentionMessageMode = messageMode && messageMode.id === 'mention-message';
 
+          // Only process TTS and beep if the tab is active, controlled by settings
+          const shouldCheckTabActive = shouldEnable('sound', 'activity');
+          const isTabActive = shouldCheckTabActive ? document.visibilityState !== 'visible' : true;
+
           // If voice mode is enabled and the message is new, trigger text-to-speech
-          if (isVoice && isInitializedChat && currentMessageText && currentMessageText !== previousMessageText) {
+          if (isTabActive && isVoice && isInitializedChat && currentMessageText && currentMessageText !== previousMessageText) {
             localStorage.setItem('previousMessageText', currentMessageText);
             if (currentMessageUsername && !currentMessageUsername.includes(myNickname)) {
               const shouldRead = isEveryMessageMode || (isMentionMessageMode && isMention);
@@ -135,7 +140,7 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           }
 
           // If beep mode is enabled and the message is new, play beep sound
-          if (isBeep && isInitializedChat && currentMessageText && currentMessageText !== previousMessageText) {
+          if (isTabActive && isBeep && isInitializedChat && currentMessageText && currentMessageText !== previousMessageText) {
             localStorage.setItem('previousMessageText', currentMessageText);
             if (currentMessageUsername && !currentMessageUsername.includes(myNickname)) {
               const shouldBeep = isEveryMessageMode || (isMentionMessageMode && isMention);
