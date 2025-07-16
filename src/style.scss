@@ -662,7 +662,7 @@
   top: 20px;
   padding-top: 8px;
   width: 200px;
-  height: 94%;
+  height: calc(100% - 35px) !important;
   overflow-y: auto;
   overflow-x: hidden;
 
