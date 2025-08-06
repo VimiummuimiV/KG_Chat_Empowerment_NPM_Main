@@ -206,7 +206,6 @@ export function normalizeAndResetUsernames(usernameElements, mode) {
     const computedColor = getComputedStyle(usernameElements).color;
     const normalizedColor = normalizeUsernameColor(computedColor, "rgb");
     usernameElements.style.setProperty('color', normalizedColor, 'important');
-    userSpan.style.setProperty('filter', 'invert(0)', 'important');
   } else if (mode === 'all') {
     // Process all username elements using forEach with return (which acts like continue)
     Array.from(usernameElements).forEach(usernameElement => {
@@ -216,7 +215,6 @@ export function normalizeAndResetUsernames(usernameElements, mode) {
       const computedColor = getComputedStyle(usernameElement).color;
       const normalizedColor = normalizeUsernameColor(computedColor, "rgb");
       usernameElement.style.setProperty('color', normalizedColor, 'important');
-      userSpan.style.setProperty('filter', 'invert(0)', 'important');
     });
   } else {
     console.error("Invalid mode. Use 'one' or 'all'.");
