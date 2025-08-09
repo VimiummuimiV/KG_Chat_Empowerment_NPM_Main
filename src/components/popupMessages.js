@@ -1,3 +1,5 @@
+import { actionSVG, userSVG, clockSVG } from "../icons.js";
+
 // Set the maximum number of popup messages to display globally
 const maxPopupMessagesCount = 10;
 
@@ -89,7 +91,7 @@ export function showPopupMessage() {
     // Append time SVG icon before the time
     const timeIcon = document.createElement('div');
     timeIcon.classList.add('time-icon');
-    timeIcon.innerHTML = icons.clockSVG;
+    timeIcon.innerHTML = clockSVG;
 
     // Append spans for each part with respective classes
     const timeElement = document.createElement('div');
@@ -99,7 +101,7 @@ export function showPopupMessage() {
     // Append user SVG icon after the time
     const userIcon = document.createElement('div');
     userIcon.classList.add('user-icon');
-    userIcon.innerHTML = icons.userSVG;
+    userIcon.innerHTML = userSVG;
 
     const usernameElement = document.createElement('div');
     usernameElement.classList.add('username');
@@ -108,7 +110,7 @@ export function showPopupMessage() {
     // Append action SVG icon after the username
     const actionIcon = document.createElement('div');
     actionIcon.classList.add('action-icon');
-    actionIcon.innerHTML = icons.actionSVG;
+    actionIcon.innerHTML = actionSVG;
 
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');

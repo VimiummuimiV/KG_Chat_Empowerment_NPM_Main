@@ -52,7 +52,8 @@ export let state = {
   bigImageEvents: {},
   panelsEvents: {},
   // Remove the extra closing parenthesis after getItem('fetchedUsers')
-  fetchedUsers: JSON.parse(localStorage.getItem('fetchedUsers')) || {}
+  fetchedUsers: JSON.parse(localStorage.getItem('fetchedUsers')) || {},
+  isInitializedChat: false
 };
 
 // Timeout before the dynamicChatNotification should be removed

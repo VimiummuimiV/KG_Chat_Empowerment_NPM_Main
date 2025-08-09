@@ -23,7 +23,6 @@ import { getUserProfileData } from "../helpers/userProfileData.js";
 
 import { createCustomTooltip } from "../components/tooltip.js";
 import { updateUserCountText } from "../panels/cache/cacheHelpers.js";
-import { isInitializedChat } from "../main.js";
 import { addShakeEffect } from "../animations.js";
 import { insertPrivate } from "./chatWorkers.js";
 import { loadProfileIntoIframe } from "../helpers/iframeProfileLoader.js";
@@ -355,7 +354,7 @@ export async function refreshUserList(retrievedLogin, actionType) {
             // Add the user to the corresponding rank group
             rankSubparents[rankClass].appendChild(newUserElement);
             // Make sure the mutation observer for the new users changed flag to false to make it work
-            if (isInitializedChat) addShakeEffect(newUserElement); // Add shake effect on entered users on chat ready state
+            if (state.isInitializedChat) addShakeEffect(newUserElement); // Add shake effect on entered users on chat ready state
           }
 
           // Update existing user IDs

@@ -1,4 +1,6 @@
-import { deniedSVG } from "../icons.js"; // icons
+import { deniedSVG } from "../icons.js";
+import { state } from "../definitions.js";
+import { pruneDeletedMessages } from "../chat/chatMessagesRemover/chatMessagesRemover.js";
 
 // helpers
 import {
@@ -160,7 +162,7 @@ if (locationHas('gamelist')) {
 function setPrivateModeStyles(enable) {
   const chatField = document.querySelector('.chat .messages .text');
   if (!chatField) return;
-  
+
   // Create handler if it doesn't exist
   if (!setPrivateModeStyles._privateInputHandler) {
     setPrivateModeStyles._privateInputHandler = function (e) {
@@ -169,19 +171,19 @@ function setPrivateModeStyles(enable) {
       }
     };
   }
-  
+
   if (enable) {
     // Apply private mode styles
     chatField.style.setProperty('background-color', 'hsl(0, 50%, 20%)', 'important');
     chatField.style.setProperty('color', 'hsl(0, 50%, 80%)', 'important');
-    
+
     // Add listener only when private mode is active
     chatField.addEventListener('input', setPrivateModeStyles._privateInputHandler);
   } else {
     // Remove private mode styles
     chatField.style.removeProperty('background-color');
     chatField.style.removeProperty('color');
-    
+
     // Remove listener when private mode is disabled
     chatField.removeEventListener('input', setPrivateModeStyles._privateInputHandler);
   }
@@ -276,27 +278,28 @@ export function setupInputBackup() {
 // ---- Restore chat state (Opened or Closed) ----
 export function restoreChatState() {
   const chatMainWrapper = document.querySelector('#chat-fixed-placeholder');
-  if (!localStorage.getItem('shouldShowPopupMessage')) localStorage.setItem('shouldShowPopupMessage', 'false');
-  chatMainWrapper.style.display = JSON.parse(localStorage.getItem('shouldShowPopupMessage')) ? 'none' : 'unset';
+  if (localStorage.getItem('shouldShowPopupMessage') === null) {
+    localStorage.setItem('shouldShowPopupMessage', 'false');
+  }
+
+  const shouldShowPopup = JSON.parse(localStorage.getItem('shouldShowPopupMessage'));
+  chatMainWrapper.style.display = shouldShowPopup ? 'none' : 'unset';
 }
 
 // ---- Manual chat (Open and Close) ----
-const chatCloseButton = document.querySelector('.mostright');
 
 // Check if the current location is 'gmid' or 'gamelist'
 if (locationHas('gmid') || locationHas('gamelist')) {
-  // Event listener for mostright click event
-  chatCloseButton.addEventListener('click', () => {
+  document.querySelector('.mostright')?.addEventListener('click', () => {
     setTimeout(() => {
       const chatHidden = document.querySelector('#chat-wrapper.chat-hidden');
       if (chatHidden) {
         localStorage.setItem('shouldShowPopupMessage', 'true');
-        isInitializedChat = false;
+        state.isInitializedChat = false;
       } else {
-        pruneDeletedMessages();
+        requestAnimationFrame(() => pruneDeletedMessages());
         setChatFieldFocus();
-        isInitializedChat = false;
-        setTimeout(() => (isInitializedChat = false), 3000);
+        setTimeout(() => (state.isInitializedChat = true), 3000);
         localStorage.setItem('shouldShowPopupMessage', 'false');
       }
     }, 300);
@@ -388,12 +391,13 @@ if (locationHas('gmid') || locationHas('gamelist')) {
   document.addEventListener('keydown', e => {
     if (e.ctrlKey && e.code === 'Space') {
       const chat = document.querySelector('#chat-fixed-placeholder');
-      const wasHidden = chat.style.display === 'none';
-      chat.style.display = wasHidden ? 'unset' : 'none';
-      localStorage.setItem('shouldShowPopupMessage', !wasHidden);
-      !wasHidden
-        ? document.querySelector('.popup-messages-container')?.remove()
-        : getChatElements().chatField?.focus();
+      const hidden = chat.style.display === 'none';
+      chat.style.display = hidden ? 'unset' : 'none';
+      localStorage.setItem('shouldShowPopupMessage', !hidden);
+      if (!hidden) {
+        document.querySelector('.popup-messages-container')?.remove();
+        getChatElements().chatField?.focus();
+      }
     }
   });
 }

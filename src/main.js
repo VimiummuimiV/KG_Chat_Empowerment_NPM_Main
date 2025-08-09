@@ -17,9 +17,9 @@ import {
   setChatFieldFocus,
   setupInputBackup,
   setupChatInputListener,
-  restoreChatState,
   groupChatMessages,
-  applyDynamicBackgroundColor
+  applyDynamicBackgroundColor,
+  restoreChatState
 } from "./chat/chatWorkers.js";
 
 import { scrollToBottom } from "./helpers/scrollTo.js";
@@ -47,11 +47,9 @@ import { createSettingsButton } from "./panels/settings/settings.js";
 // definitions
 import {
   cacheRefreshThresholdHours,
-  today
+  today,
+  state
 } from "./definitions.js";
-
-// Skip reading the messages on page load to read them normally when the user is present and the page is stable
-export let isInitializedChat = false;
 
 (() => { // This is the recommended way for safety and isolation
   // Prevent running the script inside an iframe
@@ -150,7 +148,7 @@ export let isInitializedChat = false;
         setupChatInputListener();
         pruneDeletedMessages();
         setTimeout(() => { initChatEvents() }, 600);
-        setTimeout(() => (isInitializedChat = true), 600);
+        setTimeout(() => (state.isInitializedChat = true), 600);
         parsePersonalMessages(today);
       }
     }

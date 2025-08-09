@@ -16,9 +16,8 @@ import { convertImageLinksToImage } from "../converters/imageConverter.js";
 import { convertVideoLinksToPlayer } from "../converters/videoConverter.js";
 import { showPopupMessage } from "../components/popupMessages.js";
 import { groupChatMessages } from "./chatWorkers.js";
-import { isInitializedChat } from "../main.js";
 import { playBeep } from "../components/beepEngine.js";
-import { myNickname } from "../definitions.js";
+import { myNickname, state } from "../definitions.js";
 import { settingsState } from "../panels/settings/settings.js";
 import { scrollToBottom } from "../helpers/scrollTo.js";
 import { addTrackedIconsToUsernames } from "./chatTracked.js";
@@ -57,7 +56,7 @@ const newMessagesObserver = new MutationObserver(async mutations => {
   const allUsernameElements = document.querySelectorAll('.username'); // Get all username elements
   normalizeAndResetUsernames(allUsernameElements, 'all'); // Process all username elements
 
-  if (!isInitializedChat) return;
+  if (!state.isInitializedChat) return;
 
   for (let mutation of mutations) {
     if (mutation.type === 'childList') {
@@ -129,7 +128,7 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           const isTabActive = shouldCheckTabActive ? document.visibilityState !== 'visible' : true;
 
           // If voice mode is enabled and the message is new, trigger text-to-speech
-          if (isTabActive && isVoice && isInitializedChat && currentMessageText && currentMessageText !== previousMessageText) {
+          if (isTabActive && isVoice && state.isInitializedChat && currentMessageText && currentMessageText !== previousMessageText) {
             localStorage.setItem('previousMessageText', currentMessageText);
             if (currentMessageUsername && !currentMessageUsername.includes(myNickname)) {
               const shouldRead = isEveryMessageMode || (isMentionMessageMode && isMention);
@@ -140,7 +139,7 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           }
 
           // If beep mode is enabled and the message is new, play beep sound
-          if (isTabActive && isBeep && isInitializedChat && currentMessageText && currentMessageText !== previousMessageText) {
+          if (isTabActive && isBeep && state.isInitializedChat && currentMessageText && currentMessageText !== previousMessageText) {
             localStorage.setItem('previousMessageText', currentMessageText);
             if (currentMessageUsername && !currentMessageUsername.includes(myNickname)) {
               const shouldBeep = isEveryMessageMode || (isMentionMessageMode && isMention);
@@ -153,7 +152,7 @@ const newMessagesObserver = new MutationObserver(async mutations => {
           }
 
           // If the page is initialized, perform various UI updates and processing
-          if (isInitializedChat) {
+          if (state.isInitializedChat) {
             convertImageLinksToImage('generalMessages');
             convertVideoLinksToPlayer('generalMessages');
             processEncodedLinks('generalMessages');

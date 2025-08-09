@@ -6,8 +6,7 @@ import {
 } from "../helpers/helpers.js";
 
 import { getChatElements } from "./chatDomUtils.js";
-import { debounceTimeout } from "../definitions.js";
-import { isInitializedChat } from "../main.js";
+import { debounceTimeout, state } from "../definitions.js";
 import { addJumpEffect, addPulseEffect } from "../animations.js";
 import { showUserAction } from "../components/notifications/notifications.js";
 import { refreshUserList } from "./chatUserlist.js";
@@ -90,7 +89,7 @@ const chatUsersObserver = new MutationObserver(debounce((mutations) => {
           .filter(Boolean) // Remove null entries
       );
 
-      if (!isInitializedChat) return;
+      if (!state.isInitializedChat) return;
 
       if (!isAnimated) {
         if (userCountElement && Number(userCountElement.textContent) === 0) {
