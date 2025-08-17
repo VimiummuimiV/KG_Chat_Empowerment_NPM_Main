@@ -79,13 +79,13 @@
     height: 48px;
     width: 100%;
     padding: 10px;
-    font-size: 1em;
-    font-family: "Montserrat";
+    font-size: 1em !important;
+    font-family: "Montserrat" !important;
     color: bisque !important;
     border-radius: 0.2em !important;
     box-sizing: border-box;
-    background-color: #111;
-    border: 1px solid #222;
+    background-color: #111 !important;
+    border: 1px solid #222 !important;
   }
 
   .sort-buttons-container {
