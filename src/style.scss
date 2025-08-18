@@ -745,7 +745,8 @@
 
   > div {
     padding: 2px;
-    display: flex;
+    display: inline-flex;
+    flex-wrap: wrap;
     font-family: "Montserrat", sans-serif;
   }
 
