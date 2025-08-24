@@ -29,13 +29,13 @@ export function showPopupMessage() {
     const nodes = Array.from(latestMessage.childNodes);
     const elements = nodes.map(node => {
       if (node.nodeType === Node.TEXT_NODE) {
-        return { type: 'text', value: node.nodeValue.replace(/ /g, '\u00A0') }; // Replace spaces with Unicode non-breaking space
+        return { type: 'text', value: node.nodeValue };
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         if (node.tagName.toLowerCase() === 'a' && node.classList.contains('private')) {
           return { type: 'text', value: '📢\u00A0' };
         }
         if (node.tagName.toLowerCase() === 'span' && node.classList.contains('private')) {
-          return { type: 'text', value: node.textContent.replace(/ /g, '\u00A0') };
+          return { type: 'text', value: node.textContent };
         }
         if (node.tagName.toLowerCase() === 'img') {
           return { type: 'img', title: node.getAttribute('title') };
@@ -125,17 +125,18 @@ export function showPopupMessage() {
 
     // Fill the message container with text, images, and anchors
     elements.forEach(element => {
-      const elementContainer = document.createElement('div');
-
       if (element.type === 'text') {
-        elementContainer.textContent = element.value;
+        const textNode = document.createTextNode(element.value);
+        messageElement.appendChild(textNode);
       } else if (element.type === 'img') {
+        const elementContainer = document.createElement('span');
         elementContainer.innerHTML = `&nbsp;${element.title}&nbsp;`;
+        messageElement.appendChild(elementContainer);
       } else if (element.type === 'anchor') {
+        const elementContainer = document.createElement('span');
         elementContainer.innerHTML = `&nbsp;${element.href}&nbsp;`;
+        messageElement.appendChild(elementContainer);
       }
-
-      messageElement.appendChild(elementContainer);
     });
 
     // Append the message container to the main container
