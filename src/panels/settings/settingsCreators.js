@@ -2,6 +2,8 @@ import { addSVG, removeSVG, refreshUsernameSVG, snowflakeSVG } from "../../icons
 import { createCustomTooltip, disableCustomTooltip } from "../../components/tooltip.js";
 import { settingsTitles } from "./settingsTitles.js";
 import { getCurrentLanguage, localizedMessage, debounce } from "../../helpers/helpers.js";
+import { getRandomEmojiAvatar } from "../../helpers/helpers.js";
+import { state } from "../../definitions.js";
 import { getDataById, getDataByName } from "../../helpers/apiData.js";
 import { settingsConfig } from "./settingsConfig.js";
 
@@ -361,10 +363,51 @@ export function createUserColorItem(username, userData = null) {
     localStorage.setItem('userData', JSON.stringify(userData));
   };
   
-  // Username display
-  const usernameDisplay = document.createElement('span');
-  usernameDisplay.className = 'userColors-username-display';
-  usernameDisplay.textContent = `👤 ${username}`;
+  // Avatar + username display
+  const avatarElement = document.createElement('div');
+  avatarElement.className = 'userColors-avatar';
+
+  const userId = userColorData.id || '';
+  // Compactly resolve avatarTimestamp from fetchedUsers cache or localStorage
+  let avatarTimestamp = '';
+  if (userId) {
+    avatarTimestamp = (state?.fetchedUsers?.[userId]?.avatarTimestamp) || '';
+    if (!avatarTimestamp) {
+      try {
+        const cached = JSON.parse(localStorage.getItem('fetchedUsers') || '{}');
+        avatarTimestamp = (cached?.[userId]?.avatarTimestamp) || '';
+      } catch {}
+    }
+  }
+
+  if (userId) {
+    const bigAvatarUrl = avatarTimestamp && avatarTimestamp !== '00'
+      ? `/storage/avatars/${userId}_big.png?updated=${avatarTimestamp}`
+      : `/storage/avatars/${userId}_big.png`;
+    const img = document.createElement('img');
+    img.alt = `${username}'s avatar`;
+    img.className = 'userColors-avatar-img';
+    // If image fails to load, replace the img with an emoji fallback inside the avatar container
+    img.onerror = () => {
+      avatarElement.innerHTML = '';
+      const emojiEl = document.createElement('div');
+      emojiEl.className = 'userColors-avatar-emoji';
+      emojiEl.textContent = getRandomEmojiAvatar();
+      avatarElement.appendChild(emojiEl);
+    };
+    img.src = bigAvatarUrl;
+    avatarElement.appendChild(img);
+  } else {
+    avatarElement.innerHTML = '';
+    const emojiEl = document.createElement('div');
+    emojiEl.className = 'userColors-avatar-emoji';
+    emojiEl.textContent = getRandomEmojiAvatar();
+    avatarElement.appendChild(emojiEl);
+  }
+
+  const usernameSpan = document.createElement('span');
+  usernameSpan.className = 'userColors-username-display';
+  usernameSpan.textContent = username;
   
   // Hex input
   const hexInput = createInput('userColors', userColorData.color, getPlaceholder('userColors', 'hex'));
@@ -433,7 +476,13 @@ export function createUserColorItem(username, userData = null) {
   // append visible hex input, swatch, hidden color input, then remove button
   controlsRow.append(hexInput, swatch, colorInput, removeButton);
   
-  contentWrapper.append(usernameDisplay, controlsRow);
+  // Insert avatar + username together
+  const headerRow = document.createElement('div');
+  headerRow.className = 'userColors-header-row';
+  headerRow.appendChild(avatarElement);
+  headerRow.appendChild(usernameSpan);
+
+  contentWrapper.append(headerRow, controlsRow);
   item.appendChild(contentWrapper);
   
   return item;

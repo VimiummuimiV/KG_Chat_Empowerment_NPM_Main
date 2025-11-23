@@ -180,10 +180,35 @@
   }
 
   .settings-userColors-container {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 0.6em;
-    align-items: start;
+
+    .userColors-search-container {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      width: 100%;
+    }
+
+    .userColors-search-field {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+    }
+
+    .settings-userColors-items-container {
+      width: 100%;
+      max-width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+      gap: 0.6em;
+      align-items: start;
+    }
+
+    .userColors-item.userColors-hidden {
+      display: none !important;
+    }
   }
 
   .settings-toggle-container {
@@ -225,6 +250,39 @@
       gap: 0.4em;
       align-items: center;
       flex-wrap: wrap;
+    }
+
+    .userColors-header-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+    }
+
+    .userColors-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 0.2em !important;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: transparent;
+    }
+
+    .userColors-avatar-img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .userColors-avatar-emoji {
+      width: 100%;
+      height: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
     }
 
     .userColors-color-swatch {

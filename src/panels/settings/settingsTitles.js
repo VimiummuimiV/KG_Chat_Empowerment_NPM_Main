@@ -101,6 +101,10 @@ export const settingsTitles = {
       ru: 'Игнорируемый'
     },
     userColors: {
+      search: {
+        en: 'Search user',
+        ru: 'Поиск пользователя'
+      },
       hex: {
         en: 'Hex color',
         ru: 'Цвет HEX'

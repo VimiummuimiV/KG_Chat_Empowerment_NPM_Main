@@ -2,7 +2,7 @@ import { settingsConfig, toggleSettingsConfig } from "./settingsConfig.js";
 import { getSettingsData } from "./settingsFileHandlers.js";
 import { createSpoilerContainer, createAddButton } from "./settingsCreators.js";
 import { settingsTitles } from "./settingsTitles.js";
-import { getCurrentLanguage } from "../../helpers/helpers.js";
+import { getCurrentLanguage, debounce } from "../../helpers/helpers.js";
 
 export function clearSettingsContainers() {
   settingsConfig.forEach(config => {
@@ -30,8 +30,39 @@ export function populateSettings() {
       // Handle userColors separately - load userData once and pass it to creators
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const usernames = Object.keys(userData);
-      // Pass the already-loaded userData to avoid reading localStorage again inside the creator
-      usernames.forEach(username => container.appendChild(creator(username, userData)));
+
+      const searchContainer = document.createElement('div');
+      searchContainer.className = 'userColors-search-container';
+      const searchInput = document.createElement('input');
+      searchInput.type = 'search';
+      searchInput.className = 'settings-field userColors-search-field';
+      searchInput.placeholder = settingsTitles.placeholderTitles.userColors?.search?.[getCurrentLanguage()] || 'Search';
+      searchContainer.appendChild(searchInput);
+      container.appendChild(searchContainer);
+
+      // Bottom: items wrapper (grid handled in SCSS)
+      const itemsWrapper = document.createElement('div');
+      itemsWrapper.className = 'settings-userColors-items-container';
+
+      usernames.forEach(username => {
+        const item = creator(username, userData);
+        if (item && item instanceof HTMLElement) item.dataset.username = username;
+        itemsWrapper.appendChild(item);
+      });
+
+      container.appendChild(itemsWrapper);
+
+      // Debounced filter toggling CSS class to hide non-matches
+      const filter = debounce((e) => {
+        const q = (e.target.value || '').trim().toLowerCase();
+        const items = itemsWrapper.querySelectorAll('.userColors-item');
+        items.forEach(it => {
+          const name = (it.dataset.username || '').toLowerCase();
+          if (q === '' || name.includes(q)) it.classList.remove('userColors-hidden');
+          else it.classList.add('userColors-hidden');
+        });
+      }, 150);
+      searchInput.addEventListener('input', filter);
     } else if (type !== 'toggle') {
       const items = data[key] || [];
       items.forEach(item => container.appendChild(creator(item)));
