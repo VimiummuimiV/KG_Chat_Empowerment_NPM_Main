@@ -190,34 +190,37 @@ export function isBanMessage(messageText) {
   return ['Клавобот', 'Пользователь', 'заблокирован'].every(word => messageText.includes(word));
 }
 
-/**
- * Normalizes the color of usernames and resets their filter based on the specified mode.
- *
- * @param {NodeList|Element} usernameElements - A NodeList of username elements or a single username element.
- * @param {string} mode - The mode of operation; either 'one' to process a single username or 'all' to process multiple.
- */
 export function normalizeAndResetUsernames(usernameElements, mode) {
-  if (!usernameElements) return; // Skip processing if undefined or null
+  if (!usernameElements) return;
 
-  if (mode === 'one') {
-    // Process a single username element.
-    const userSpan = usernameElements.querySelector('span[data-user]');
-    if (!userSpan) return; // Skip processing if child span is missing
-    const computedColor = getComputedStyle(usernameElements).color;
-    const normalizedColor = normalizeUsernameColor(computedColor, "rgb");
-    usernameElements.style.setProperty('color', normalizedColor, 'important');
-  } else if (mode === 'all') {
-    // Process all username elements using forEach with return (which acts like continue)
-    Array.from(usernameElements).forEach(usernameElement => {
-      if (!usernameElement) return; // Skip this iteration if the element is falsy
-      const userSpan = usernameElement.querySelector('span[data-user]');
-      if (!userSpan) return; // Skip if child span is missing
-      const computedColor = getComputedStyle(usernameElement).color;
-      const normalizedColor = normalizeUsernameColor(computedColor, "rgb");
-      usernameElement.style.setProperty('color', normalizedColor, 'important');
-    });
-  } else {
-    console.error("Invalid mode. Use 'one' or 'all'.");
+  // Load saved user data once
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+  const list = mode === 'one' ? [usernameElements] :
+               mode === 'all' ? Array.from(usernameElements) :
+               (console.error("Invalid mode. Use 'one' or 'all'."), null);
+
+  if (!list) return;
+
+  for (const el of list) {
+    const span = el?.querySelector('span[data-user]');
+    if (!span) continue;
+
+    const userId = span.dataset.user;
+    const savedEntry = Object.values(userData).find(u => String(u.id) === userId);
+
+    let finalColor;
+
+    if (savedEntry?.color) {
+      // User exists → use stored dominant color
+      finalColor = savedEntry.color;
+    } else {
+      // User not saved → normalize from computed color
+      const computed = getComputedStyle(el).color;
+      finalColor = normalizeUsernameColor(computed, "rgb");
+    }
+
+    el.style.setProperty('color', finalColor, 'important');
   }
 }
 
