@@ -1,4 +1,4 @@
-import { addSVG, removeSVG, refreshUsernameSVG, snowflakeSVG } from "../../icons.js";
+import { addSVG, removeSVG, refreshUsernameSVG, snowflakeSVG, checkSVG } from "../../icons.js";
 import { createCustomTooltip, disableCustomTooltip } from "../../components/tooltip.js";
 import { settingsTitles } from "./settingsTitles.js";
 import { getCurrentLanguage, localizedMessage, debounce } from "../../helpers/helpers.js";
@@ -350,6 +350,32 @@ export function createToggleItem(toggleConfig, optionValue, localizedDescription
   return item;
 }
 
+// Create badge helper
+function showUserBadge(item, username, userData, doSave = false) {
+  if (doSave) {
+    try {
+      if (!userData[username]) userData[username] = {};
+      userData[username].change = 'user';
+      localStorage.setItem('userData', JSON.stringify(userData));
+      
+      // Move to top of wrapper
+      const wrapper = item.closest('.settings-userColors-items-container');
+      if (wrapper && wrapper.firstChild !== item) {
+        wrapper.insertBefore(item, wrapper.firstChild);
+      }
+    } catch (err) {}
+  }
+
+  // Create/show badge
+  const header = item.querySelector('.userColors-header-row');
+  if (header && !header.querySelector('.userColors-user-badge')) {
+    const badge = document.createElement('span');
+    badge.className = 'userColors-user-badge';
+    badge.innerHTML = checkSVG;
+    header.appendChild(badge);
+  }
+}
+
 // Creator function for a user color item
 export function createUserColorItem(username, userData = null) {
   const item = createContainer('userColors');
@@ -422,11 +448,16 @@ export function createUserColorItem(username, userData = null) {
   
   hexInput.addEventListener('change', (e) => {
     if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
-      updateColor(e.target.value);
-      // update swatch when hex is manually changed
-      if (swatch) {
-        try { swatch.style.backgroundColor = e.target.value; } catch (err) {}
+      const newColor = e.target.value;
+      const oldColor = (userData[username] && userData[username].color) || userColorData.color;
+      // If color didn't change, just update swatch and bail out
+      if (newColor === oldColor) {
+        if (swatch) swatch.style.backgroundColor = newColor;
+        return;
       }
+      updateColor(newColor);
+      showUserBadge(item, username, userData, true);
+      if (swatch) swatch.style.backgroundColor = newColor;
     }
   });
 
@@ -439,18 +470,21 @@ export function createUserColorItem(username, userData = null) {
 
   const swatch = document.createElement('div');
   swatch.className = 'userColors-color-swatch';
-  try { swatch.style.backgroundColor = userColorData.color; } catch (err) {}
-  swatch.title = getPlaceholder('userColors', 'hex');
+  swatch.style.backgroundColor = userColorData.color;
 
   swatch.addEventListener('click', () => {
     colorInput.click();
   });
 
   colorInput.addEventListener('change', (e) => {
-    hexInput.value = e.target.value;
-    updateColor(e.target.value);
+    const newColor = e.target.value;
+    const oldColor = (userData[username] && userData[username].color) || userColorData.color;
+    hexInput.value = newColor;
     hexInput.classList.remove('input-warning');
-    try { swatch.style.backgroundColor = e.target.value; } catch (err) {}
+    swatch.style.backgroundColor = newColor;
+    if (newColor === oldColor) return;
+    updateColor(newColor);
+    showUserBadge(item, username, userData, true);
   });
   
   // Remove button
@@ -484,6 +518,11 @@ export function createUserColorItem(username, userData = null) {
 
   contentWrapper.append(headerRow, controlsRow);
   item.appendChild(contentWrapper);
+  
+  // Show badge initially if user has 'change: user' flag
+  if (userData[username]?.change === 'user') {
+    showUserBadge(item, username, userData);
+  }
   
   return item;
 }

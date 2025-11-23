@@ -29,7 +29,14 @@ export function populateSettings() {
     if (type === 'userColors') {
       // Handle userColors separately - load userData once and pass it to creators
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const usernames = Object.keys(userData);
+      let usernames = Object.keys(userData);
+      // place items changed by user first
+      usernames.sort((a, b) => {
+        const aUser = userData[a] && userData[a].change === 'user';
+        const bUser = userData[b] && userData[b].change === 'user';
+        if (aUser === bUser) return a.localeCompare(b);
+        return aUser ? -1 : 1;
+      });
 
       const searchContainer = document.createElement('div');
       searchContainer.className = 'userColors-search-container';

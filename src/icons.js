@@ -739,3 +739,17 @@ export const moveSVG = `
     <circle cx="12" cy="19" r="1"></circle>
     <circle cx="12" cy="12" r="1"></circle>
   </svg>`;
+
+// Inline SVG source for the "check" icon (used as a small badge)
+const checkSVGStrokeColor = "currentColor";
+export const checkSVG = `
+  <svg xmlns="${svgUrl}"
+      width="${iconSize - 16}"
+      height="${iconSize - 16}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="${checkSVGStrokeColor}"
+      stroke-width="${iconStrokeWidth}"
+      stroke-linecap="round" stroke-linejoin="round" class="feather feather-check">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>`;
