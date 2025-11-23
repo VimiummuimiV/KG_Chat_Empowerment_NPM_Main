@@ -43,8 +43,8 @@ export function handleDownloadSettings(settingsData) {
   if (!settingsData || typeof settingsData !== 'object') {
     console.error('Invalid settings data for download.');
     localizedMessage({
-      en: 'Cannot import settings. Please try again.',
-      ru: 'Не удалось импортировать настройки. Пожалуйста, попробуйте снова.'
+      en: 'Cannot export settings. Please try again.',
+      ru: 'Не удалось экспортировать настройки. Пожалуйста, попробуйте снова.'
     }, 'alert');
     return;
   }
@@ -52,40 +52,57 @@ export function handleDownloadSettings(settingsData) {
   try {
     const tabSize2 = '  ';
     const tabSize4 = '    ';
+
     let jsonData = '{\n';
 
-    // Iterate over settingsConfig to build each key-value pair dynamically
     settingsConfig.forEach((config, index) => {
       const key = config.key;
-      const data = settingsData[key];
-      let formattedValue = '';
+      let data = settingsData[key];
 
-      if (Array.isArray(data)) {
-        // Format each array element using JSON.stringify with proper indentation.
-        formattedValue = `[\n${data
-          .map(item => `${tabSize4}${JSON.stringify(item)}`)
-          .join(',\n')}\n${tabSize2}]`;
-      } else {
-        // For non-array values, simply stringify them.
-        formattedValue = JSON.stringify(data);
+      // Special pretty formatting for userData (only saved colors)
+      if (key === 'userData' && data && typeof data === 'object') {
+        const entries = Object.entries(data);
+        if (entries.length === 0) {
+          jsonData += `${tabSize2}"userData": {}`;
+        } else {
+          jsonData += `${tabSize2}"userData": {\n`;
+          entries.forEach(([username, userObj], i) => {
+            const line = JSON.stringify(userObj);
+            const comma = i < entries.length - 1 ? ',' : '';
+            jsonData += `${tabSize4}"${username}": ${line}${comma}\n`;
+          });
+          jsonData += `${tabSize2}}`;
+        }
+      }
+      // All other keys (arrays)
+      else if (Array.isArray(data)) {
+        if (data.length === 0) {
+          jsonData += `${tabSize2}"${key}": []`;
+        } else {
+          jsonData += `${tabSize2}"${key}": [\n`;
+          data.forEach((item, i) => {
+            const comma = i < data.length - 1 ? ',' : '';
+            jsonData += `${tabSize4}${JSON.stringify(item)}${comma}\n`;
+          });
+          jsonData += `${tabSize2}]`;
+        }
+      }
+      // Fallback (should not happen)
+      else {
+        jsonData += `${tabSize2}"${key}": ${JSON.stringify(data)}`;
       }
 
-      // Append the formatted key-value pair
-      jsonData += `${tabSize2}"${key}": ${formattedValue}`;
-      if (index < settingsConfig.length - 1) {
-        jsonData += ',\n';
-      } else {
-        jsonData += '\n';
-      }
+      // Add comma except for last item
+      jsonData += index < settingsConfig.length - 1 ? ',\n' : '\n';
     });
 
     jsonData += '}';
 
-    // Generate filename with current date
+    // Generate filename with date
     const currentDate = new Intl.DateTimeFormat('en-CA').format(new Date());
     const filename = `KG_Chat_Empowerment_Settings_${currentDate}.json`;
 
-    // Create blob and trigger download
+    // Download
     const blob = new Blob([jsonData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const tempLink = document.createElement('a');
@@ -95,6 +112,7 @@ export function handleDownloadSettings(settingsData) {
     tempLink.click();
     document.body.removeChild(tempLink);
     URL.revokeObjectURL(url);
+
   } catch (error) {
     console.error('Error exporting settings:', error);
     localizedMessage({
@@ -105,28 +123,41 @@ export function handleDownloadSettings(settingsData) {
 }
 
 export function getSettingsData() {
-  return Object.fromEntries(settingsConfig.map(config => [config.key, JSON.parse(localStorage.getItem(config.key)) || []]));
-}
+  const data = Object.fromEntries(
+    settingsConfig.map(config => [
+      config.key,
+      JSON.parse(localStorage.getItem(config.key)) || []
+    ])
+  );
 
-function saveSettingsToLocalStorage() {
-  settingsConfig.forEach(config => {
-    localStorage.setItem(config.key, JSON.stringify(settingsState[config.key]));
-  });
+  // Only export manually saved user colors
+  if (data.userData) {
+    data.userData = Object.fromEntries(
+      Object.entries(data.userData).filter(([_, v]) => v?.change === 'user')
+    );
+  }
+
+  return data;
 }
 
 // Process and apply uploaded settings dynamically
 export function processUploadedSettings(uploadedSettings) {
-  // Iterate over the settingsConfig to apply each setting
   settingsConfig.forEach(config => {
-    if (Array.isArray(uploadedSettings[config.key])) {
-      // If the setting is an array, update it in the settingsState
-      settingsState[config.key] = uploadedSettings[config.key];
+    const key = config.key;
+    if (!uploadedSettings.hasOwnProperty(key)) return;
+
+    if (key === 'userData') {
+      const current = JSON.parse(localStorage.getItem('userData') || '{}');
+      const merged = { ...current, ...uploadedSettings[key] };
+
+      localStorage.setItem('userData', JSON.stringify(merged));
+      if (settingsState[key] !== undefined) settingsState[key] = merged;
     }
-
-    // Save the updated settings to localStorage
-    saveSettingsToLocalStorage();
-
-    // Log the updated settings for debugging
-    console.log(`Updated setting for ${config.key}:`, settingsState[config.key]);
+    else if (Array.isArray(uploadedSettings[key])) {
+      settingsState[key] = uploadedSettings[key];
+      localStorage.setItem(key, JSON.stringify(uploadedSettings[key]));
+    }
   });
+
+  console.log('Settings imported successfully');
 }
