@@ -179,6 +179,13 @@
     margin-bottom: 4em;
   }
 
+  .settings-userColors-container {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+    gap: 0.6em;
+    align-items: start;
+  }
+
   .settings-toggle-container {
     align-items: start !important;
   }
@@ -220,17 +227,15 @@
       flex-wrap: wrap;
     }
 
-    .userColors-color-picker {
-      width: 40px;
-      height: 40px;
-      border: 2px solid rgb(34, 34, 34);
-      border-radius: 0.3em !important;
+    .userColors-color-swatch {
+      width: 30px;
+      height: 30px;
+      border-radius: 0.2em !important;
       cursor: pointer;
-      padding: 2px;
-      box-sizing: border-box;
+      transition: transform 0.08s ease;
 
       &:hover {
-        border-color: burlywood;
+        transform: scale(1.05);
       }
     }
   }

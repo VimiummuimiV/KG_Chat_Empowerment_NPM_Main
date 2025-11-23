@@ -349,9 +349,10 @@ export function createToggleItem(toggleConfig, optionValue, localizedDescription
 }
 
 // Creator function for a user color item
-export function createUserColorItem(username) {
+export function createUserColorItem(username, userData = null) {
   const item = createContainer('userColors');
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  // Use provided in-memory userData when available to avoid duplicate localStorage reads
+  if (!userData) userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const userColorData = userData[username] || { id: '', color: '#808080' };
   
   // Update userData helper
@@ -367,7 +368,7 @@ export function createUserColorItem(username) {
   
   // Hex input
   const hexInput = createInput('userColors', userColorData.color, getPlaceholder('userColors', 'hex'));
-  Object.assign(hexInput, { type: 'text', pattern: '^#[0-9A-Fa-f]{6}$', maxLength: 7 });
+  Object.assign(hexInput, { pattern: '^#[0-9A-Fa-f]{6}$', maxLength: 7 });
   
   hexInput.addEventListener('input', (e) => {
     let value = e.target.value.toUpperCase();
@@ -379,22 +380,34 @@ export function createUserColorItem(username) {
   hexInput.addEventListener('change', (e) => {
     if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
       updateColor(e.target.value);
-      colorPicker.value = e.target.value;
+      // update swatch when hex is manually changed
+      if (swatch) {
+        try { swatch.style.backgroundColor = e.target.value; } catch (err) {}
+      }
     }
   });
-  
-  // Color picker
-  const colorPicker = document.createElement('input');
-  Object.assign(colorPicker, { 
-    type: 'color', 
-    className: 'userColors-color-picker', 
-    value: userColorData.color 
+
+  // Color swatch + hidden native color input
+  const colorInput = document.createElement('input');
+  colorInput.type = 'color';
+  colorInput.className = 'userColors-color-input-hidden';
+  colorInput.value = userColorData.color;
+  colorInput.style.display = 'none';
+
+  const swatch = document.createElement('div');
+  swatch.className = 'userColors-color-swatch';
+  try { swatch.style.backgroundColor = userColorData.color; } catch (err) {}
+  swatch.title = getPlaceholder('userColors', 'hex');
+
+  swatch.addEventListener('click', () => {
+    colorInput.click();
   });
-  
-  colorPicker.addEventListener('change', (e) => {
+
+  colorInput.addEventListener('change', (e) => {
     hexInput.value = e.target.value;
     updateColor(e.target.value);
     hexInput.classList.remove('input-warning');
+    try { swatch.style.backgroundColor = e.target.value; } catch (err) {}
   });
   
   // Remove button
@@ -417,7 +430,8 @@ export function createUserColorItem(username) {
   
   const controlsRow = document.createElement('div');
   controlsRow.className = 'userColors-controls-row';
-  controlsRow.append(hexInput, colorPicker, removeButton);
+  // append visible hex input, swatch, hidden color input, then remove button
+  controlsRow.append(hexInput, swatch, colorInput, removeButton);
   
   contentWrapper.append(usernameDisplay, controlsRow);
   item.appendChild(contentWrapper);

@@ -27,10 +27,11 @@ export function populateSettings() {
     container.classList.add('settings-container');
 
     if (type === 'userColors') {
-      // Handle userColors separately - get from userData localStorage
+      // Handle userColors separately - load userData once and pass it to creators
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const usernames = Object.keys(userData);
-      usernames.forEach(username => container.appendChild(creator(username)));
+      // Pass the already-loaded userData to avoid reading localStorage again inside the creator
+      usernames.forEach(username => container.appendChild(creator(username, userData)));
     } else if (type !== 'toggle') {
       const items = data[key] || [];
       items.forEach(item => container.appendChild(creator(item)));
