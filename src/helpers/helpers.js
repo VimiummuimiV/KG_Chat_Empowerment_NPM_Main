@@ -218,6 +218,18 @@ export function normalizeAndResetUsernames(usernameElements, mode) {
       // User not saved → normalize from computed color
       const computed = getComputedStyle(el).color;
       finalColor = normalizeUsernameColor(computed, "rgb");
+      // Register user into userData (auto-save) if not present by id (from chat messages)
+      try {
+        const existingById = Object.values(userData).find(u => String(u.id) === userId);
+        if (!existingById) {
+          const usernameText = span.textContent.trim();
+          // Only create an entry if we have a username string
+          if (usernameText) {
+            userData[usernameText] = userData[usernameText] || { id: userId, color: finalColor };
+            try { localStorage.setItem('userData', JSON.stringify(userData)); } catch (err) {}
+          }
+        }
+      } catch (err) {}
     }
 
     el.style.setProperty('color', finalColor, 'important');
