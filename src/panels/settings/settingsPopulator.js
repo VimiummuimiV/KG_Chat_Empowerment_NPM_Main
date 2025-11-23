@@ -29,8 +29,9 @@ export function populateSettings() {
     let container;
 
     if (type === 'userColors') {
-      // Use dedicated creator for userColors which handles all special UI
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      // Prevent creation if empty or absent
+      if (!userData || Object.keys(userData).length === 0) return;
       container = createUserColorsContainer(userData, creator);
     } else if (type !== 'toggle') {
       // Standard container for tracked, mention, replacement, moderator, ignored
