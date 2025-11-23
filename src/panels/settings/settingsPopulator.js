@@ -26,7 +26,12 @@ export function populateSettings() {
     container.className = `settings-${type}-container`;
     container.classList.add('settings-container');
 
-    if (type !== 'toggle') {
+    if (type === 'userColors') {
+      // Handle userColors separately - get from userData localStorage
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const usernames = Object.keys(userData);
+      usernames.forEach(username => container.appendChild(creator(username)));
+    } else if (type !== 'toggle') {
       const items = data[key] || [];
       items.forEach(item => container.appendChild(creator(item)));
       const addButton = createAddButton(`.settings-${type}-container`, creator);

@@ -348,6 +348,83 @@ export function createToggleItem(toggleConfig, optionValue, localizedDescription
   return item;
 }
 
+// Creator function for a user color item
+export function createUserColorItem(username) {
+  const item = createContainer('userColors');
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const userColorData = userData[username] || { id: '', color: '#808080' };
+  
+  // Update userData helper
+  const updateColor = (color) => {
+    userData[username].color = color;
+    localStorage.setItem('userData', JSON.stringify(userData));
+  };
+  
+  // Username display
+  const usernameDisplay = document.createElement('span');
+  usernameDisplay.className = 'userColors-username-display';
+  usernameDisplay.textContent = `👤 ${username}`;
+  
+  // Hex input
+  const hexInput = createInput('userColors', userColorData.color, getPlaceholder('userColors', 'hex'));
+  Object.assign(hexInput, { type: 'text', pattern: '^#[0-9A-Fa-f]{6}$', maxLength: 7 });
+  
+  hexInput.addEventListener('input', (e) => {
+    let value = e.target.value.toUpperCase();
+    if (value && !value.startsWith('#')) value = '#' + value;
+    e.target.value = value;
+    hexInput.classList.toggle('input-warning', !/^#[0-9A-Fa-f]{6}$/.test(value));
+  });
+  
+  hexInput.addEventListener('change', (e) => {
+    if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+      updateColor(e.target.value);
+      colorPicker.value = e.target.value;
+    }
+  });
+  
+  // Color picker
+  const colorPicker = document.createElement('input');
+  Object.assign(colorPicker, { 
+    type: 'color', 
+    className: 'userColors-color-picker', 
+    value: userColorData.color 
+  });
+  
+  colorPicker.addEventListener('change', (e) => {
+    hexInput.value = e.target.value;
+    updateColor(e.target.value);
+    hexInput.classList.remove('input-warning');
+  });
+  
+  // Remove button
+  const removeButton = document.createElement('div');
+  removeButton.className = 'settings-button remove-settings-button remove-userColors-item';
+  removeButton.innerHTML = removeSVG;
+  removeButton.addEventListener('click', () => {
+    delete userData[username];
+    localStorage.setItem('userData', JSON.stringify(userData));
+    item.remove();
+  });
+  createCustomTooltip(removeButton, {
+    en: 'Remove user color',
+    ru: 'Удалить цвет пользователя'
+  });
+  
+  // Build layout
+  const contentWrapper = document.createElement('div');
+  contentWrapper.className = 'userColors-content-wrapper';
+  
+  const controlsRow = document.createElement('div');
+  controlsRow.className = 'userColors-controls-row';
+  controlsRow.append(hexInput, colorPicker, removeButton);
+  
+  contentWrapper.append(usernameDisplay, controlsRow);
+  item.appendChild(contentWrapper);
+  
+  return item;
+}
+
 // Function to create an "Add" button for dynamic item creation
 export function createAddButton(containerSelector, itemCreator) {
   const middleWord = containerSelector.split('-')[1]; // Extract key type (e.g., tracked, mention)

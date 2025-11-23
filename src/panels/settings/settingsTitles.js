@@ -20,6 +20,10 @@ export const settingsTitles = {
       en: { show: 'Show ignored users', hide: 'Hide ignored users' },
       ru: { show: 'Показать игнорируемых пользователей', hide: 'Скрыть игнорируемых пользователей' }
     },
+    userColors: {
+      en: { show: 'Show user colors', hide: 'Hide user colors' },
+      ru: { show: 'Показать цвета пользователей', hide: 'Скрыть цвета пользователей' }
+    },
     toggle: {
       en: { show: 'Show toggle options', hide: 'Hide toggle options' },
       ru: { show: 'Показать переключатели', hide: 'Скрыть переключатели' }
@@ -95,6 +99,12 @@ export const settingsTitles = {
     ignored: {
       en: 'Ignored',
       ru: 'Игнорируемый'
+    },
+    userColors: {
+      hex: {
+        en: 'Hex color',
+        ru: 'Цвет HEX'
+      }
     }
   }
 };

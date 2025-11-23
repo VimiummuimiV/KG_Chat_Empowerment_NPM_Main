@@ -4,7 +4,8 @@ import {
   createReplacementItem,
   createModeratorItem,
   createIgnoredItem,
-  createToggleItem
+  createToggleItem,
+  createUserColorItem
 } from './settingsCreators.js';
 
 // Process toggle settings separately with categorization and defaults
@@ -100,6 +101,13 @@ export const settingsConfig = [
     key: 'ignored',
     selector: '.settings-ignored-container',
     creator: createIgnoredItem
+  },
+  {
+    type: 'userColors',
+    emoji: '🎨',
+    key: 'userData',
+    selector: '.settings-userColors-container',
+    creator: createUserColorItem
   },
   {
     type: 'toggle',

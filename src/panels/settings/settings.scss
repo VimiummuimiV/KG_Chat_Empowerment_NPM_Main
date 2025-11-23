@@ -192,6 +192,49 @@
     gap: 0.4em;
   }
 
+  .userColors-item {
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+    background-color: #111111 !important;
+    padding: 0.8em !important;
+    border-radius: 0.4em !important;
+    gap: 0.6em;
+
+    .userColors-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6em;
+
+      .userColors-username-display {
+        font: 1em Montserrat;
+        color: burlywood;
+        font-weight: 500;
+      }
+    }
+
+    .userColors-controls-row {
+      display: inline-flex;
+      gap: 0.4em;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .userColors-color-picker {
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgb(34, 34, 34);
+      border-radius: 0.3em !important;
+      cursor: pointer;
+      padding: 2px;
+      box-sizing: border-box;
+
+      &:hover {
+        border-color: burlywood;
+      }
+    }
+  }
+
   @media (max-width: 1199px) {
     width: 90vw;
     height: 85vh;

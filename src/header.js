@@ -4,7 +4,7 @@
 // @version      1.3.3 
 // @description  Enhance the chat abilities
 // @author       Patcher
-// @match        *://klavogonki.ru/g*
+// @match        *://klavogonki.ru/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=klavogonki.ru
 // @grant        none
 // ==/UserScript==
