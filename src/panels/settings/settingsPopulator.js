@@ -1,6 +1,8 @@
 import { settingsConfig, toggleSettingsConfig } from "./settingsConfig.js";
 import { getSettingsData } from "./settingsFileHandlers.js";
 import { createSpoilerContainer, createAddButton } from "./settingsCreators.js";
+import { createCustomTooltip } from "../../components/tooltip.js";
+import { removeSVG } from "../../icons.js";
 import { settingsTitles } from "./settingsTitles.js";
 import { getCurrentLanguage, debounce } from "../../helpers/helpers.js";
 
@@ -58,6 +60,59 @@ export function populateSettings() {
       searchInput.className = 'settings-field userColors-search-field';
       searchInput.placeholder = settingsTitles.placeholderTitles.userColors?.search?.[getCurrentLanguage()] || 'Search';
       searchContainer.appendChild(searchInput);
+
+      // Trash button to clear all userData
+      const trashButton = document.createElement('div');
+      trashButton.className = 'settings-button remove-settings-button clear-userData-button';
+      trashButton.innerHTML = removeSVG;
+      createCustomTooltip(trashButton, {
+        en: `
+          [Click] Remove unsaved user colors
+          [Ctrl + Click] Remove ALL user colors
+        `,
+        ru: `
+          [Клик] Удалить несохранённые цвета пользователей
+          [Ctrl + Клик] Удалить все цвета пользователей
+        `
+      });
+      trashButton.addEventListener('click', (e) => {
+        const lang = getCurrentLanguage();
+        const isCtrl = e.ctrlKey || e.metaKey;
+        const confirmText = isCtrl
+          ? settingsTitles.actionTitles?.userColors?.confirmAll?.[lang]
+          : settingsTitles.actionTitles?.userColors?.confirm?.[lang];
+        if (!confirm(confirmText)) return;
+
+        // Load current userData
+        let current = {};
+        try { current = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (err) { current = {}; }
+
+        if (isCtrl) {
+          // Remove everything
+          try { localStorage.removeItem('userData'); } catch (err) {}
+          // Remove all DOM items
+          const items = itemsWrapper.querySelectorAll('.userColors-item');
+          items.forEach(it => it.remove());
+          return;
+        }
+
+        // Otherwise remove only entries that are NOT marked as changed by user
+        try {
+          Object.keys(current).forEach(k => {
+            if (!(current[k] && current[k].change === 'user')) delete current[k];
+          });
+          localStorage.setItem('userData', JSON.stringify(current));
+        } catch (err) {}
+
+        // Remove DOM items for removed keys
+        const items = itemsWrapper.querySelectorAll('.userColors-item');
+        items.forEach(it => {
+          const name = it.dataset.username;
+          if (!name) return;
+          if (!(current[name] && current[name].change === 'user')) it.remove();
+        });
+      });
+      searchContainer.appendChild(trashButton);
       container.appendChild(searchContainer);
 
       // Bottom: items wrapper (grid handled in SCSS)

@@ -29,6 +29,18 @@ export const settingsTitles = {
       ru: { show: 'Показать переключатели', hide: 'Скрыть переключатели' }
     }
   },
+  actionTitles: {
+    userColors: {
+      confirm: {
+        en: 'Remove unsaved user colors?',
+        ru: 'Удалить несохранённые цвета пользователей?'
+      },
+      confirmAll: {
+        en: 'Remove ALL user colors?',
+        ru: 'Удалить ВСЕ цвета пользователей?'
+      }
+    }
+  },
   toggleTitles: {
     static: {
       en: 'Show static chat notifications',
