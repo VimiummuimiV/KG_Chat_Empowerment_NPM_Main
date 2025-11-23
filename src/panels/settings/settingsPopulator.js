@@ -30,12 +30,25 @@ export function populateSettings() {
       // Handle userColors separately - load userData once and pass it to creators
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       let usernames = Object.keys(userData);
-      // place items changed by user first
+      
+      // Sort by changeDate timestamp (newest first), then alphabetically
       usernames.sort((a, b) => {
         const aUser = userData[a] && userData[a].change === 'user';
         const bUser = userData[b] && userData[b].change === 'user';
-        if (aUser === bUser) return a.localeCompare(b);
-        return aUser ? -1 : 1;
+        
+        // Both have user changes - sort by date (newest first)
+        if (aUser && bUser) {
+          const aDate = userData[a].changeDate || 0;
+          const bDate = userData[b].changeDate || 0;
+          if (aDate !== bDate) return bDate - aDate; // Descending order (newest first)
+          return a.localeCompare(b); // Fallback to alphabetical
+        }
+        
+        // One has user changes - prioritize it
+        if (aUser !== bUser) return aUser ? -1 : 1;
+        
+        // Neither has user changes - sort alphabetically
+        return a.localeCompare(b);
       });
 
       const searchContainer = document.createElement('div');

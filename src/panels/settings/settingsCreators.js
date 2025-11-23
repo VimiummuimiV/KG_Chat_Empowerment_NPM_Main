@@ -356,6 +356,7 @@ function showUserBadge(item, username, userData, doSave = false) {
     try {
       if (!userData[username]) userData[username] = {};
       userData[username].change = 'user';
+      userData[username].changeDate = Date.now();
       localStorage.setItem('userData', JSON.stringify(userData));
       
       // Move to top of wrapper
