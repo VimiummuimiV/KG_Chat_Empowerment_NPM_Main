@@ -228,6 +228,11 @@
             font: 1em Montserrat;
             color: burlywood;
             font-weight: 500;
+            transition: color 0.3s ease-in-out;
+
+            &:hover {
+              color: bisque;
+            }
           }
         }
 

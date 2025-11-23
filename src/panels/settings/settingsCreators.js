@@ -6,6 +6,7 @@ import { getRandomEmojiAvatar } from "../../helpers/helpers.js";
 import { state } from "../../definitions.js";
 import { getDataById, getDataByName } from "../../helpers/apiData.js";
 import { settingsConfig } from "./settingsConfig.js";
+import { loadProfileIntoIframe } from "../../helpers/iframeProfileLoader.js";
 
 // Helper function to get localized placeholder text
 function getPlaceholder(type, field = null) {
@@ -555,6 +556,15 @@ export function createUserColorItem(username, userData = null) {
   const usernameSpan = document.createElement('span');
   usernameSpan.className = 'userColors-username-display';
   usernameSpan.textContent = username;
+  
+  // Make username clickable to open profile in iframe
+  if (userId) {
+    usernameSpan.style.cursor = 'pointer';
+    usernameSpan.addEventListener('click', () => {
+      const profileUrl = `https://klavogonki.ru/u/#/${userId}/`;
+      loadProfileIntoIframe(profileUrl);
+    });
+  }
   
   // Hex input
   const hexInput = createInput('userColors', userColorData.color, getPlaceholder('userColors', 'hex'));
