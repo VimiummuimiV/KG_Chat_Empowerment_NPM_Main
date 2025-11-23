@@ -3,9 +3,6 @@ import {
   formatRegisteredDate,
   convertToUpdatedTimestamp
 } from './apiData.js';
-import { getCurrentLanguage } from './helpers.js';
-
-const lang = getCurrentLanguage();
 
 // Function to validate required user data
 function validateUserData(user) {

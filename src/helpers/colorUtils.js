@@ -180,12 +180,14 @@ export async function cacheUserData(usernames, userDataKey = USER_DATA_CACHE_KEY
           id: fetched.id || null,
           color: carColor && carColor.startsWith('#')
             ? normalizeUsernameColor(carColor, "hex")
-            : '#808080'
+            : '#808080',
+            change: 'auto'
         };
       } else {
         userData[username] = {
           id: null,
-          color: '#808080'
+          color: '#808080',
+          change: 'auto'
         };
       }
     });
