@@ -277,6 +277,13 @@
           align-items: center;
           justify-content: center;
           background-color: transparent;
+          transform-origin: left;
+          transition: transform 0.15s;
+        }
+
+        .userColors-avatar:has(img):hover {
+          transform: scale(2);
+          z-index: 2;
         }
 
         .userColors-avatar-img {
