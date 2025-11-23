@@ -189,12 +189,12 @@
       align-items: center;
       gap: 0.4em;
       width: 100%;
-    }
 
-    .userColors-search-field {
-      width: 100%;
-      max-width: 100%;
-      margin: 0;
+      .userColors-search-field {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+      }
     }
 
     .settings-userColors-items-container {
@@ -204,98 +204,95 @@
       grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
       gap: 0.6em;
       align-items: start;
-    }
 
-    .userColors-item.userColors-hidden {
-      display: none !important;
+      .userColors-item {
+        display: flex !important;
+        flex-direction: column;
+        width: 100%;
+        background-color: #111111 !important;
+        padding: 0.8em !important;
+        border-radius: 0.4em !important;
+        gap: 0.6em;
+
+        &.userColors-hidden {
+          display: none !important;
+        }
+
+        .userColors-content-wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 0.6em;
+
+          .userColors-username-display {
+            font: 1em Montserrat;
+            color: burlywood;
+            font-weight: 500;
+          }
+        }
+
+        .userColors-controls-row {
+          display: inline-flex;
+          gap: 0.4em;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .userColors-header-row {
+          display: flex;
+          align-items: center;
+          gap: 0.6em;
+        }
+
+        .userColors-avatar {
+          width: 24px;
+          height: 24px;
+          border-radius: 0.2em !important;
+          overflow: hidden;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background-color: transparent;
+        }
+
+        .userColors-avatar-img {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: cover;
+        }
+
+        .userColors-avatar-emoji {
+          width: 100%;
+          height: 100%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2rem;
+        }
+
+        .userColors-color-swatch {
+          width: 30px;
+          height: 30px;
+          border-radius: 0.2em !important;
+          cursor: pointer;
+          transition: transform 0.08s ease;
+
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+      }
     }
   }
 
   .settings-toggle-container {
     align-items: start !important;
-  }
-
-  .settings-toggle-container {
     flex-direction: column;
   }
 
   [class$="item"] {
     display: inline-flex;
     gap: 0.4em;
-  }
-
-  .userColors-item {
-    display: flex !important;
-    flex-direction: column;
-    width: 100%;
-    background-color: #111111 !important;
-    padding: 0.8em !important;
-    border-radius: 0.4em !important;
-    gap: 0.6em;
-
-    .userColors-content-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 0.6em;
-
-      .userColors-username-display {
-        font: 1em Montserrat;
-        color: burlywood;
-        font-weight: 500;
-      }
-    }
-
-    .userColors-controls-row {
-      display: inline-flex;
-      gap: 0.4em;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .userColors-header-row {
-      display: flex;
-      align-items: center;
-      gap: 0.6em;
-    }
-
-    .userColors-avatar {
-      width: 24px;
-      height: 24px;
-      border-radius: 0.2em !important;
-      overflow: hidden;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background-color: transparent;
-    }
-
-    .userColors-avatar-img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-    }
-
-    .userColors-avatar-emoji {
-      width: 100%;
-      height: 100%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-    }
-
-    .userColors-color-swatch {
-      width: 30px;
-      height: 30px;
-      border-radius: 0.2em !important;
-      cursor: pointer;
-      transition: transform 0.08s ease;
-
-      &:hover {
-        transform: scale(1.05);
-      }
-    }
   }
 
   @media (max-width: 1199px) {
