@@ -5,6 +5,9 @@ import { settingsConfig } from "./settingsConfig.js";
 import { getSettingsData, processUploadedSettings } from "./settingsFileHandlers.js";
 import { createCustomTooltip, disableCustomTooltip } from "../../components/tooltip.js";
 
+// Flag to track if initialization has completed
+let isInitialized = false;
+
 /**
  * Initializes save button logic for the settings panel
  * @param {HTMLElement} saveButton - The save button element
@@ -12,6 +15,9 @@ import { createCustomTooltip, disableCustomTooltip } from "../../components/tool
 export function initializeSaveButtonLogic(saveButton) {
   const container = document.querySelector('.settings-content-container');
   if (!container) return console.error("Container not found.");
+
+  // Reset flag when panel opens to block observer during new population
+  isInitialized = false;
 
   const showButton = () => {
     saveButton.style.visibility = 'visible'; // Make the element interactable
@@ -33,6 +39,9 @@ export function initializeSaveButtonLogic(saveButton) {
   const previousValues = getSettingsData();
 
   const handleInputChange = () => {
+    // Skip if initialization hasn't completed yet
+    if (!isInitialized) return;
+
     // Dynamically create the currentValues object with empty arrays
     const currentValues = {};
     settingsConfig.forEach(config => {
@@ -255,7 +264,15 @@ export function initializeSaveButtonLogic(saveButton) {
   };
 
   // Create a mutation observer to monitor changes in the target container
+  let initTimeout;
   const observer = new MutationObserver(debounce((mutationsList) => {
+    // During initialization, wait for mutations to stop before enabling monitoring
+    if (!isInitialized) {
+      clearTimeout(initTimeout);
+      initTimeout = setTimeout(() => { isInitialized = true; }, 300);
+      return;
+    }
+
     mutationsList.forEach((mutation) => {
       if (mutation.type === 'childList') {
         mutation.addedNodes.forEach((node) => {
