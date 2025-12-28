@@ -4,12 +4,7 @@ import { fetchChatLogs } from "./chatlogsLoader.js";
 import { renderChatMessages } from "./chatlogsMessages.js";
 import { renderActiveUsers } from "./chatlogsUserlist.js";
 import { getCurrentLanguage, normalizeDate } from "../../helpers/helpers.js";
-
-import {
-  getExactUserIdByName,
-  getDataByName
-} from "../../helpers/apiData.js";
-
+import { getExactUserIdByName, getDataByName } from "../../helpers/apiData.js";
 import { chatlogsParserMessages } from "./chatlogsParserMessages.js";
 import { createCustomTooltip } from "../../components/tooltip.js";
 import { deleteAllChatlogsFromIndexedDB } from "./chatlogsStorage.js";
@@ -23,7 +18,6 @@ function getLatestNDaysRange(days) {
   const today = new Date();
   const fromDate = new Date(today);
   fromDate.setDate(today.getDate() - days + 1); // +1 to include today
-
   return {
     from: fromDate.toISOString().slice(0, 10),
     to: today.toISOString().slice(0, 10)
@@ -33,7 +27,7 @@ function getLatestNDaysRange(days) {
 /**
  * Helper function to get all mention terms including myNickname, its history, and mention keywords from localStorage
  * Order: myNickname first, then usernamesHistory, then mentionKeywords
- * @returns {Promise<Array>} - Array of unique mention terms in proper order
+ * @returns {Promise} - Array of unique mention terms in proper order
  */
 async function getAllMentionTerms() {
   let allMentionTerms = [];
@@ -69,6 +63,7 @@ async function getAllMentionTerms() {
   } catch (error) {
     console.warn('Could not parse mention keywords from localStorage:', error);
   }
+
   if (!Array.isArray(mentionKeywords)) mentionKeywords = [];
 
   mentionKeywords.forEach(keyword => {
@@ -102,11 +97,14 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
   async function promptOptions() {
     let modeInput;
     while (true) {
+      // Prompt
       modeInput = prompt(chatlogsParserMessages.selectParseMode[lang], '1');
       if (modeInput === null) return null;
       if (["1", "2", "3", "4", "5", "6"].includes(modeInput)) break;
+      // Alert
       alert(chatlogsParserMessages.invalidSelection[lang]);
     }
+
     const opts = {};
 
     // Helper for date range prompts (to avoid code repetition)
@@ -117,9 +115,11 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       } else if (mode === '3') {
         let rangeInput, fromDate, toDate;
         while (true) {
+          // Prompt
           rangeInput = prompt(chatlogsParserMessages.enterDateRange[lang], '');
           if (rangeInput === null) return null;
           if (!rangeInput.trim()) continue;
+
           const match = rangeInput.match(/([\d:\-]{6,10})\s*-\s*([\d:\-]{6,10})/);
           if (match) {
             fromDate = normalizeDate(match[1]);
@@ -130,34 +130,41 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
               break;
             }
           }
+          // Alert
           alert(chatlogsParserMessages.invalidRange[lang]);
         }
       } else if (mode === '2') {
         let fromInput, fromDate;
         while (true) {
+          // Prompt
           fromInput = prompt(chatlogsParserMessages.enterFromDate[lang], '');
           if (fromInput === null) return null;
           if (!fromInput.trim()) continue;
+
           fromDate = normalizeDate(fromInput.trim());
           if (fromDate) {
             opts.from = fromDate;
             opts.to = new Date().toISOString().slice(0, 10);
             break;
           }
+          // Alert
           alert(chatlogsParserMessages.invalidFromDate[lang]);
         }
       } else if (mode === '1') {
         let dateInput, dateVal;
         while (true) {
+          // Prompt
           dateInput = prompt(chatlogsParserMessages.enterSingleDate[lang], '');
           if (dateInput === null) return null;
           if (!dateInput.trim()) continue;
+
           dateVal = normalizeDate(dateInput.trim());
           if (dateVal) {
             opts.from = dateVal;
             opts.to = dateVal;
             break;
           }
+          // Alert
           alert(chatlogsParserMessages.invalidDate[lang]);
         }
       }
@@ -167,9 +174,11 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       // Personal mentions mode: prompt for date mode, then handle latest N days option
       let dateMode;
       while (true) {
+        // Prompt
         dateMode = prompt(chatlogsParserMessages.selectPersonalMentionsDateMode[lang], '1');
         if (dateMode === null) return null;
         if (["1", "2", "3", "4", "5"].includes(dateMode)) break;
+        // Alert
         alert(chatlogsParserMessages.invalidSelection[lang]);
       }
 
@@ -177,11 +186,13 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       if (dateMode === '5') {
         let daysInput;
         while (true) {
+          // Prompt
           daysInput = prompt(chatlogsParserMessages.enterLatestDays[lang], '7');
           if (daysInput === null) return null;
 
           const days = parseInt(daysInput.trim());
           if (isNaN(days) || days <= 0 || days > 365) {
+            // Alert
             alert(chatlogsParserMessages.invalidDaysNumber[lang]);
             continue;
           }
@@ -201,6 +212,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       const allMentionTerms = await getAllMentionTerms();
 
       // Prompt user to edit the combined list
+      // Prompt
       let mentionInput = prompt(
         chatlogsParserMessages.enterMentionKeywords[lang],
         allMentionTerms.join(', ')
@@ -228,6 +240,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       }
 
       if (finalMentionKeywords.length === 0) {
+        // Alert
         alert(chatlogsParserMessages.noMentionKeywords[lang]);
         return null;
       }
@@ -242,11 +255,10 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     } else if (["4", "3", "2", "1"].includes(modeInput)) {
       const dateResult = await promptDateRange(modeInput);
       if (dateResult === null) return null;
-      opts.mode =
-        modeInput === '1' ? 'single' :
-          modeInput === '2' ? 'fromdate' :
-            modeInput === '3' ? 'range' :
-              'fromstart';
+
+      opts.mode = modeInput === '1' ? 'single' : 
+                  modeInput === '2' ? 'fromdate' : 
+                  modeInput === '3' ? 'range' : 'fromstart';
       return opts;
     }
   }
@@ -255,6 +267,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
   async function promptUsernames() {
     let usernamesInput = "";
     while (true) {
+      // Prompt
       usernamesInput = prompt(chatlogsParserMessages.enterUsernames[lang], usernamesInput || "");
       if (usernamesInput === null) return null;
       if (!usernamesInput || !usernamesInput.trim()) return [];
@@ -275,7 +288,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       for (const username of usernames) {
         const userId = await getExactUserIdByName(username);
         if (!userId) {
-          // Ask user if they want to proceed (possibly banned)
+          // Confirm - Ask user if they want to proceed (possibly banned)
           if (confirm(chatlogsParserMessages.userPossiblyBanned[lang](username))) {
             validUsernames.push(username);
           }
@@ -283,17 +296,21 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
           validUsernames.push(username);
         }
       }
+
       if (validUsernames.length === 0) {
         // If all were skipped or not found, just continue the prompt loop (no alert)
         continue;
       }
+
       if (validUsernames.length === 1) {
+        // Prompt
         const answer = prompt(chatlogsParserMessages.retrieveHistoryPrompt[lang], '2');
         if (answer === '1') {
           if (typeof getDataByName === 'function') {
             const historyUsernames = await getDataByName(validUsernames[0], 'usernamesHistory');
             if (Array.isArray(historyUsernames) && historyUsernames.length > 0) {
               const allUsernames = [validUsernames[0], ...historyUsernames.filter(u => u !== validUsernames[0])];
+              // Prompt
               const confirmed = prompt(chatlogsParserMessages.confirmUsernames[lang], allUsernames.join(', '));
               if (!confirmed) return null;
 
@@ -311,42 +328,38 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
           }
         }
       }
+
       return validUsernames;
     }
   }
 
   // Helper to prompt for search terms
   function promptSearchTerms(searchAllUsers = false) {
-    let searchInput;
-    while (true) {
-      searchInput = prompt(chatlogsParserMessages.enterSearchTerms[lang](searchAllUsers), '');
-      if (searchInput === null) return null;
-      if (!searchInput || !searchInput.trim()) {
-        if (searchAllUsers) {
-          alert(chatlogsParserMessages.searchAllUsersRequired[lang]);
-          continue;
-        }
-        return [];
-      }
-
-      let searchTerms = [];
-      if (searchInput && searchInput.trim()) {
-        const splitTerms = searchInput.split(',');
-        if (Array.isArray(splitTerms)) {
-          searchTerms = splitTerms
-            .map(term => term ? term.trim().toLowerCase() : '')
-            .filter(Boolean);
-        }
-      }
-      return searchTerms;
+    // Prompt
+    let searchInput = prompt(chatlogsParserMessages.enterSearchTerms[lang](searchAllUsers), '');
+    if (searchInput === null) return null;
+    
+    // Allow empty input - just return empty array
+    if (!searchInput || !searchInput.trim()) {
+      return [];
     }
+
+    let searchTerms = [];
+    if (searchInput && searchInput.trim()) {
+      const splitTerms = searchInput.split(',');
+      if (Array.isArray(splitTerms)) {
+        searchTerms = splitTerms
+          .map(term => term ? term.trim().toLowerCase() : '')
+          .filter(Boolean);
+      }
+    }
+    return searchTerms;
   }
 
   // Helper to check if message contains any of the search terms
   function messageContainsSearchTerms(message, searchTerms) {
     if (!searchTerms || searchTerms.length === 0) return true; // No search terms means show all
     if (!message) return false;
-
     const lowerMessage = message.toLowerCase();
     return searchTerms.some(term => lowerMessage.includes(term));
   }
@@ -414,10 +427,12 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
 
     let usernames;
     let searchTerms;
+
     if (opts.mode === 'personalmentions') {
       // Use mention keywords from opts (do not update localStorage)
       let mentionKeywords = opts.mentionKeywords || [];
       if (!Array.isArray(mentionKeywords) || mentionKeywords.length === 0) {
+        // Alert
         alert('No mention keywords provided. Please enter at least one keyword.');
         resetButton();
         return;
@@ -428,10 +443,12 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       // Prompt for usernames and fetch registration dates
       let usernamesInput = await promptUsernames();
       if (usernamesInput === null || usernamesInput.length === 0) {
+        // Alert
         alert(chatlogsParserMessages.noUsersSelected[lang]);
         resetButton();
         return;
       }
+
       // Fetch registration dates for all usernames
       let regDates = [];
       for (const username of usernamesInput) {
@@ -444,32 +461,42 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         }
         if (regDate) regDates.push(regDate);
       }
+
       if (!regDates.length) {
+        // Alert
         alert(chatlogsParserMessages.unableToGetRegDate[lang]);
         resetButton();
         return;
       }
+
       // Use the earliest registration date
       let minDate = regDates.sort()[0];
+
       // Prompt user to edit or confirm the start date
+      // Prompt
       let editedDate = prompt(chatlogsParserMessages.editStartDate[lang](minDate), minDate);
       if (!editedDate) {
         resetButton();
         return;
       }
+
       // Normalize and validate the edited date using normalizeDate and isValidDateParts
       editedDate = normalizeDate(editedDate.trim());
       if (!editedDate) {
+        // Alert
         alert(chatlogsParserMessages.invalidEditedDate[lang]);
         resetButton();
         return;
       }
+
       // Clamp to minimalChatlogsDate if needed
       let minAllowed = minimalChatlogsDate;
       if (editedDate < minAllowed) {
+        // Alert
         alert(chatlogsParserMessages.dateBeforeMinimal[lang](minAllowed));
         editedDate = minAllowed;
       }
+
       opts.from = editedDate;
       opts.to = new Date().toISOString().slice(0, 10);
       usernames = usernamesInput;
@@ -480,17 +507,13 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         return;
       }
     }
+
     const searchAllUsers = usernames.length === 0;
+
     if (opts.mode !== 'personalmentions') {
       // Prompt for message search terms
       searchTerms = promptSearchTerms(searchAllUsers);
       if (searchTerms === null) {
-        resetButton();
-        return;
-      }
-      // If searching all users, search terms are required
-      if (searchAllUsers && searchTerms.length === 0) {
-        alert(chatlogsParserMessages.searchAllUsersRequired[lang]);
         resetButton();
         return;
       }
@@ -503,6 +526,7 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     // Prepare for rendering
     let allFiltered = [];
     const usernameMessageCountMap = new Map();
+
     // Clear the messages container before starting
     const messagesContainer = getMessagesContainer(chatLogsPanelOrContainer);
     if (messagesContainer) messagesContainer.innerHTML = '';
@@ -513,10 +537,18 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
       const searchInfo = document.createElement('div');
       searchInfo.className = 'search-messages-info';
       if (searchAllUsers) {
-        searchInfo.textContent = chatlogsParserMessages.searchInfoAllUsers[lang](searchTerms);
+        if (searchTerms.length > 0) {
+          // UI Message
+          searchInfo.textContent = chatlogsParserMessages.searchInfoAllUsers[lang](searchTerms);
+        } else {
+          // UI Message
+          searchInfo.textContent = chatlogsParserMessages.searchInfoAllUsersNoTerms[lang];
+        }
       } else if (searchTerms.length > 0) {
+        // UI Message
         searchInfo.textContent = chatlogsParserMessages.searchInfoSomeUsers[lang](usernames, searchTerms);
       } else {
+        // UI Message
         searchInfo.textContent = chatlogsParserMessages.searchInfoAllFromUsers[lang](usernames);
       }
       messagesContainer.appendChild(searchInfo);
@@ -532,12 +564,16 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
     const startDate = new Date(from);
     const endDate = new Date(to);
     let currentDate = new Date(startDate);
+
     while (currentDate <= endDate && !stopRequested) {
       const dateStr = currentDate.toISOString().slice(0, 10);
+
       if (searchDateInfo) {
         const percent = getPercentComplete(currentDate, startDate, endDate);
+        // UI Message
         searchDateInfo.textContent = chatlogsParserMessages.dateProgressInfo[lang](from, dateStr, percent);
       }
+
       try {
         const { chatlogs } = await fetchChatLogs(dateStr, null, abortController.signal);
         if (stopRequested) break;
@@ -546,19 +582,14 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         let filtered;
         if (searchAllUsers) {
           // Search all users, but only keep messages with valid content that match search terms
-          filtered = chatlogs.filter(log =>
-            log &&
-            log.message &&
-            messageContainsSearchTerms(log.message, searchTerms)
+          filtered = chatlogs.filter(log => 
+            log && log.message && messageContainsSearchTerms(log.message, searchTerms)
           );
         } else {
           // Filter by username(s) first, then apply search terms if provided
-          filtered = chatlogs.filter(log =>
-            log &&
-            log.message &&
-            usernames.includes(log.username)
+          filtered = chatlogs.filter(log => 
+            log && log.message && usernames.includes(log.username)
           );
-
           // Apply search term filtering if search terms are provided
           if (searchTerms.length > 0) {
             filtered = filtered.filter(log => messageContainsSearchTerms(log.message, searchTerms));
@@ -566,12 +597,16 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         }
 
         if (stopRequested) break;
+
         allFiltered = allFiltered.concat(filtered);
+
         // Update message count map
         filtered.forEach(({ username }) => {
           usernameMessageCountMap.set(username, (usernameMessageCountMap.get(username) || 0) + 1);
         });
+
         if (stopRequested) break;
+
         // Render incrementally
         if (messagesContainer && filtered.length > 0) {
           renderChatMessages(
@@ -583,12 +618,16 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
             searchTerms && searchTerms.length > 0 // highlightSearch true if search terms present
           );
           if (stopRequested) break;
+
           renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'));
         }
+
         if (stopRequested) break;
+
         // Optional: add a small delay for smoother UI
         await new Promise(res => setTimeout(res, 60));
         if (stopRequested) break;
+
         currentDate.setDate(currentDate.getDate() + 1);
       } catch (error) {
         if (error.name === 'AbortError') {
@@ -600,17 +639,27 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         }
       }
     }
+
     // If nothing was found, show placeholder
     if (messagesContainer && allFiltered.length === 0) {
       let noMessagesText;
       if (searchAllUsers) {
-        noMessagesText = chatlogsParserMessages.noMessagesFoundAll[lang](searchTerms);
+        if (searchTerms.length > 0) {
+          // UI Message
+          noMessagesText = chatlogsParserMessages.noMessagesFoundAll[lang](searchTerms);
+        } else {
+          // UI Message
+          noMessagesText = chatlogsParserMessages.noMessagesFoundAllNoTerms[lang];
+        }
       } else if (searchTerms.length > 0) {
+        // UI Message
         noMessagesText = chatlogsParserMessages.noMessagesFoundSome[lang](searchTerms);
       } else {
+        // UI Message
         noMessagesText = chatlogsParserMessages.noMessagesFound[lang];
       }
       messagesContainer.innerHTML = `<div class="no-messages-info">${noMessagesText}</div>`;
+
       // Also clear userlist
       const panel = messagesContainer.closest('.chat-logs-panel');
       if (panel) {
@@ -618,11 +667,14 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
         if (activeUsers) activeUsers.innerHTML = '';
       }
     }
+
     resetButton();
+
     // Always update userlist after parsing (even if stopped early)
     if (messagesContainer) {
       renderActiveUsers(usernameMessageCountMap, messagesContainer.closest('.chat-logs-panel'));
     }
+
     // If parsing stopped automatically, update random button to today mode
     setRandomButtonToTodayMode();
   }
@@ -646,8 +698,10 @@ export function setupChatLogsParser(parseButton, chatLogsPanelOrContainer) {
 
   parseButton.addEventListener('click', async (event) => {
     if (event.ctrlKey) {
+      // Confirm
       if (confirm(chatlogsParserMessages.deleteConfirm[lang])) {
         await deleteAllChatlogsFromIndexedDB();
+        // Alert
         alert(chatlogsParserMessages.deleteSuccess[lang]);
       }
       return;

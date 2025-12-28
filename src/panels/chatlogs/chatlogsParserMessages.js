@@ -31,6 +31,7 @@ export const chatlogsParserMessages = {
       '6. Личные упоминания'
     ].join('\n')
   },
+  
   invalidSelection: { // Alert
     en: `${WARN} Invalid selection.`,
     ru: `${WARN} Неверный выбор.`
@@ -57,10 +58,12 @@ export const chatlogsParserMessages = {
       '24-02-02 - 24-03-03'
     ].join('\n')
   },
+  
   invalidRange: { // Alert
     en: `${WARN} Invalid range format or one/both ${DATE} dates out of bounds. Please try again.`,
     ru: `${WARN} Неверный формат диапазона или одна/обе ${DATE} даты вне допустимого диапазона. Пожалуйста, попробуйте снова.`
   },
+  
   enterFromDate: { // Prompt
     en: [
       `${EDIT} Enter FROM ${DATE} date`,
@@ -81,10 +84,12 @@ export const chatlogsParserMessages = {
       `${INFO} Диапазон будет с этой ${DATE} даты до сегодня.`
     ].join('\n')
   },
+  
   invalidFromDate: { // Alert
     en: `${WARN} Invalid FROM ${DATE} date format or date out of bounds. Please try again.`,
     ru: `${WARN} Неверный формат начальной ${DATE} даты или дата вне допустимого диапазона. Пожалуйста, попробуйте снова.`
   },
+  
   enterSingleDate: { // Prompt
     en: [
       `${EDIT} Enter a ${DATE} date`,
@@ -103,6 +108,7 @@ export const chatlogsParserMessages = {
       '240101'
     ].join('\n')
   },
+  
   invalidDate: { // Alert
     en: `${WARN} Invalid ${DATE} date format or date out of bounds. Please try again.`,
     ru: `${WARN} Неверный формат ${DATE} даты или дата вне допустимого диапазона. Пожалуйста, попробуйте снова.`
@@ -119,14 +125,17 @@ export const chatlogsParserMessages = {
       `${INFO} Оставьте пустым, чтобы искать ${CONTENT} сообщения всех ${USER} пользователей.`
     ].join('\n')
   },
+  
   userPossiblyBanned: { // Confirm
     en: username => `${WARN} User ${USER} ${username} not found. The user may be banned or deleted. Continue anyway?`,
     ru: username => `${WARN} Пользователь ${USER} ${username} не найден. Возможно, пользователь забанен или удалён. Продолжить в любом случае?`
   },
+  
   retrieveHistoryPrompt: { // Prompt
     en: `${INFO} Do you want to retrieve all previous ${USER} history usernames for this user? (1 - yes, 2 - no)`,
     ru: `${INFO} Хотите получить все предыдущие ${USER} имена пользователей для этого пользователя? (1 - да, 2 - нет)`
   },
+  
   confirmUsernames: { // Prompt
     en: `${EDIT} Confirm or edit the list of ${USER} usernames to parse (comma-separated):`,
     ru: `${EDIT} Подтвердите или отредактируйте список ${USER} имён для парсинга (через запятую):`
@@ -137,18 +146,22 @@ export const chatlogsParserMessages = {
     en: `${WARN} No ${USER} users selected.`,
     ru: `${WARN} Не выбраны ${USER} пользователи.`
   },
+  
   unableToGetRegDate: { // Alert
     en: `${WARN} Could not get registration ${DATE} date.`,
     ru: `${WARN} Не удалось получить ${DATE} дату регистрации.`
   },
+  
   editStartDate: { // Prompt
     en: minDate => `${EDIT} From which ${DATE} to start parsing? (registration date: ${minDate})`,
     ru: minDate => `${EDIT} С какой ${DATE} начать парсинг? (дата регистрации: ${minDate})`
   },
+  
   invalidEditedDate: { // Alert
     en: `${WARN} Invalid ${DATE} date format.`,
     ru: `${WARN} Неверный формат ${DATE} даты.`
   },
+  
   dateBeforeMinimal: { // Alert
     en: minAllowed => `${WARN} ${CHATLOGS} Chat logs are only available from ${minAllowed}. Using this ${DATE} date.`,
     ru: minAllowed => `${WARN} ${CHATLOGS} Логи чата доступны только с ${minAllowed}. Используется эта ${DATE} дата.`
@@ -158,8 +171,8 @@ export const chatlogsParserMessages = {
   enterSearchTerms: { // Prompt
     en: searchAllUsers => [
       `${SEARCH} Enter search terms to filter ${CONTENT} messages (comma-separated):`,
-      searchAllUsers
-        ? `${INFO} This will search through all ${USER} users' ${CONTENT} messages for the specified terms.`
+      searchAllUsers 
+        ? `${INFO} Leave empty to show ALL ${CONTENT} messages from all ${USER} users.`
         : `${INFO} Leave empty to show all ${CONTENT} messages from selected ${USER} users.`,
       `${EXAMPLE} Examples:`,
       'hello, dude',
@@ -169,7 +182,7 @@ export const chatlogsParserMessages = {
     ru: searchAllUsers => [
       `${SEARCH} Введите поисковое слово или слова для фильтрации ${CONTENT} сообщений (через запятую):`,
       searchAllUsers
-        ? `${INFO} Будет производиться поиск по всем ${CONTENT} сообщениям ${USER} пользователей для указанных слов.`
+        ? `${INFO} Оставьте пустым, чтобы показать ВСЕ ${CONTENT} сообщения от всех ${USER} пользователей.`
         : `${INFO} Оставьте пустым, для поиска всех ${CONTENT} сообщений выбранных ${USER} пользователей.`,
       `${EXAMPLE} Примеры:`,
       'привет, чувак',
@@ -177,40 +190,50 @@ export const chatlogsParserMessages = {
       `${INFO} Примечание: поиск не чувствителен к регистру и найдёт ${CONTENT} сообщения, содержащие ЛЮБОЕ из слов.`
     ].join('\n')
   },
-  searchAllUsersRequired: { // Alert
-    en: `${WARN} When searching all ${USER} users, you must provide search terms to filter ${CONTENT} messages.`,
-    ru: `${WARN} При поиске по всем ${USER} пользователям необходимо указать поисковые слова для фильтрации ${CONTENT} сообщений.`
-  },
 
-  // Search info messages (UI Messages)
-  searchInfoAllUsers: {
+  // Search info messages
+  searchInfoAllUsers: { // UI Message
     en: searchTerms => `${SEARCH} Searching all ${USER} users for ${CONTENT} messages containing: ${searchTerms.join(', ')}`,
     ru: searchTerms => `${SEARCH} Поиск по всем ${USER} пользователям сообщений ${CONTENT}, содержащих: ${searchTerms.join(', ')}`
   },
-  searchInfoSomeUsers: {
+  
+  searchInfoAllUsersNoTerms: { // UI Message
+    en: `${SEARCH} Showing all ${CONTENT} messages from all ${USER} users`,
+    ru: `${SEARCH} Показаны все ${CONTENT} сообщения от всех ${USER} пользователей`
+  },
+  
+  searchInfoSomeUsers: { // UI Message
     en: (usernames, searchTerms) => `${SEARCH} Searching for ${CONTENT} messages from: ${USER} ${usernames.join(', ')}, containing: ${searchTerms.join(', ')}`,
     ru: (usernames, searchTerms) => `${SEARCH} Поиск ${CONTENT} сообщений от: ${USER} ${usernames.join(', ')}, содержащих: ${searchTerms.join(', ')}`
   },
-  searchInfoAllFromUsers: {
+  
+  searchInfoAllFromUsers: { // UI Message
     en: usernames => `${SEARCH} Showing all ${CONTENT} messages from: ${USER} ${usernames.join(', ')}`,
     ru: usernames => `${SEARCH} Показаны все ${CONTENT} сообщения от: ${USER} ${usernames.join(', ')}`
   },
 
-  // Date progress info message (UI Message)
+  // Date progress info message
   dateProgressInfo: { // UI Message
     en: (initialDate, currentDate, percent) => `${DATE} Start: ${initialDate} | Current: ${currentDate} | Progress: ${percent}%`,
     ru: (initialDate, currentDate, percent) => `${DATE} Начало: ${initialDate} | Текущая: ${currentDate} | Прогресс: ${percent}%`
   },
 
-  // No messages found messages (UI Messages)
+  // No messages found messages
   noMessagesFoundAll: { // UI Message
     en: searchTerms => `${WARN} No ${CONTENT} messages found containing the search terms: ${searchTerms.join(', ')}`,
     ru: searchTerms => `${WARN} ${CONTENT} Сообщения, содержащие слова: ${searchTerms.join(', ')}, не найдены.`
   },
+  
+  noMessagesFoundAllNoTerms: { // UI Message
+    en: `${WARN} No ${CONTENT} messages found.`,
+    ru: `${WARN} ${CONTENT} Сообщения не найдены.`
+  },
+  
   noMessagesFoundSome: { // UI Message
     en: searchTerms => `${WARN} No ${CONTENT} messages found for the selected ${USER} user(s) containing the search terms: ${searchTerms.join(', ')}`,
     ru: searchTerms => `${WARN} ${CONTENT} Сообщения выбранных ${USER} пользователей, содержащие слова: ${searchTerms.join(', ')}, не найдены.`
   },
+  
   noMessagesFound: { // UI Message
     en: `${WARN} No ${CONTENT} messages found for the selected ${USER} user(s).`,
     ru: `${WARN} ${CONTENT} Сообщения для выбранных ${USER} пользователей не найдены.`
@@ -221,13 +244,14 @@ export const chatlogsParserMessages = {
     en: `${WARN} Are you sure you want to delete all saved ${CHATLOGS} chatlogs?`,
     ru: `${WARN} Вы уверены, что хотите удалить все сохранённые ${CHATLOGS} чатлоги?`
   },
+  
   deleteSuccess: { // Alert
     en: `${INFO} All ${CHATLOGS} chatlogs deleted and cache size reset.`,
     ru: `${INFO} Все ${CHATLOGS} чатлоги удалены, размер кэша сброшен.`
   },
 
   // Personal mentions mode messages
-  selectPersonalMentionsDateMode: {
+  selectPersonalMentionsDateMode: { // Prompt
     en: [
       `${INFO} Select date mode for personal mentions`,
       '1. Single date',
@@ -245,19 +269,23 @@ export const chatlogsParserMessages = {
       '5. За последние (N) дней'
     ].join('\n')
   },
-  enterMentionKeywords: {
+  
+  enterMentionKeywords: { // Prompt
     en: `${EDIT} Enter mention keywords to search (comma-separated):`,
     ru: `${EDIT} Введите ключевые слова для поиска упоминаний (через запятую):`
   },
-  noMentionKeywords: {
+  
+  noMentionKeywords: { // Alert
     en: `${WARN} No mention keywords provided. Please enter at least one keyword.`,
     ru: `${WARN} Не указаны ключевые слова для поиска упоминаний. Введите хотя бы одно слово.`
   },
-  enterLatestDays: {
+  
+  enterLatestDays: { // Prompt
     en: `${EDIT} Enter the number of latest days:`,
     ru: `${EDIT} Введите количество последних дней:`
   },
-  invalidDaysNumber: {
+  
+  invalidDaysNumber: { // Alert
     en: `${WARN} Please enter a valid number of days.`,
     ru: `${WARN} Введите корректное число дней.`
   }
