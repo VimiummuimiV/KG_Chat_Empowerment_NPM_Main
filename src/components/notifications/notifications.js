@@ -15,6 +15,13 @@ import { scrollToBottom } from "../../helpers/scrollTo.js";
 // Helper for pausing execution
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+// Hover dimming constants and state
+const HOVER_DIM_DELAY = 300; // milliseconds before dimming effect applies when hovering new username
+const HOVER_PROTECTION_TIME = 3000; // milliseconds to keep dimmed state when leaving
+let hoverTimeoutId = null;
+let protectionTimeoutId = null;
+let currentHoveredUsername = null;
+
 // Creates the action icon element
 function createActionIcon(iconType) {
   const actionIcon = document.createElement('span');
@@ -23,6 +30,31 @@ function createActionIcon(iconType) {
   actionIcon.style.setProperty('border', 'none', 'important');
   actionIcon.innerHTML = iconType;
   return actionIcon;
+}
+
+// Handle notification hover dimming logic
+function handleNotificationHover(staticChatNotification, isEntering) {
+  if (hoverTimeoutId) clearTimeout(hoverTimeoutId);
+  
+  if (!isEntering) {
+    if (protectionTimeoutId) clearTimeout(protectionTimeoutId);
+    protectionTimeoutId = setTimeout(() => {
+      document.querySelectorAll('.static-chat-notification').forEach(n => n.classList.toggle('dimmed', false));
+      currentHoveredUsername = null;
+    }, HOVER_PROTECTION_TIME);
+    return;
+  }
+  
+  const username = staticChatNotification.dataset.username;
+  if (currentHoveredUsername === username) return;
+  
+  hoverTimeoutId = setTimeout(() => {
+    if (protectionTimeoutId) clearTimeout(protectionTimeoutId);
+    currentHoveredUsername = username;
+    document.querySelectorAll('.static-chat-notification').forEach(n => {
+      n.classList.toggle('dimmed', n.dataset.username !== username);
+    });
+  }, HOVER_DIM_DELAY);
 }
 
 // Function to create and display a static notification
@@ -98,15 +130,20 @@ export function createStaticNotification(user, iconType, time, presence, contain
   // Append the notification to the selected container
   staticNotificationsContainer.appendChild(staticChatNotification);
 
-  // Use the custom tooltip when the user enters the static notification
-  staticChatNotification.addEventListener('mouseover', () => {
-    // Use dataset to get the username and time from the static notification
+  // Handle hover events for dimming and tooltip
+  staticChatNotification.addEventListener('mouseenter', () => {
+    // Handle dimming effect
+    handleNotificationHover(staticChatNotification, true);
+    
+    // Handle tooltip
     const usernameData = staticChatNotification.dataset.username;
     const timeData = staticChatNotification.dataset.time;
-    // Get the user chat duration and pass it to the custom tooltip
     const title = getUserChatDuration(usernameData, timeData);
-    // Create and display the custom tooltip
     createCustomTooltip(staticChatNotification, title);
+  });
+  
+  staticChatNotification.addEventListener('mouseleave', () => {
+    handleNotificationHover(staticChatNotification, false);
   });
 }
 

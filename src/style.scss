@@ -378,6 +378,11 @@
   font-size: 1em;
   align-items: center;
   border-radius: 4px !important;
+
+  &.dimmed {
+    opacity: 0.3;
+    filter: grayscale(0.5);
+  }
 }
 
 .dynamic-chat-notifications-container {
